@@ -707,6 +707,17 @@
             border-top: 3px solid var(--primary-red);
             margin-top: 50px;
         }
+        
+        /* Stylizacja linków w stopce */
+        footer a {
+            color: #777;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        footer a:hover {
+            color: var(--primary-red);
+        }
 
         @media (max-width: 768px) {
             header { height: auto; padding: 15px 5%; flex-direction: column; justify-content: center; }
@@ -1008,7 +1019,10 @@
     </section>
 
     <footer>
-        <p>&copy; 2025 SSCAR Stacja Kontroli Pojazdów Wrocław.</p>
+        <p>Potrzebujesz taką profesjonalną stronę spersonalizowaną pod twoje potrzeby? <br>
+           Zadzwoń: <a href="tel:+48608078802">608 078 802</a> 
+           Lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> - Michał Jarosiński
+        </p>
     </footer>
 
     <!-- Skrypt JS do animacji poświaty i przewijania -->
