@@ -88,16 +88,16 @@
             align-items: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             
-            /* Zwiększona wysokość nagłówka */
-            height: 110px; 
+            /* ZMIANA: Zwiększona wysokość nagłówka, by zmieścić większe logo */
+            height: 160px; 
             
             border-bottom: 2px solid var(--primary-red);
             transition: all 0.3s;
         }
 
         .logo-img {
-            /* Zwiększone logo w menu */
-            max-height: 90px;
+            /* ZMIANA: Jeszcze większe logo w lewym górnym rogu */
+            max-height: 140px;
             width: auto;
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
             transition: transform 0.3s;
@@ -187,10 +187,9 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Dodatkowe centrowanie flex */
+            align-items: center;
         }
 
-        /* NOWY STYL DLA GŁÓWNEGO LOGO W HERO */
         .hero-logo-main {
             max-width: 700px;
             width: 90%;
@@ -205,7 +204,7 @@
             margin-bottom: 3rem;
             max-width: 800px;
             
-            /* WYMUSZONE CENTROWANIE */
+            /* Wymuszone centrowanie */
             margin-left: auto;
             margin-right: auto;
             text-align: center;
@@ -270,7 +269,7 @@
             background: transparent;
             border: 2px solid var(--white);
             box-shadow: none;
-            color: white; /* Fix dla koloru tekstu */
+            color: white;
         }
         
         .btn-outline:hover {
@@ -642,9 +641,6 @@
             nav ul { margin-top: 20px; flex-wrap: wrap; justify-content: center; }
             nav ul li { margin: 10px 15px; }
             .hero { margin-top: 130px; height: auto; padding: 120px 20px; }
-            
-            /* Nie potrzebujemy już zmiany font-size h1, bo mamy logo */
-            
             .pricing-table th, .pricing-table td { font-size: 0.85rem; padding: 15px 10px; }
             .ac-container { flex-direction: column; }
             .contact-info { padding: 2rem; }
@@ -670,11 +666,10 @@
 
     <div class="hero">
         <div class="hero-content">
-            <!-- ZMIANA: Zastąpienie H1 obrazkiem -->
             <img src="Logo-SSCAR.png" alt="Stacja Kontroli Pojazdów SSCAR Wrocław" class="hero-logo-main">
             
-            <!-- ZMIANA: Podpisy są teraz centrowane przez CSS -->
-            <p>Diagnostyka | Tuning | Geometria 3D | Klimatyzacja | Wulkanizacja</p>
+            <!-- ZMIANA: Usunięto "Tuning" z listy -->
+            <p>Diagnostyka | Geometria 3D | Klimatyzacja | Wulkanizacja</p>
             
             <div class="btn-group">
                 <a href="tel:+48796995620" class="btn">SKP: 796 995 620</a>
