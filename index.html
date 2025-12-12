@@ -78,10 +78,7 @@
         header {
             background: rgba(18, 18, 18, 0.95);
             backdrop-filter: blur(10px);
-            
-            /* ZMIANA: Usunięto pionowy padding (0), aby flexbox idealnie wyśrodkował elementy przy stałej wysokości */
             padding: 0 5%;
-            
             position: fixed;
             width: 100%;
             top: 0;
@@ -91,7 +88,7 @@
             align-items: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             
-            /* ZMIANA: Zmniejszono wysokość do 100px dla lepszej kompozycji */
+            /* Wysokość pozostaje bez zmian (niski pasek) */
             height: 100px; 
             
             border-bottom: 2px solid var(--primary-red);
@@ -99,9 +96,14 @@
         }
 
         .logo-img {
-            /* ZMIANA: Zmniejszono logo do 80px, aby pasowało do nagłówka 100px */
-            max-height: 80px;
+            /* ZMIANA: Powiększenie logo do 130px */
+            max-height: 130px; 
             width: auto;
+            
+            /* ZMIANA: Triki z marginesami, aby logo "wystawało" poza pasek 100px */
+            position: relative;
+            top: 15px; /* Przesunięcie w dół, by wystawało pod spód paska */
+            
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
             transition: transform 0.3s;
             display: block;
@@ -207,12 +209,9 @@
             font-size: 1.4rem;
             margin-bottom: 3rem;
             max-width: 800px;
-            
-            /* Wymuszone centrowanie */
             margin-left: auto;
             margin-right: auto;
             text-align: center;
-            
             font-weight: 300;
             letter-spacing: 1px;
             color: #ddd;
@@ -879,7 +878,8 @@
                     <i class="fas fa-map-marker-alt"></i>
                     <div>
                         <span class="label-tag">Adres</span>
-                        <span><strong>SSCAR Polanowicka</strong><br>ul. Polanowicka 82<br>51-180 Wrocław</span>
+                        <!-- ZMIANA: Usunięto tekst SSCAR Polanowicka -->
+                        <span>ul. Polanowicka 82<br>51-180 Wrocław</span>
                     </div>
                 </div>
 
