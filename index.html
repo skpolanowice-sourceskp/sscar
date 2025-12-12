@@ -157,8 +157,7 @@
         /* Hero Section */
         .hero {
             height: 95vh;
-            /* Usunięto statyczne tło url('tlo.jpg') */
-            background-color: #000; /* Tło awaryjne */
+            background-color: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -178,7 +177,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0; /* Pod treścią */
+            z-index: 0;
+            background-color: #000;
         }
 
         .hero-slideshow div {
@@ -189,27 +189,46 @@
             height: 100%;
             background-size: cover;
             background-position: center;
-            opacity: 100; /* Domyślnie niewidoczne */
-            animation: slideshowAnimation 36s infinite; /* Czas całej pętli */
+            opacity: 0;
+            /* Pętla 30s dla 6 zdjęć (5s na zdjęcie) */
+            animation: slideshowAnimation 30s linear infinite; 
         }
 
-        /* Definicja poszczególnych zdjęć i ich opóźnień */
-        .hero-slideshow div:nth-child(1) { background-image: url('drift-bober-przod.jpg'); animation-delay: 0s; }
-        .hero-slideshow div:nth-child(2) { background-image: url('BMW-M3-F.jpg'); animation-delay: 6s; }
-        .hero-slideshow div:nth-child(3) { background-image: url('eclipse-przod.jpg'); animation-delay: 12s; }
-        .hero-slideshow div:nth-child(4) { background-image: url('mandaryna-bok-1.jpg'); animation-delay: 18s; }
-        .hero-slideshow div:nth-child(5) { background-image: url('Gt-63-S-przod.jpg'); animation-delay: 24s; }
-        .hero-slideshow div:nth-child(6) { background-image: url('Maverick-przod.jpg'); animation-delay: 30s; }
+        /* POPRAWIONE NAZWY PLIKÓW (z polskimi znakami "ó") */
+        .hero-slideshow div:nth-child(1) { 
+            background-image: url('drift-bober-przód.jpg'); 
+            animation-delay: 0s; 
+        }
+        .hero-slideshow div:nth-child(2) { 
+            background-image: url('BMW-M3-F.jpg'); 
+            animation-delay: 5s; 
+        }
+        .hero-slideshow div:nth-child(3) { 
+            background-image: url('eclipse-przód.jpg'); 
+            animation-delay: 10s; 
+        }
+        .hero-slideshow div:nth-child(4) { 
+            background-image: url('mandaryna-bok-1.jpg'); 
+            animation-delay: 15s; 
+        }
+        .hero-slideshow div:nth-child(5) { 
+            background-image: url('Gt-63-S-przód.jpg'); 
+            animation-delay: 20s; 
+        }
+        .hero-slideshow div:nth-child(6) { 
+            background-image: url('Maverick-przód.jpg'); 
+            animation-delay: 25s; 
+        }
 
         @keyframes slideshowAnimation {
-            0% { opacity: 0; transform: scale(1.1); }
-            5% { opacity: 1; }
-            20% { opacity: 1; }   /* Zdjęcie widoczne przez ok. 15-20% czasu */
-            25% { opacity: 0; transform: scale(1); }
-            100% { opacity: 0; }
+            0% { opacity: 0; transform: scale(1.05); }
+            4% { opacity: 1; }   /* Szybkie pojawienie się */
+            17% { opacity: 1; }  /* Pełna widoczność do momentu wejścia kolejnego */
+            22% { opacity: 0; transform: scale(1); } /* Zanikanie */
+            100% { opacity: 0; transform: scale(1); }
         }
 
-        /* Przyciemnienie zdjęć, aby tekst był czytelny */
+        /* Przyciemnienie zdjęć */
         .hero::after {
             content: '';
             position: absolute;
@@ -232,14 +251,14 @@
             bottom: 0;
             right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2; /* Nad przyciemnieniem */
+            z-index: 2;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
         .hero-content {
             position: relative;
-            z-index: 3; /* Najwyżej, aby tekst był na wierzchu */
+            z-index: 3;
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -719,14 +738,14 @@
     </header>
 
     <div class="hero">
-        <!-- ZMIANA: Pokaz slajdów w tle -->
         <div class="hero-slideshow">
-            <div></div> <!-- drift-bober-przod.jpg -->
-            <div></div> <!-- BMW-M3-F.jpg -->
-            <div></div> <!-- eclipse-przod.jpg -->
-            <div></div> <!-- mandaryna-bok-1.jpg -->
-            <div></div> <!-- Gt-63-S-przod.jpg -->
-            <div></div> <!-- Maverick-przod.jpg -->
+            <!-- Puste divy z obrazkami ładowanymi przez CSS -->
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
         </div>
 
         <div class="hero-content">
@@ -1025,4 +1044,3 @@
     </script>
 </body>
 </html>
-
