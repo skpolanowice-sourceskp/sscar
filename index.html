@@ -34,7 +34,7 @@
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
             position: relative;
-            overflow-x: hidden; /* Zapobiega przewijaniu na boki całej strony */
+            overflow-x: hidden;
         }
 
         /* --- EFEKT CZERWONEJ POŚWIATY POD MYSZĄ --- */
@@ -172,7 +172,7 @@
         /* Hero Section */
         .hero {
             height: 95vh;
-            min-height: 600px; /* Minimalna wysokość dla mobile */
+            min-height: 600px;
             background-color: #000;
             display: flex;
             flex-direction: column;
@@ -406,7 +406,7 @@
         .service-card h3 { margin-bottom: 1rem; color: var(--white); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .service-card p { color: var(--text-muted); }
 
-        /* Pricing Table */
+        /* Pricing Table - POPRAWIONE, BEZ SCROLLA */
         .pricing-wrapper {
             max-width: 1000px;
             margin: 0 auto;
@@ -417,19 +417,12 @@
             border: 1px solid #333;
         }
 
-        /* Kontener do przewijania tabeli na mobile */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
-        }
-
         .pricing-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0 10px;
             margin-bottom: 40px;
-            min-width: 600px; /* Wymuszenie szerokości na mobile */
+            /* Usunięto min-width aby nie było scrolla */
         }
 
         .pricing-table th { padding: 20px; background-color: #2a2a2a; color: var(--primary-red); text-align: center; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; border: none; }
@@ -485,21 +478,12 @@
             header { 
                 height: 80px; 
                 padding: 0 20px; 
-                justify-content: space-between; /* Logo z lewej, burger z prawej */
+                justify-content: space-between;
             }
             
-            .logo-link {
-                position: static;
-                transform: none;
-            }
-            
-            .logo-img {
-                max-height: 50px; /* Mniejsze logo */
-            }
-
-            .menu-toggle {
-                display: block; /* Pokaż hamburgera */
-            }
+            .logo-link { position: static; transform: none; }
+            .logo-img { max-height: 50px; }
+            .menu-toggle { display: block; }
 
             nav {
                 position: absolute;
@@ -509,100 +493,43 @@
                 background: rgba(10, 10, 10, 0.98);
                 backdrop-filter: blur(15px);
                 border-bottom: 2px solid var(--primary-red);
-                transform: translateY(-150%); /* Ukryte nad ekranem */
+                transform: translateY(-150%);
                 transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 z-index: 999;
                 padding: 20px 0;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             }
 
-            nav.active {
-                transform: translateY(0); /* Wysunięte */
-            }
-
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-                margin: 0;
-            }
-
-            nav ul li {
-                margin: 15px 0;
-                width: 100%;
-                text-align: center;
-            }
-            
-            nav ul li a {
-                font-size: 1.2rem;
-                display: block;
-                padding: 10px;
-            }
+            nav.active { transform: translateY(0); }
+            nav ul { flex-direction: column; align-items: center; margin: 0; }
+            nav ul li { margin: 15px 0; width: 100%; text-align: center; }
+            nav ul li a { font-size: 1.2rem; display: block; padding: 10px; }
 
             /* Sekcje */
-            section {
-                padding: 4rem 5%; /* Mniejszy padding */
-            }
-
-            h2 {
-                font-size: 2rem; /* Mniejsze nagłówki */
-                margin-bottom: 2.5rem;
-            }
+            section { padding: 4rem 5%; }
+            h2 { font-size: 2rem; margin-bottom: 2.5rem; }
 
             /* Hero */
-            .hero {
-                padding-top: 100px; /* Miejsce na header */
-            }
+            .hero { padding-top: 100px; }
+            .hero p { font-size: 1.1rem; padding: 0 10px; }
+            .btn-group { flex-direction: column; width: 100%; gap: 15px; }
+            .btn { width: 100%; padding: 14px 20px; }
 
-            .hero p {
-                font-size: 1.1rem;
-                padding: 0 10px;
-            }
+            /* Cennik - ZMIANY MOBILNE */
+            .pricing-wrapper { padding: 1.5rem 0.5rem; } /* Mniejszy padding kontenera */
+            .table-title { font-size: 1.4rem; margin: 30px 0 20px; }
             
-            .btn-group {
-                flex-direction: column;
-                width: 100%;
-                gap: 15px;
-            }
-            
-            .btn {
-                width: 100%;
-                padding: 14px 20px;
-            }
-
-            /* Cennik */
-            .pricing-wrapper {
-                padding: 1.5rem;
-            }
-            
-            .table-title {
-                font-size: 1.4rem;
-                margin: 30px 0 20px;
-            }
+            /* Pomniejszanie tabeli żeby weszła na ekran */
+            .pricing-table th { padding: 10px 5px; font-size: 0.7rem; letter-spacing: 0; }
+            .pricing-table td { padding: 10px 5px; font-size: 0.75rem; }
+            .pricing-table td.price { font-size: 0.9rem; }
             
             /* Kontakt */
-            .contact-info {
-                padding: 2.5rem 1.5rem;
-                min-width: 100%;
-            }
-            
-            .contact-item {
-                flex-direction: column;
-                align-items: flex-start;
-                text-align: left;
-            }
-            
-            .contact-item i {
-                margin-bottom: 10px;
-                margin-right: 0;
-            }
-            
-            .map-container {
-                min-height: 400px;
-            }
-
-            .glass-panel {
-                padding: 2rem;
-            }
+            .contact-info { padding: 2.5rem 1.5rem; min-width: 100%; }
+            .contact-item { flex-direction: column; align-items: flex-start; text-align: left; }
+            .contact-item i { margin-bottom: 10px; margin-right: 0; }
+            .map-container { min-height: 400px; }
+            .glass-panel { padding: 2rem; }
         }
     </style>
 </head>
@@ -692,127 +619,121 @@
 
             <!-- Ceny Urzędowe -->
             <h3 class="table-title">Badania Techniczne (Ceny Urzędowe)</h3>
-            <div class="table-responsive">
-                <table class="pricing-table">
-                    <tbody>
-                        <tr>
-                            <td>Samochód osobowy (do 3.5t)</td>
-                            <td class="price">149 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Samochód osobowy z gazem (LPG/CNG) <br><small style="color:#888">Badanie okresowe + specjalistyczne gaz</small></td>
-                            <td class="price">245 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Taxi (Osobowe + Taxi)</td>
-                            <td class="price">213 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Badanie powypadkowe (łącznie z okresowym)</td>
-                            <td class="price">292 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Motocykl</td>
-                            <td class="price">94 zł</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="pricing-table">
+                <tbody>
+                    <tr>
+                        <td>Samochód osobowy (do 3.5t)</td>
+                        <td class="price">149 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Samochód osobowy z gazem (LPG/CNG) <br><small style="color:#888">Badanie okresowe + specjalistyczne gaz</small></td>
+                        <td class="price">245 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Taxi (Osobowe + Taxi)</td>
+                        <td class="price">213 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Badanie powypadkowe (łącznie z okresowym)</td>
+                        <td class="price">292 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Motocykl</td>
+                        <td class="price">94 zł</td>
+                    </tr>
+                </tbody>
+            </table>
             
             <!-- Cennik Usług Specjalnych -->
             <h3 class="table-title">Usługi Diagnostyczne / Dodatkowe</h3>
-            <div class="table-responsive">
-                <table class="pricing-table">
-                    <tbody>
-                        <tr>
-                            <td>Sprawdzenie / regulacja świateł</td>
-                            <td class="price">40 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Sprawdzenie zawieszenia (szarpaki)</td>
-                            <td class="price">70 zł</td>
-                        </tr>
-                        <tr>
-                            <td>Sprawdzenie zawieszenia i hamulców (ścieżka diagnostyczna)</td>
-                            <td class="price">100 zł</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Sprawdzenie auta przed zakupem - BAZA</strong><br>
-                                <small style="color:#888">(przejazd przez ścieżkę)</small>
-                            </td>
-                            <td class="price">150 zł</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Sprawdzenie auta przed zakupem - MAX</strong><br>
-                                <small style="color:#888">(ścieżka, lakier, komputer, geometria)</small>
-                            </td>
-                            <td class="price">450 zł</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="pricing-table">
+                <tbody>
+                    <tr>
+                        <td>Sprawdzenie / regulacja świateł</td>
+                        <td class="price">40 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Sprawdzenie zawieszenia (szarpaki)</td>
+                        <td class="price">70 zł</td>
+                    </tr>
+                    <tr>
+                        <td>Sprawdzenie zawieszenia i hamulców (ścieżka diagnostyczna)</td>
+                        <td class="price">100 zł</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Sprawdzenie auta przed zakupem - BAZA</strong><br>
+                            <small style="color:#888">(przejazd przez ścieżkę)</small>
+                        </td>
+                        <td class="price">150 zł</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Sprawdzenie auta przed zakupem - MAX</strong><br>
+                            <small style="color:#888">(ścieżka, lakier, komputer, geometria)</small>
+                        </td>
+                        <td class="price">450 zł</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <!-- Geometria Table -->
             <h3 class="table-title">Geometria Kół 3D</h3>
-            <div class="table-responsive">
-                <table class="pricing-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left; border-radius: 6px 0 0 6px;">Usługa / Typ Pojazdu</th>
-                            <th>Przednia Oś</th>
-                            <th style="border-radius: 0 6px 6px 0;">Obie Osie</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="3" class="category-header">Pomiar</td>
-                        </tr>
-                        <tr>
-                            <td>Pomiar (każdy samochód)</td>
-                            <td colspan="2" class="price">150 zł</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="category-header">Regulacja (zawiera pomiar)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Auta osobowe - Prosty wahacz</strong><br><small style="color:#888">(np. Ford Focus Mk2)</small></td>
-                            <td class="price">250 zł</td>
-                            <td class="price">350 zł</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Auta osobowe - Wielowahacz prosty</strong><br><small style="color:#888">(np. BMW E90)</small></td>
-                            <td class="price">250 zł</td>
-                            <td class="price">450+ zł</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Auta osobowe - Trudny dostęp</strong><br><small style="color:#888">(np. BMW Serii 5, Audi RS3)</small></td>
-                            <td class="price">250 zł</td>
-                            <td class="price">550+ zł</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Busy do 3.5t</strong></td>
-                            <td class="price">300 zł</td>
-                            <td class="price">Indyw.</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Busy powyżej 3.5t</strong></td>
-                            <td class="price">350 zł</td>
-                            <td class="price">Indyw.</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Auta sportowe</strong></td>
-                            <td class="price">300 zł</td>
-                            <td class="price">600+ zł</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Reset czujnika kąta skrętu</strong></td>
-                            <td colspan="2" class="price">200 zł</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; border-radius: 6px 0 0 6px;">Usługa / Typ Pojazdu</th>
+                        <th>Przednia Oś</th>
+                        <th style="border-radius: 0 6px 6px 0;">Obie Osie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3" class="category-header">Pomiar</td>
+                    </tr>
+                    <tr>
+                        <td>Pomiar (każdy samochód)</td>
+                        <td colspan="2" class="price">150 zł</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="category-header">Regulacja (zawiera pomiar)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auta osobowe - Prosty wahacz</strong><br><small style="color:#888">(np. Ford Focus Mk2)</small></td>
+                        <td class="price">250 zł</td>
+                        <td class="price">350 zł</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auta osobowe - Wielowahacz prosty</strong><br><small style="color:#888">(np. BMW E90)</small></td>
+                        <td class="price">250 zł</td>
+                        <td class="price">450+ zł</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auta osobowe - Trudny dostęp</strong><br><small style="color:#888">(np. BMW Serii 5, Audi RS3)</small></td>
+                        <td class="price">250 zł</td>
+                        <td class="price">550+ zł</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Busy do 3.5t</strong></td>
+                        <td class="price">300 zł</td>
+                        <td class="price">Indyw.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Busy powyżej 3.5t</strong></td>
+                        <td class="price">350 zł</td>
+                        <td class="price">Indyw.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auta sportowe</strong></td>
+                        <td class="price">300 zł</td>
+                        <td class="price">600+ zł</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reset czujnika kąta skrętu</strong></td>
+                        <td colspan="2" class="price">200 zł</td>
+                    </tr>
+                </tbody>
+            </table>
             <div style="text-align:center;">
                 <div class="pricing-note">
                     * Auta z drążkami u góry ustawiamy tylko na nowych drążkach.<br>
@@ -948,7 +869,6 @@
 
         menuBtn.addEventListener('click', () => {
             navMenu.classList.toggle('active');
-            // Zmiana ikony z paska na X
             const icon = menuBtn.querySelector('i');
             if (navMenu.classList.contains('active')) {
                 icon.classList.remove('fa-bars');
@@ -959,7 +879,6 @@
             }
         });
 
-        // Zamknij menu po kliknięciu w link
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
