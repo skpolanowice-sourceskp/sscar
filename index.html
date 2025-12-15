@@ -29,12 +29,12 @@
             line-height: 1.6;
             color: var(--text-main);
             background-color: var(--dark-bg);
-            /* Tło główne strony (poza hero) */
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
             position: relative;
+            overflow-x: hidden; /* Zapobiega przewijaniu na boki całej strony */
         }
 
         /* --- EFEKT CZERWONEJ POŚWIATY POD MYSZĄ --- */
@@ -52,6 +52,11 @@
                 transparent 40%
             );
             transition: opacity 0.3s;
+        }
+
+        /* Ukryj glow na urządzeniach dotykowych */
+        @media (hover: none) {
+            .mouse-glow { display: none; }
         }
 
         /* Animacje wejścia */
@@ -85,7 +90,7 @@
             top: 0;
             z-index: 1000;
             display: flex;
-            justify-content: flex-end; /* Menu do prawej */
+            justify-content: flex-end;
             align-items: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             height: 100px;
@@ -113,6 +118,7 @@
             transform: scale(1.05);
         }
 
+        /* Navigation Desktop */
         nav ul {
             display: flex;
             list-style: none;
@@ -154,9 +160,19 @@
             width: 100%;
         }
 
+        /* Hamburger Menu Icon (hidden on desktop) */
+        .menu-toggle {
+            display: none;
+            font-size: 1.8rem;
+            color: var(--text-main);
+            cursor: pointer;
+            z-index: 1002;
+        }
+
         /* Hero Section */
         .hero {
             height: 95vh;
+            min-height: 600px; /* Minimalna wysokość dla mobile */
             background-color: #000;
             display: flex;
             flex-direction: column;
@@ -170,7 +186,6 @@
             z-index: 2;
         }
 
-        /* --- SLIDESHOW (POKAZ ZDJĘĆ) --- */
         .hero-slideshow {
             position: absolute;
             top: 0;
@@ -190,45 +205,24 @@
             background-size: cover;
             background-position: center;
             opacity: 0;
-            /* Pętla 30s dla 6 zdjęć (5s na zdjęcie) */
             animation: slideshowAnimation 30s linear infinite; 
         }
 
-        /* POPRAWIONE NAZWY PLIKÓW (z polskimi znakami "ó") */
-        .hero-slideshow div:nth-child(1) { 
-            background-image: url('drift-bober-przód.jpg'); 
-            animation-delay: 0s; 
-        }
-        .hero-slideshow div:nth-child(2) { 
-            background-image: url('BMW-M3-F.jpg'); 
-            animation-delay: 5s; 
-        }
-        .hero-slideshow div:nth-child(3) { 
-            background-image: url('eclipse-przód.jpg'); 
-            animation-delay: 10s; 
-        }
-        .hero-slideshow div:nth-child(4) { 
-            background-image: url('mandaryna-bok-1.jpg'); 
-            animation-delay: 15s; 
-        }
-        .hero-slideshow div:nth-child(5) { 
-            background-image: url('Gt-63-S-przód.jpg'); 
-            animation-delay: 20s; 
-        }
-        .hero-slideshow div:nth-child(6) { 
-            background-image: url('Maverick-przód.jpg'); 
-            animation-delay: 25s; 
-        }
+        .hero-slideshow div:nth-child(1) { background-image: url('drift-bober-przód.jpg'); animation-delay: 0s; }
+        .hero-slideshow div:nth-child(2) { background-image: url('BMW-M3-F.jpg'); animation-delay: 5s; }
+        .hero-slideshow div:nth-child(3) { background-image: url('eclipse-przód.jpg'); animation-delay: 10s; }
+        .hero-slideshow div:nth-child(4) { background-image: url('mandaryna-bok-1.jpg'); animation-delay: 15s; }
+        .hero-slideshow div:nth-child(5) { background-image: url('Gt-63-S-przód.jpg'); animation-delay: 20s; }
+        .hero-slideshow div:nth-child(6) { background-image: url('Maverick-przód.jpg'); animation-delay: 25s; }
 
         @keyframes slideshowAnimation {
             0% { opacity: 0; transform: scale(1.05); }
-            4% { opacity: 1; }   /* Szybkie pojawienie się */
-            17% { opacity: 1; }  /* Pełna widoczność do momentu wejścia kolejnego */
-            22% { opacity: 0; transform: scale(1); } /* Zanikanie */
+            4% { opacity: 1; }
+            17% { opacity: 1; }
+            22% { opacity: 0; transform: scale(1); }
             100% { opacity: 0; transform: scale(1); }
         }
 
-        /* Przyciemnienie zdjęć */
         .hero::after {
             content: '';
             position: absolute;
@@ -236,12 +230,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.65); /* Przyciemnienie 65% */
+            background: rgba(0, 0, 0, 0.65);
             z-index: 1;
             pointer-events: none;
         }
 
-        /* Skanline effect na wierzchu */
         .hero::before {
             content: " ";
             display: block;
@@ -312,6 +305,7 @@
             position: relative;
             overflow: hidden;
             z-index: 1;
+            text-align: center;
         }
         
         .btn::before {
@@ -326,30 +320,11 @@
             z-index: -1;
         }
 
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(227, 30, 36, 0.5);
-            background-color: #c0151b;
-            border-color: #c0151b;
-        }
+        .btn:hover::before { left: 100%; }
+        .btn:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(227, 30, 36, 0.5); background-color: #c0151b; border-color: #c0151b; }
         
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--white);
-            box-shadow: none;
-            color: white;
-        }
-        
-        .btn-outline:hover {
-            background: var(--white);
-            color: var(--dark-bg);
-            border-color: var(--white);
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
-        }
+        .btn-outline { background: transparent; border: 2px solid var(--white); box-shadow: none; color: white; }
+        .btn-outline:hover { background: var(--white); color: var(--dark-bg); border-color: var(--white); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
 
         /* Sections Generic */
         section {
@@ -393,10 +368,7 @@
             margin: 0 auto;
             transition: transform 0.3s;
         }
-        
-        .glass-panel:hover {
-            border-color: rgba(227, 30, 36, 0.3);
-        }
+        .glass-panel:hover { border-color: rgba(227, 30, 36, 0.3); }
 
         .about-text {
             font-size: 1.2rem;
@@ -404,10 +376,7 @@
             text-align: justify;
             line-height: 1.9;
         }
-        
-        .about-text strong {
-            color: var(--primary-red);
-        }
+        .about-text strong { color: var(--primary-red); }
 
         /* Services */
         .services-grid {
@@ -431,37 +400,13 @@
             overflow: hidden;
         }
 
-        .service-card:hover {
-            transform: translateY(-15px) scale(1.03);
-            box-shadow: 0 20px 40px rgba(227, 30, 36, 0.2);
-            background: #252525;
-            border-top: 4px solid var(--primary-red);
-        }
-        
-        .service-card i {
-            font-size: 4rem;
-            color: var(--primary-red);
-            margin-bottom: 1.5rem;
-            transition: transform 0.5s;
-        }
-        
-        .service-card:hover i {
-            transform: rotateY(180deg);
-        }
+        .service-card:hover { transform: translateY(-15px) scale(1.03); box-shadow: 0 20px 40px rgba(227, 30, 36, 0.2); background: #252525; border-top: 4px solid var(--primary-red); }
+        .service-card i { font-size: 4rem; color: var(--primary-red); margin-bottom: 1.5rem; transition: transform 0.5s; }
+        .service-card:hover i { transform: rotateY(180deg); }
+        .service-card h3 { margin-bottom: 1rem; color: var(--white); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .service-card p { color: var(--text-muted); }
 
-        .service-card h3 {
-            margin-bottom: 1rem;
-            color: var(--white);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .service-card p {
-            color: var(--text-muted);
-        }
-
-        /* Pricing Table (Cennik) */
+        /* Pricing Table */
         .pricing-wrapper {
             max-width: 1000px;
             margin: 0 auto;
@@ -472,291 +417,222 @@
             border: 1px solid #333;
         }
 
+        /* Kontener do przewijania tabeli na mobile */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
+        }
+
         .pricing-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0 10px;
             margin-bottom: 40px;
+            min-width: 600px; /* Wymuszenie szerokości na mobile */
         }
 
-        .pricing-table th {
-            padding: 20px;
-            background-color: #2a2a2a;
-            color: var(--primary-red);
-            text-align: center;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            border: none;
-        }
-
-        .pricing-table td {
-            padding: 20px;
-            background-color: #252525;
-            border: none;
-            transition: all 0.3s;
-            color: #ddd;
-        }
+        .pricing-table th { padding: 20px; background-color: #2a2a2a; color: var(--primary-red); text-align: center; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; border: none; }
+        .pricing-table td { padding: 20px; background-color: #252525; border: none; transition: all 0.3s; color: #ddd; }
         
         .pricing-table td:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
         .pricing-table td:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+        .pricing-table tr:hover td { background-color: #333; transform: scale(1.02); box-shadow: 0 5px 15px rgba(0,0,0,0.3); color: white; }
+        .pricing-table td.price { text-align: center; font-weight: 800; color: var(--primary-red); font-size: 1.3rem; white-space: nowrap; }
 
-        .pricing-table tr:hover td {
-            background-color: #333;
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            color: white;
-        }
+        .category-header { background-color: #333 !important; font-weight: 800; text-transform: uppercase; color: white !important; font-size: 0.9rem; padding-left: 20px; border-left: 5px solid var(--primary-red); letter-spacing: 1px; }
 
-        .pricing-table td.price {
-            text-align: center;
-            font-weight: 800;
-            color: var(--primary-red);
-            font-size: 1.3rem;
-            white-space: nowrap;
-        }
-
-        .category-header {
-            background-color: #333 !important;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: white !important;
-            font-size: 0.9rem;
-            padding-left: 20px;
-            border-left: 5px solid var(--primary-red);
-            letter-spacing: 1px;
-        }
-
-        .table-title {
-            text-align: center;
-            margin: 50px 0 30px;
-            color: var(--white);
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .pricing-note {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #888;
-            margin-top: -20px;
-            margin-bottom: 40px;
-            font-style: italic;
-            background: rgba(227, 30, 36, 0.1);
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px dashed var(--primary-red);
-            display: inline-block;
-        }
+        .table-title { text-align: center; margin: 50px 0 30px; color: var(--white); font-size: 1.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .pricing-note { text-align: center; font-size: 0.9rem; color: #888; margin-top: -20px; margin-bottom: 40px; font-style: italic; background: rgba(227, 30, 36, 0.1); padding: 15px; border-radius: 6px; border: 1px dashed var(--primary-red); display: inline-block; }
 
         /* AC Pricing */
-        .ac-container {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .ac-card {
-            background: #252525;
-            padding: 2.5rem;
-            border: 1px solid #333;
-            border-bottom: 5px solid var(--primary-red);
-            text-align: center;
-            flex: 1;
-            min-width: 300px;
-            transition: all 0.3s;
-            border-radius: 8px;
-        }
-        
-        .ac-card:hover {
-            transform: translateY(-10px);
-            background: #2a2a2a;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            border-color: var(--primary-red);
-        }
-
-        .ac-card h3 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            font-weight: 800;
-        }
-
-        .ac-main-price {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--primary-red);
-            margin: 15px 0;
-            font-style: italic;
-            text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-        }
-        
+        .ac-container { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: 2rem; }
+        .ac-card { background: #252525; padding: 2.5rem; border: 1px solid #333; border-bottom: 5px solid var(--primary-red); text-align: center; flex: 1; min-width: 300px; transition: all 0.3s; border-radius: 8px; }
+        .ac-card:hover { transform: translateY(-10px); background: #2a2a2a; box-shadow: 0 15px 30px rgba(0,0,0,0.4); border-color: var(--primary-red); }
+        .ac-card h3 { color: white; margin-bottom: 15px; font-size: 1.5rem; text-transform: uppercase; font-weight: 800; }
+        .ac-main-price { font-size: 3.5rem; font-weight: 900; color: var(--primary-red); margin: 15px 0; font-style: italic; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
         .ac-detail { color: #aaa; }
         .ac-sub-price { color: white; font-weight: bold; font-size: 1.1rem; }
 
         /* Contact */
-        .contact-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            border-radius: 15px;
-            overflow: hidden;
-            border: 1px solid #333;
-        }
-
-        .contact-info {
-            flex: 1;
-            min-width: 350px;
-            padding: 4rem;
-            background: #151515;
-            color: var(--white);
-            position: relative;
-        }
+        .contact-container { display: flex; flex-wrap: wrap; gap: 0; max-width: 1200px; margin: 0 auto; background: var(--card-bg); box-shadow: 0 20px 50px rgba(0,0,0,0.6); border-radius: 15px; overflow: hidden; border: 1px solid #333; }
+        .contact-info { flex: 1; min-width: 350px; padding: 4rem; background: #151515; color: var(--white); position: relative; }
+        .contact-info::before { content: ''; position: absolute; top: 0; right: 0; width: 150px; height: 150px; background: radial-gradient(circle at top right, rgba(227, 30, 36, 0.2), transparent 70%); }
+        .contact-info h3 { margin-bottom: 2.5rem; color: var(--white); font-size: 2rem; text-transform: uppercase; font-weight: 800; border-left: 5px solid var(--primary-red); padding-left: 15px; }
         
-        .contact-info::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle at top right, rgba(227, 30, 36, 0.2), transparent 70%);
-        }
+        .contact-item { margin-bottom: 2.5rem; display: flex; align-items: center; transition: transform 0.3s; }
+        .contact-item:hover { transform: translateX(10px); }
+        .contact-item i { font-size: 1.5rem; margin-right: 25px; color: var(--primary-red); background: rgba(255,255,255,0.05); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(227, 30, 36, 0.3); }
+        .contact-item span, .contact-item a, .contact-info p { color: #ccc; font-size: 1.1rem; }
+        .contact-item a:hover { color: var(--primary-red); text-decoration: none; }
+        .label-tag { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; color: var(--primary-red) !important; margin-bottom: 5px; letter-spacing: 1px; }
 
-        .contact-info h3 {
-            margin-bottom: 2.5rem;
-            color: var(--white);
-            font-size: 2rem;
-            text-transform: uppercase;
-            font-weight: 800;
-            border-left: 5px solid var(--primary-red);
-            padding-left: 15px;
-        }
-        
-        .contact-item {
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            transition: transform 0.3s;
-        }
-        
-        .contact-item:hover {
-            transform: translateX(10px);
-        }
+        .map-container { flex: 1; min-width: 350px; min-height: 550px; filter: grayscale(100%) invert(90%) contrast(90%); transition: filter 0.5s; }
+        .map-container:hover { filter: grayscale(0%) invert(0%); }
 
-        .contact-item i {
-            font-size: 1.5rem;
-            margin-right: 25px;
-            color: var(--primary-red);
-            background: rgba(255,255,255,0.05);
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 1px solid rgba(227, 30, 36, 0.3);
-        }
+        footer { background: #0a0a0a; color: #555; text-align: center; padding: 3rem 2rem; font-size: 0.9rem; border-top: 3px solid var(--primary-red); margin-top: 50px; }
+        footer a { color: #777; text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--primary-red); }
 
-        .contact-item span, .contact-item a, .contact-info p {
-             color: #ccc;
-             font-size: 1.1rem;
-        }
-
-        .contact-item a:hover {
-            color: var(--primary-red);
-            text-decoration: none;
-        }
-        
-        .label-tag {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            color: var(--primary-red) !important;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-
-        .map-container {
-            flex: 1;
-            min-width: 350px;
-            min-height: 550px;
-            filter: grayscale(100%) invert(90%) contrast(90%);
-            transition: filter 0.5s;
-        }
-        
-        .map-container:hover {
-            filter: grayscale(0%) invert(0%);
-        }
-
-        footer {
-            background: #0a0a0a;
-            color: #555;
-            text-align: center;
-            padding: 3rem 2rem;
-            font-size: 0.9rem;
-            border-top: 3px solid var(--primary-red);
-            margin-top: 50px;
-        }
-        
-        /* Stylizacja linków w stopce */
-        footer a {
-            color: #777;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        footer a:hover {
-            color: var(--primary-red);
+        /* --- MEDIA QUERIES (RESPONSYWNOŚĆ) --- */
+        @media (max-width: 992px) {
+            h2 { font-size: 2.5rem; }
         }
 
         @media (max-width: 768px) {
-            header { height: auto; padding: 15px 5%; flex-direction: column; justify-content: center; }
-            .logo-link { position: static; transform: none; margin-bottom: 20px; }
-            nav ul { margin-top: 20px; flex-wrap: wrap; justify-content: center; }
-            nav ul li { margin: 10px 15px; }
-            .hero { margin-top: 130px; height: auto; padding: 120px 20px; }
-            .pricing-table th, .pricing-table td { font-size: 0.85rem; padding: 15px 10px; }
-            .ac-container { flex-direction: column; }
-            .contact-info { padding: 2rem; }
+            /* Header Mobile */
+            header { 
+                height: 80px; 
+                padding: 0 20px; 
+                justify-content: space-between; /* Logo z lewej, burger z prawej */
+            }
+            
+            .logo-link {
+                position: static;
+                transform: none;
+            }
+            
+            .logo-img {
+                max-height: 50px; /* Mniejsze logo */
+            }
+
+            .menu-toggle {
+                display: block; /* Pokaż hamburgera */
+            }
+
+            nav {
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(15px);
+                border-bottom: 2px solid var(--primary-red);
+                transform: translateY(-150%); /* Ukryte nad ekranem */
+                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                z-index: 999;
+                padding: 20px 0;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            }
+
+            nav.active {
+                transform: translateY(0); /* Wysunięte */
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                margin: 0;
+            }
+
+            nav ul li {
+                margin: 15px 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            nav ul li a {
+                font-size: 1.2rem;
+                display: block;
+                padding: 10px;
+            }
+
+            /* Sekcje */
+            section {
+                padding: 4rem 5%; /* Mniejszy padding */
+            }
+
+            h2 {
+                font-size: 2rem; /* Mniejsze nagłówki */
+                margin-bottom: 2.5rem;
+            }
+
+            /* Hero */
+            .hero {
+                padding-top: 100px; /* Miejsce na header */
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+                padding: 0 10px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 14px 20px;
+            }
+
+            /* Cennik */
+            .pricing-wrapper {
+                padding: 1.5rem;
+            }
+            
+            .table-title {
+                font-size: 1.4rem;
+                margin: 30px 0 20px;
+            }
+            
+            /* Kontakt */
+            .contact-info {
+                padding: 2.5rem 1.5rem;
+                min-width: 100%;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+            
+            .contact-item i {
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+            
+            .map-container {
+                min-height: 400px;
+            }
+
+            .glass-panel {
+                padding: 2rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Poświata pod myszą -->
+    <!-- Poświata pod myszą (JS) -->
     <div class="mouse-glow"></div>
 
     <header>
         <a href="#" class="logo-link"><img src="Logo-SSCAR.png" alt="SSCAR Logo" class="logo-img"></a>
-        <nav>
+        
+        <!-- Przycisk Hamburger -->
+        <div class="menu-toggle" id="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
             <ul>
-                <li><a href="#o-nas">O nas</a></li>
-                <li><a href="#oferta">Oferta</a></li>
-                <li><a href="#cennik">Cennik</a></li>
-                <li><a href="#kontakt">Kontakt</a></li>
+                <li><a href="#o-nas" class="nav-link">O nas</a></li>
+                <li><a href="#oferta" class="nav-link">Oferta</a></li>
+                <li><a href="#cennik" class="nav-link">Cennik</a></li>
+                <li><a href="#kontakt" class="nav-link">Kontakt</a></li>
             </ul>
         </nav>
     </header>
 
     <div class="hero">
         <div class="hero-slideshow">
-            <!-- Puste divy z obrazkami ładowanymi przez CSS -->
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+            <!-- Tła ładowane w CSS -->
+            <div></div><div></div><div></div><div></div><div></div><div></div>
         </div>
 
         <div class="hero-content">
@@ -765,8 +641,8 @@
             <p>Diagnostyka | Geometria 3D | Klimatyzacja | Wulkanizacja</p>
             
             <div class="btn-group">
-                <a href="tel:+48796995620" class="btn">SKP: 796 995 620</a>
-                <a href="tel:+48609995620" class="btn btn-outline">Opony: 609 995 620</a>
+                <a href="tel:+48796995620" class="btn"><i class="fas fa-phone"></i> SKP: 796 995 620</a>
+                <a href="tel:+48609995620" class="btn btn-outline"><i class="fas fa-phone"></i> Opony: 609 995 620</a>
             </div>
         </div>
     </div>
@@ -816,125 +692,131 @@
 
             <!-- Ceny Urzędowe -->
             <h3 class="table-title">Badania Techniczne (Ceny Urzędowe)</h3>
-            <table class="pricing-table">
-                <tbody>
-                    <tr>
-                        <td>Samochód osobowy (do 3.5t)</td>
-                        <td class="price">149 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Samochód osobowy z gazem (LPG/CNG) <br><small style="color:#888">Badanie okresowe + specjalistyczne gaz</small></td>
-                        <td class="price">245 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Taxi (Osobowe + Taxi)</td>
-                        <td class="price">213 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Badanie powypadkowe (łącznie z okresowym)</td>
-                        <td class="price">292 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Motocykl</td>
-                        <td class="price">94 zł</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="pricing-table">
+                    <tbody>
+                        <tr>
+                            <td>Samochód osobowy (do 3.5t)</td>
+                            <td class="price">149 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Samochód osobowy z gazem (LPG/CNG) <br><small style="color:#888">Badanie okresowe + specjalistyczne gaz</small></td>
+                            <td class="price">245 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Taxi (Osobowe + Taxi)</td>
+                            <td class="price">213 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Badanie powypadkowe (łącznie z okresowym)</td>
+                            <td class="price">292 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Motocykl</td>
+                            <td class="price">94 zł</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             
             <!-- Cennik Usług Specjalnych -->
             <h3 class="table-title">Usługi Diagnostyczne / Dodatkowe</h3>
-            <table class="pricing-table">
-                <tbody>
-                    <tr>
-                        <td>Sprawdzenie / regulacja świateł</td>
-                        <td class="price">40 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Sprawdzenie zawieszenia (szarpaki)</td>
-                        <td class="price">70 zł</td>
-                    </tr>
-                    <tr>
-                        <td>Sprawdzenie zawieszenia i hamulców (ścieżka diagnostyczna)</td>
-                        <td class="price">100 zł</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Sprawdzenie auta przed zakupem - BAZA</strong><br>
-                            <small style="color:#888">(przejazd przez ścieżkę)</small>
-                        </td>
-                        <td class="price">150 zł</td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Sprawdzenie auta przed zakupem - MAX</strong><br>
-                            <small style="color:#888">(przejazd przez ścieżkę, sprawdzenie lakieru, sprawdzenie komputerem oraz pomiar geometrii)</small>
-                        </td>
-                        <td class="price">450 zł</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="pricing-table">
+                    <tbody>
+                        <tr>
+                            <td>Sprawdzenie / regulacja świateł</td>
+                            <td class="price">40 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Sprawdzenie zawieszenia (szarpaki)</td>
+                            <td class="price">70 zł</td>
+                        </tr>
+                        <tr>
+                            <td>Sprawdzenie zawieszenia i hamulców (ścieżka diagnostyczna)</td>
+                            <td class="price">100 zł</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Sprawdzenie auta przed zakupem - BAZA</strong><br>
+                                <small style="color:#888">(przejazd przez ścieżkę)</small>
+                            </td>
+                            <td class="price">150 zł</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>Sprawdzenie auta przed zakupem - MAX</strong><br>
+                                <small style="color:#888">(ścieżka, lakier, komputer, geometria)</small>
+                            </td>
+                            <td class="price">450 zł</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Geometria Table -->
             <h3 class="table-title">Geometria Kół 3D</h3>
-            <table class="pricing-table">
-                <thead>
-                    <tr>
-                        <th style="text-align:left; border-radius: 6px 0 0 6px;">Usługa / Typ Pojazdu</th>
-                        <th>Przednia Oś</th>
-                        <th style="border-radius: 0 6px 6px 0;">Obie Osie</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="3" class="category-header">Pomiar</td>
-                    </tr>
-                    <tr>
-                        <td>Pomiar (każdy samochód)</td>
-                        <td colspan="2" class="price">150 zł</td>
-                    </tr>
-                    <tr>
-                        <td colspan="3" class="category-header">Regulacja (zawiera pomiar)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auta osobowe - Prosty wahacz</strong><br><small style="color:#888">(np. Ford Focus Mk2)</small></td>
-                        <td class="price">250 zł</td>
-                        <td class="price">350 zł</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auta osobowe - Wielowahacz prosty</strong><br><small style="color:#888">(np. BMW E90)</small></td>
-                        <td class="price">250 zł</td>
-                        <td class="price">450+ zł</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auta osobowe - Trudny dostęp</strong><br><small style="color:#888">(np. BMW Serii 5, Audi RS3)</small></td>
-                        <td class="price">250 zł</td>
-                        <td class="price">550+ zł</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Busy do 3.5t</strong><br><small style="color:#888">(np. Fiat Ducato, Peugeot Boxer)</small></td>
-                        <td class="price">300 zł</td>
-                        <td class="price">Indyw.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Busy powyżej 3.5t</strong><br><small style="color:#888">(np. MAN TGL)</small></td>
-                        <td class="price">350 zł</td>
-                        <td class="price">Indyw.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auta sportowe</strong><br><small style="color:#888">(np. Ferrari, Porsche)</small></td>
-                        <td class="price">300 zł</td>
-                        <td class="price">600+ zł</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Reset czujnika kąta skrętu</strong><br><small style="color:#888">(jeśli konieczne)</small></td>
-                        <td colspan="2" class="price">200 zł</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; border-radius: 6px 0 0 6px;">Usługa / Typ Pojazdu</th>
+                            <th>Przednia Oś</th>
+                            <th style="border-radius: 0 6px 6px 0;">Obie Osie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="category-header">Pomiar</td>
+                        </tr>
+                        <tr>
+                            <td>Pomiar (każdy samochód)</td>
+                            <td colspan="2" class="price">150 zł</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="category-header">Regulacja (zawiera pomiar)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auta osobowe - Prosty wahacz</strong><br><small style="color:#888">(np. Ford Focus Mk2)</small></td>
+                            <td class="price">250 zł</td>
+                            <td class="price">350 zł</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auta osobowe - Wielowahacz prosty</strong><br><small style="color:#888">(np. BMW E90)</small></td>
+                            <td class="price">250 zł</td>
+                            <td class="price">450+ zł</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auta osobowe - Trudny dostęp</strong><br><small style="color:#888">(np. BMW Serii 5, Audi RS3)</small></td>
+                            <td class="price">250 zł</td>
+                            <td class="price">550+ zł</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Busy do 3.5t</strong></td>
+                            <td class="price">300 zł</td>
+                            <td class="price">Indyw.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Busy powyżej 3.5t</strong></td>
+                            <td class="price">350 zł</td>
+                            <td class="price">Indyw.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Auta sportowe</strong></td>
+                            <td class="price">300 zł</td>
+                            <td class="price">600+ zł</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reset czujnika kąta skrętu</strong></td>
+                            <td colspan="2" class="price">200 zł</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <div style="text-align:center;">
                 <div class="pricing-note">
-                    * Auta z drążkami u góry ustawiamy tylko na nowych drążkach, nie ustawiamy wahaczy przesuwnych typu e46.<br>
-                    * Za uruchomienie zapieczonych śrub (indukcja) doliczamy 50 zł/szt.
+                    * Auta z drążkami u góry ustawiamy tylko na nowych drążkach.<br>
+                    * Uruchomienie zapieczonych śrub (indukcja): +50 zł/szt.
                 </div>
             </div>
 
@@ -1025,17 +907,20 @@
         </p>
     </footer>
 
-    <!-- Skrypt JS do animacji poświaty i przewijania -->
+    <!-- JS -->
     <script>
-        // 1. Śledzenie myszy dla efektu poświaty
+        // 1. Śledzenie myszy (tylko desktop)
+        const glow = document.querySelector('.mouse-glow');
         document.addEventListener('mousemove', (e) => {
-            const x = e.clientX;
-            const y = e.clientY;
-            document.documentElement.style.setProperty('--mouse-x', x + 'px');
-            document.documentElement.style.setProperty('--mouse-y', y + 'px');
+            if(window.matchMedia("(hover: hover)").matches) {
+                const x = e.clientX;
+                const y = e.clientY;
+                document.documentElement.style.setProperty('--mouse-x', x + 'px');
+                document.documentElement.style.setProperty('--mouse-y', y + 'px');
+            }
         });
 
-        // 2. Animacja Scroll Reveal (pojawianie się elementów)
+        // 2. Animacja Scroll Reveal
         document.addEventListener('DOMContentLoaded', function() {
             const observerOptions = {
                 root: null,
@@ -1054,6 +939,34 @@
 
             const elements = document.querySelectorAll('.animate-on-scroll');
             elements.forEach(el => observer.observe(el));
+        });
+
+        // 3. Obsługa Menu Mobilnego
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            // Zmiana ikony z paska na X
+            const icon = menuBtn.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Zamknij menu po kliknięciu w link
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                const icon = menuBtn.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
         });
     </script>
 </body>
