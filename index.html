@@ -6,9 +6,7 @@
     <title>SSCAR - Stacja Kontroli Pojazdów Wrocław | Tuning & Geometria</title>
     <meta name="description" content="Profesjonalna Stacja Kontroli Pojazdów we Wrocławiu. Przeglądy rejestracyjne, geometria 3D, serwis klimatyzacji, wulkanizacja. Specjalizacja: auta sportowe.">
     
-    <!-- --- TU JEST ZMIANA: Ikona na pasku przeglądarki --- -->
     <link rel="icon" href="Logo-SSCAR.png" type="image/png">
-    <!-- -------------------------------------------------- -->
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -328,8 +326,20 @@
         .btn:hover::before { left: 100%; }
         .btn:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(227, 30, 36, 0.5); background-color: #c0151b; border-color: #c0151b; }
         
-        .btn-outline { background: transparent; border: 2px solid var(--white); box-shadow: none; color: white; }
-        .btn-outline:hover { background: var(--white); color: var(--dark-bg); border-color: var(--white); box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid var(--white); 
+            box-shadow: none; 
+            color: #ffffff; /* Domyślny kolor tekstu biały */
+        }
+        
+        /* --- ZMIANA: Wymuszenie białego tła i czarnego tekstu na hover --- */
+        .btn-outline:hover { 
+            background: #ffffff !important; 
+            color: #000000 !important; 
+            border-color: #ffffff !important; 
+            box-shadow: 0 0 15px rgba(255,255,255,0.4); 
+        }
 
         /* Sections Generic */
         section {
@@ -799,6 +809,14 @@
                     <div>
                         <span class="label-tag">Email</span>
                         <a href="mailto:skpolanowice@gmail.com">skpolanowice@gmail.com</a>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fab fa-facebook-f"></i>
+                    <div>
+                        <span class="label-tag">Facebook</span>
+                        <a href="https://www.facebook.com/Diagnosta.z.Posta" target="_blank">Diagnosta z Posta</a>
                     </div>
                 </div>
 
