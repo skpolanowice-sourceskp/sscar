@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSCAR - Wyszukiwarka Klimatyzacji</title>
+    <meta name="description"
+        content="Sprawdź ile czynnika klimatyzacji wchodzi do Twojego samochodu i oblicz koszt serwisu w SSCAR Wrocław.">
+
+    <link rel="icon" href="Logo-SSCAR.png" type="image/png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e31e24;
+            /* Czerwień SSCAR */
+            --dark-bg: #121212;
+            /* Bardzo ciemne tło główne */
+            --card-bg: #1e1e1e;
+            /* Tło kart i sekcji */
+            --text-main: #f0f0f0;
+            /* Jasny tekst */
+            --text-muted: #aaaaaa;
+            /* Szary tekst */
+            --mouse-x: 50%;
+            /* Zmienne do pozycji myszy */
+            --mouse-y: 50%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--dark-bg);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- EFEKT CZERWONEJ POŚWIATY POD MYSZĄ --- */
+        .mouse-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+                    rgba(227, 30, 36, 0.15),
+                    transparent 40%);
+            transition: opacity 0.3s;
+        }
+
+        @media (hover: none) {
+            .mouse-glow {
+                display: none;
+            }
+        }
+
+        /* Animacje */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            height: 100px;
+            border-bottom: 2px solid var(--primary-red);
+        }
+
+        .logo-link {
+            position: absolute;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1001;
+        }
+
+        .logo-img {
+            max-height: 130px;
+            width: auto;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+            transition: transform 0.3s;
+            display: block;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: color 0.3s, text-shadow 0.3s;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-red);
+            text-shadow: 0 0 10px rgba(227, 30, 36, 0.6);
+        }
+
+        nav ul li a::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 2px;
+            background: var(--primary-red);
+            transition: width .3s ease;
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            box-shadow: 0 0 8px var(--primary-red);
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.8rem;
+            color: var(--text-main);
+            cursor: pointer;
+            z-index: 1002;
+        }
+
+        /* Search Section Styles */
+        .search-section {
+            padding-top: 150px;
+            padding-bottom: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--white);
+            text-transform: uppercase;
+            font-weight: 900;
+            position: relative;
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 5px;
+            background: var(--primary-red);
+            margin: 15px auto 0;
+            transform: skewX(-30deg);
+        }
+
+        .search-container {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 800px;
+            border-top: 5px solid var(--primary-red);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: #ddd;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: #151515;
+            border: 2px solid #333;
+            color: white;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            appearance: none;
+            /* Remove default arrow */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            cursor: pointer;
+        }
+
+        .form-control:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 15px rgba(227, 30, 36, 0.2);
+            background-color: #1a1a1a;
+        }
+
+        /* Result Box */
+        .result-box {
+            margin-top: 3rem;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #333;
+            padding: 2rem;
+            border-radius: 8px;
+            display: none;
+            /* Hidden initial state */
+            animation: fadeInUp 0.5s ease-out;
+            border-left: 5px solid var(--primary-red);
+        }
+
+        .result-header {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 1rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .result-value {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .price-row {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px dashed #444;
+        }
+
+        .price-highlight {
+            color: var(--primary-red);
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: right;
+            text-shadow: 0 0 20px rgba(227, 30, 36, 0.4);
+        }
+
+        .price-note {
+            display: block;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            background: #0a0a0a;
+            color: #555;
+            text-align: center;
+            padding: 3rem 2rem;
+            font-size: 0.9rem;
+            border-top: 3px solid var(--primary-red);
+            margin-top: auto;
+        }
+
+        footer a {
+            color: #777;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: var(--primary-red);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                height: 80px;
+                padding: 0 20px;
+                justify-content: space-between;
+            }
+
+            .logo-link {
+                position: static;
+                transform: none;
+            }
+
+            .logo-img {
+                max-height: 50px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            nav {
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(15px);
+                border-bottom: 2px solid var(--primary-red);
+                transform: translateY(-150%);
+                transition: transform 0.4s;
+                padding: 20px 0;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            }
+
+            nav.active {
+                transform: translateY(0);
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav ul li {
+                margin: 15px 0;
+                width: 100%;
+                text-align: center;
+            }
+
+            .search-section {
+                padding-top: 100px;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .search-container {
+                padding: 1.5rem;
+            }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .result-value {
+                text-align: left;
+            }
+
+            .price-highlight {
+                text-align: left;
+                font-size: 2rem;
+            }
+
+            .price-note {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mouse-glow"></div>
+
+    <header>
+        <a href="index.html" class="logo-link"><img src="Logo-SSCAR.png" alt="SSCAR Logo" class="logo-img"></a>
+
+        <div class="menu-toggle" id="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
+            <ul>
+                <li><a href="index.html">Strona Główna</a></li>
+                <li><a href="index.html#cennik">Cennik</a></li>
+                <li><a href="index.html#kontakt">Kontakt</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="search-section">
+        <h2 class="section-title animate-on-scroll">Baza Wiedzy Klimatyzacji</h2>
+
+        <div class="search-container animate-on-scroll">
+            <div class="form-group">
+                <label for="makeSelect">Wybierz Markę</label>
+                <select id="makeSelect" class="form-control">
+                    <option value="">Wczytywanie marek...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="modelSelect">Wybierz Model</label>
+                <select id="modelSelect" class="form-control" disabled>
+                    <option value="">Najpierw wybierz markę</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="yearSelect">Wybierz Rocznik / Silnik</label>
+                <select id="yearSelect" class="form-control" disabled>
+                    <option value="">Najpierw wybierz model</option>
+                </select>
+            </div>
+
+            <div id="resultBox" class="result-box">
+                <div class="result-header">
+                    <span id="resMakeModel">Alfa Romeo 159</span> <small id="resYear"
+                        style="color:#888; font-weight:400;">(2005-2011)</small>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Czynnik Chłodniczy</div>
+                    <div class="result-value"><span id="resGasType" style="color:var(--primary-red)">R134a</span></div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Ilość Czynnika</div>
+                    <div class="result-value"><span id="resGasQty">460</span> g</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Typ Oleju</div>
+                    <div class="result-value"><span id="resOilType">PAG 46</span></div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">Ilość Oleju</div>
+                    <div class="result-value"><span id="resOilQty">130</span> ml</div>
+                </div>
+
+                <div class="price-row">
+                    <div class="result-label" style="text-align: right;">Szacowany Koszt (Serwis + Czynnik)</div>
+                    <div class="price-highlight" id="resPrice">380 zł</div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 SSCAR Stacja Kontroli Pojazdów. Wszelkie prawa zastrzeżone.</p>
+    </footer>
+
+
+    <!-- Load Data JS File -->
+    <script src="dane_klima.js"></script>
+
+    <script>
+        // --- 1. UI Interactions (Menu, Glow, Animations) ---
+        const glow = document.querySelector('.mouse-glow');
+        document.addEventListener('mousemove', (e) => {
+            if (window.matchMedia("(hover: hover)").matches) {
+                document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+                document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+            }
+        });
+
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        menuBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            const icon = menuBtn.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Simple Animation Trigger
+        setTimeout(() => {
+            document.querySelectorAll('.animate-on-scroll').forEach(el => el.classList.add('fade-in-up'));
+        }, 100);
+
+
+        // --- 2. LOGIC: AC Database & Search ---
+
+        // acData comes from dane_klima.js
+
+        // Elements
+        const makeSelect = document.getElementById('makeSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        const resultBox = document.getElementById('resultBox');
+
+        // Result Elements
+        const elMakeModel = document.getElementById('resMakeModel');
+        const elYear = document.getElementById('resYear');
+        const elGasType = document.getElementById('resGasType');
+        const elGasQty = document.getElementById('resGasQty');
+        const elOilType = document.getElementById('resOilType');
+        const elOilQty = document.getElementById('resOilQty');
+        const elPrice = document.getElementById('resPrice');
+
+        // Pricing Configuration (Based on index.html)
+        const PRICES = {
+            'R134a': { service: 150, perGram: 0.50 },
+            'R1234yf': { service: 250, perGram: 2.00 }
+        };
+
+        // Load Data - Check if loaded
+        if (typeof acData !== 'undefined' && Array.isArray(acData)) {
+            populateMakes();
+        } else {
+            console.error('Błąd: acData nie jest zdefiniowane or empty');
+            makeSelect.innerHTML = '<option>Błąd bazy danych (Local)</option>';
+        }
+
+        function populateMakes() {
+            // Get unique makes
+            const makes = [...new Set(acData.map(item => item.Make))].sort();
+
+            makeSelect.innerHTML = '<option value="">Wybierz Markę...</option>';
+            makes.forEach(make => {
+                const opt = document.createElement('option');
+                opt.value = make;
+                opt.textContent = make;
+                makeSelect.appendChild(opt);
+            });
+            makeSelect.disabled = false;
+        }
+
+        makeSelect.addEventListener('change', () => {
+            const selectedMake = makeSelect.value;
+
+            // Reset downstream
+            modelSelect.innerHTML = '<option value="">Wybierz Model...</option>';
+            modelSelect.disabled = true;
+            yearSelect.innerHTML = '<option value="">Najpierw wybierz model</option>';
+            yearSelect.disabled = true;
+            resultBox.style.display = 'none';
+
+            if (!selectedMake) return;
+
+            // Filter models for this make
+            const models = [...new Set(
+                acData
+                    .filter(item => item.Make === selectedMake)
+                    .map(item => item.Model)
+            )].sort();
+
+            models.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model;
+                opt.textContent = model;
+                modelSelect.appendChild(opt);
+            });
+            modelSelect.disabled = false;
+        });
+
+        modelSelect.addEventListener('change', () => {
+            const selectedMake = makeSelect.value;
+            const selectedModel = modelSelect.value;
+
+            // Reset downstream
+            yearSelect.innerHTML = '<option value="">Wybierz Rocznik...</option>';
+            yearSelect.disabled = true;
+            resultBox.style.display = 'none';
+
+            if (!selectedModel) return;
+
+            // Find variants (Years/Engines)
+            const variants = acData.filter(item =>
+                item.Make === selectedMake &&
+                item.Model === selectedModel
+            );
+
+            // Populate Year select. we store INDEX in value to easily retrieve the full object later
+            variants.forEach((variant, index) => {
+                // Find the original index in the main acData array to allow unique identification if needed, 
+                // but actually since we filtered, we can just use the filtered object directly if we attached it.
+                // Simpler: Just store the index of 'variants' array as value.
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = variant.Year;
+                yearSelect.appendChild(opt);
+            });
+            yearSelect.disabled = false;
+        });
+
+        yearSelect.addEventListener('change', () => {
+            const selectedMake = makeSelect.value;
+            const selectedModel = modelSelect.value;
+            const variantIndex = yearSelect.value;
+
+            if (variantIndex === "") {
+                resultBox.style.display = 'none';
+                return;
+            }
+
+            // Retrieve Data
+            const variants = acData.filter(item =>
+                item.Make === selectedMake &&
+                item.Model === selectedModel
+            );
+            const data = variants[variantIndex];
+
+            // Display Data
+            elMakeModel.textContent = `${data.Make} ${data.Model}`;
+            elYear.textContent = `(${data.Year})`;
+
+            elGasType.textContent = data.RefrigerantType;
+            elGasQty.textContent = data.RefrigerantQuantity;
+
+            elOilType.textContent = data.OilType;
+            elOilQty.textContent = data.OilQuantity;
+
+            // Calculate Price
+            calculatePrice(data.RefrigerantType, data.RefrigerantQuantity);
+
+            // Show Box
+            resultBox.style.display = 'block';
+        });
+
+        function calculatePrice(gasType, quantityStr) {
+            // Clean up gas type string (remove spaces, case insensitive)
+            const cleanGas = gasType.replace(/\s/g, '').toLowerCase();
+            let priceConfig = null;
+
+            if (cleanGas.includes('r134a')) {
+                priceConfig = PRICES['R134a'];
+            } else if (cleanGas.includes('r1234yf')) {
+                priceConfig = PRICES['R1234yf'];
+            }
+
+            if (!priceConfig) {
+                elPrice.textContent = "Kontakt telefoniczny";
+                return;
+            }
+
+            // Handle Quantity Ranges (e.g. "650-700") -> Take Max
+            // Handle "approx. 500" -> Take 500
+            // Regex to find numbers
+            const numbers = quantityStr.match(/\d+/g);
+            if (!numbers) {
+                elPrice.textContent = "Kontakt telefoniczny";
+                return;
+            }
+
+            // Convert map to integers
+            const quantities = numbers.map(n => parseInt(n, 10));
+
+            // Logic: Base Service Price (min) to Full Tank Price (max)
+            const maxQ = Math.max(...quantities);
+            const fullPrice = priceConfig.service + (maxQ * priceConfig.perGram);
+
+            // Display "od 150 zł do 380 zł"
+            elPrice.innerHTML = `<span style="font-size:0.5em; color:#aaa; vertical-align: middle;">od</span> ${priceConfig.service} zł <span style="font-size:0.5em; color:#aaa; vertical-align: middle;">do</span> ${Math.round(fullPrice)} zł`;
+        }
+
+    </script>
+</body>
+
+</html>
