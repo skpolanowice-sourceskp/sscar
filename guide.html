@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Szybkie Menu - SSCAR</title>
+    <meta name="description" content="Szybki dostęp do nawigacji, Facebooka i strony SSCAR.">
+    <link rel="icon" href="Logo-SSCAR.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-red: #e31e24;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #f0f0f0;
+            --text-muted: #aaaaaa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            text-align: center;
+        }
+
+        .logo-img {
+            max-width: 80%;
+            height: auto;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .btn-large {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out backwards;
+        }
+
+        .btn-large i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--primary-red);
+            transition: transform 0.3s;
+        }
+
+        /* Stylizacja specyficzna dla przycisków */
+        .btn-web:active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(0.98);
+        }
+
+        .btn-fb:active {
+            background: rgba(66, 103, 178, 0.2);
+            border-color: #4267B2;
+            transform: scale(0.98);
+        }
+
+        .btn-fb i {
+            color: #4267B2;
+        }
+
+        .btn-map:active {
+            background: rgba(52, 168, 83, 0.2);
+            border-color: #34A853;
+            transform: scale(0.98);
+        }
+
+        .btn-map i {
+            color: #34A853;
+        }
+
+        /* Główny brandowy przycisk */
+        .btn-primary {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            color: white;
+            box-shadow: 0 5px 20px rgba(227, 30, 36, 0.4);
+        }
+
+        .btn-primary i {
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #c0151b;
+            transform: scale(0.98);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #666;
+            animation: fadeInUp 1s ease-out backwards;
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Logo -->
+        <img src="Logo-SSCAR.png" alt="SSCAR" class="logo-img">
+
+        <!-- Przyciski -->
+        <a href="index.html" class="btn-large btn-primary" style="animation-delay: 0.1s;">
+            <i class="fas fa-globe"></i> Strona WWW
+        </a>
+
+        <a href="https://www.facebook.com/Diagnosta.z.Posta" target="_blank" class="btn-large btn-fb"
+            style="animation-delay: 0.2s;">
+            <i class="fab fa-facebook-f"></i> Facebook
+        </a>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=ul.+Polanowicka+82+51-180+Wrocław" target="_blank"
+            class="btn-large btn-map" style="animation-delay: 0.3s;">
+            <i class="fas fa-location-arrow"></i> Nawiguj do nas
+        </a>
+
+        <div class="footer-note">
+            SSCAR Stacja Kontroli Pojazdów<br>
+            Wrocław, ul. Polanowicka 82
+        </div>
+    </div>
+
+</body>
+
+</html>
