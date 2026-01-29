@@ -783,6 +783,88 @@
             color: var(--primary-red);
         }
 
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 4rem 5%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .reviews-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .review-card {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(227, 30, 36, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .stars {
+            color: #FFD700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .review-text {
+            font-style: italic;
+            color: #ddd;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .review-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #333, #555);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .author-info h4 {
+            color: white;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .author-info span {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .google-icon {
+            margin-left: auto;
+            color: #aaa;
+            font-size: 1.2rem;
+        }
+
         /* --- MEDIA QUERIES (RESPONSYWNOŚĆ) --- */
         @media (max-width: 992px) {
             h2 {
@@ -994,6 +1076,14 @@
                     technicznych, przez zaawansowaną <strong>geometrię kół 3D</strong>, serwis klimatyzacji (R134A i
                     R1234YF), aż po wulkanizację.</p>
             </div>
+        </div>
+    </section>
+
+
+    <section id="reviews" class="reviews-section animate-on-scroll">
+        <h2>Zaufali Nam</h2>
+        <div class="reviews-container" id="reviews-container">
+            <!-- Reviews will be loaded here by JS -->
         </div>
     </section>
 
@@ -1258,8 +1348,65 @@
         </p>
     </footer>
 
+    <!-- Load Data JS Files -->
+    <script src="dane_klima.js"></script>
+    <script src="reviews_data.js"></script>
+
     <!-- JS -->
     <script>
+        // --- Reviews Logic ---
+        function initReviews() {
+            const container = document.getElementById('reviews-container');
+            if (!container || typeof reviewsData === 'undefined') return;
+
+            // Get 3 random unique reviews
+            const shuffled = [...reviewsData].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 3);
+
+            container.innerHTML = ''; // Clear loading/static
+
+            selected.forEach(review => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+
+                // Helper for initials or avatar
+                // Using UI Avatars API for consistent, nice looking avatars based on name
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.name)}&background=random&color=fff&size=128`;
+
+                card.innerHTML = `
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"${review.text}"</p>
+                    <div class="review-author">
+                        <img src="${avatarUrl}" alt="${review.name}" class="author-avatar-img">
+                        <div class="author-info">
+                            <h4>${review.name}</h4>
+                            <span>Klient Google</span>
+                        </div>
+                        <i class="fab fa-google google-icon"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Add styles for IMG avatar
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .author-avatar-img {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 1px solid rgba(255,255,255,0.2);
+                object-fit: cover;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Run on load
+        window.addEventListener('load', initReviews);
+
         // 1. Śledzenie myszy (tylko desktop)
         const glow = document.querySelector('.mouse-glow');
         document.addEventListener('mousemove', (e) => {
