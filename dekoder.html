@@ -559,11 +559,18 @@
             "JT1": { make: "Toyota", strategy: "iso" }, "JTD": { make: "Toyota", strategy: "iso" },
             "JF1": { make: "Subaru", strategy: "iso" }, "JK1": { make: "Subaru", strategy: "iso" },
             "KMH": { make: "Hyundai", strategy: "iso" }, "KNA": { make: "Kia", strategy: "iso" },
+            "KM8": { make: "Hyundai (SUV/MPV)", strategy: "iso" },
+            "MAL": { make: "Hyundai (India)", strategy: "iso" },
+            "5NP": { make: "Hyundai (USA)", strategy: "iso" },
+            "5NM": { make: "Hyundai (USA/SUV)", strategy: "iso" },
+            "NLH": { make: "Hyundai (Turkey)", strategy: "iso" },
+            "U5Y": { make: "Kia (Slovakia) / Hyundai (ix35)", strategy: "iso" },
 
             // US/AMERICAS
             "1FA": { make: "Ford USA", strategy: "iso" }, "WF0": { make: "Ford Europe", strategy: "iso" },
             "1G1": { make: "Chevrolet", strategy: "iso" }, "1J4": { make: "Jeep", strategy: "iso" },
-            "5UX": { make: "BMW (USA)", strategy: "iso" }
+            "5UX": { make: "BMW (USA)", strategy: "iso" },
+            "TMA": { make: "Hyundai (Czech)", strategy: "iso" }
         };
 
         const wmiRegions = [
@@ -987,6 +994,205 @@
             };
         }
 
+        // --- HYUNDAI DATA & LOGIC ---
+        const hyundaiData = [
+            // Accent
+            { code: "X3", model: "Accent", gen: "Mk1", body: "3dr, 5dr, sedan, coupe", years: [1994, 1999], pos4: "C", wmi: ["KMH"] },
+            { code: "LC", model: "Accent", gen: "Mk2", body: "3dr, 5dr, sedan", years: [1999, 2005], pos4: "C", wmi: ["KMH"] },
+            { code: "MC", model: "Accent", gen: "Mk3", body: "3dr, sedan", years: [2005, 2011], pos4: "C", wmi: ["KMH", "MAL"] },
+            { code: "RB", model: "Accent", gen: "Mk4", body: "5dr, sedan", years: [2011, 2018], pos4: "C", wmi: ["KMH", "MAL"] },
+            { code: "HC", model: "Accent", gen: "Mk5", body: "5dr, sedan, estate", years: [2017, 2025], pos4: "C", wmi: ["KMH", "MAL"] },
+
+            // Elantra
+            { code: "J1", model: "Elantra", gen: "Mk1", body: "sedan", years: [1990, 1995], pos4: "J", wmi: ["KMH"] },
+            { code: "J2/RD", model: "Elantra", gen: "Mk2", body: "sedan, estate", years: [1995, 2000], pos4: "J", wmi: ["KMH"] },
+            { code: "XD", model: "Elantra", gen: "Mk3", body: "5dr, sedan", years: [2000, 2006], pos4: "J", wmi: ["KMH"] },
+            { code: "HD", model: "Elantra", gen: "Mk4", body: "sedan", years: [2006, 2010], pos4: "D", wmi: ["KMH"] },
+            { code: "MD/UD", model: "Elantra", gen: "Mk5", body: "sedan, coupe", years: [2010, 2015], pos4: "D", wmi: ["KMH", "5NP"] },
+            { code: "AD", model: "Elantra", gen: "Mk6", body: "sedan", years: [2015, 2020], pos4: "D", wmi: ["KMH", "5NP"] },
+            { code: "CN7", model: "Elantra", gen: "Mk7", body: "sedan", years: [2020, 2026], pos4: "D", wmi: ["KMH", "5NP"] },
+
+            // i10 / i20 / i30
+            { code: "PA", model: "i10", gen: "Mk1", body: "5dr", years: [2007, 2017], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "PA", model: "i10", gen: "Mk1", body: "5dr", years: [2007, 2017], pos4: "A", wmi: ["MAL", "NLH"] }, // India/Turkey Pos 4 A
+            { code: "IA/BA", model: "i10", gen: "Mk2", body: "5dr", years: [2013, 2019], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "IA/BA", model: "i10", gen: "Mk2", body: "5dr", years: [2013, 2019], pos4: "A", wmi: ["MAL", "NLH"] }, // India/Turkey Pos 4 A
+            { code: "LA", model: "i10", gen: "Mk3", body: "5dr", years: [2019, 2026], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "AC3", model: "i10", gen: "Mk3", body: "5dr, sedan", years: [2019, 2026], pos4: "D", wmi: ["NLH", "MAL"] }, // Turkish prod often D?
+
+            { code: "PB", model: "i20", gen: "Mk1", body: "3dr, 5dr", years: [2008, 2014], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "GB", model: "i20", gen: "Mk2", body: "3dr, 5dr", years: [2014, 2020], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "BC3", model: "i20", gen: "Mk3", body: "5dr", years: [2020, 2026], pos4: "B", wmi: ["KMH", "MAL"] },
+
+            { code: "FD", model: "i30", gen: "Mk1", body: "5dr, estate", years: [2007, 2012], pos4: "F", wmi: ["KMH", "NLH"] }, // NLH Czech
+            { code: "FD", model: "i30", gen: "Mk1", body: "5dr, estate", years: [2007, 2012], pos4: "D", wmi: ["KMH"] }, // Early Mk1 with Pos 4 D
+            { code: "GD", model: "i30", gen: "Mk2", body: "3dr, 5dr, estate", years: [2011, 2017], pos4: "F", wmi: ["KMH", "NLH"] },
+            { code: "GDH", model: "i30", gen: "Mk2", body: "3dr, 5dr, estate", years: [2011, 2017], pos4: "D", wmi: ["TMA", "NLH"] }, // Czech/Turkey prod
+            { code: "PD", model: "i30", gen: "Mk3", body: "5dr, estate, liftback", years: [2017, 2026], pos4: "F", wmi: ["KMH", "NLH"] },
+            { code: "PDE", model: "i30", gen: "Mk3", body: "5dr, estate, liftback", years: [2016, 2026], pos4: "H", wmi: ["TMA"] }, // Czech prod starts late 2016
+
+            // i40
+            { code: "VF", model: "i40", gen: "Mk1", body: "sedan, estate", years: [2011, 2019], pos4: "L", wmi: ["KMH", "TMA"] },
+
+            // Sonata
+            { code: "Y1", model: "Sonata", gen: "Mk1", body: "sedan", years: [1985, 1988], pos4: "E", wmi: ["KMH"] },
+            { code: "Y2", model: "Sonata", gen: "Mk2", body: "sedan", years: [1988, 1993], pos4: "E", wmi: ["KMH"] },
+            { code: "Y3", model: "Sonata", gen: "Mk3", body: "sedan", years: [1993, 1998], pos4: "E", wmi: ["KMH"] },
+            { code: "EF", model: "Sonata", gen: "Mk4", body: "sedan", years: [1998, 2004], pos4: "E", wmi: ["KMH"] },
+            { code: "NF", model: "Sonata", gen: "Mk5", body: "sedan", years: [2004, 2009], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "YF", model: "Sonata", gen: "Mk6", body: "sedan", years: [2009, 2014], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "LF", model: "Sonata", gen: "Mk7", body: "sedan", years: [2014, 2019], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "DN8", model: "Sonata", gen: "Mk8", body: "sedan", years: [2019, 2026], pos4: "E", wmi: ["KMH", "5NP"] },
+
+            // Grandeur / Azera
+            { code: "XG", model: "Grandeur/Azera", gen: "Mk3", body: "sedan", years: [1999, 2005], pos4: "F", wmi: ["KMH"] },
+            { code: "TG", model: "Grandeur/Azera", gen: "Mk4", body: "sedan", years: [2006, 2011], pos4: "F", wmi: ["KMH"] },
+            { code: "HG", model: "Grandeur/Azera", gen: "Mk5", body: "sedan", years: [2012, 2017], pos4: "F", wmi: ["KMH"] },
+            { code: "IG", model: "Grandeur/Azera", gen: "Mk6", body: "sedan", years: [2018, 2026], pos4: "F", wmi: ["KMH"] },
+
+            // Coupe / Tiburon -> Pos 4 H? Or V? Review says Pos 4 H for Tiburon, V for Veloster
+            { code: "RC", model: "Tiburon/Coupe", gen: "Mk1", body: "coupe", years: [1996, 2001], pos4: "H", wmi: ["KMH"] },
+            { code: "GK", model: "Tiburon/Coupe", gen: "Mk2", body: "coupe", years: [2002, 2008], pos4: "H", wmi: ["KMH"] },
+
+            // Veloster
+            { code: "FS", model: "Veloster", gen: "Mk1", body: "3dr coupe", years: [2011, 2017], pos4: "V", wmi: ["KMH"] },
+            { code: "JS", model: "Veloster", gen: "Mk2", body: "3dr coupe", years: [2018, 2022], pos4: "V", wmi: ["KMH", "5NP"] },
+
+            // Genesis
+            { code: "BH", model: "Genesis", gen: "Mk1", body: "sedan", years: [2009, 2014], pos4: "G", wmi: ["KMH"] },
+            { code: "DH", model: "Genesis / G80", gen: "Mk2", body: "sedan", years: [2015, 2016], pos4: "G", wmi: ["KMH"] },
+
+            // SUVs
+            { code: "OS", model: "Kona", gen: "Mk1", body: "SUV", years: [2017, 2023], pos4: "H", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "OS", model: "Kona", gen: "Mk1", body: "SUV", years: [2017, 2023], pos4: "K", wmi: ["KMH"] },
+            { code: "SX2", model: "Kona", gen: "Mk2", body: "SUV", years: [2024, 2026], pos4: "H", wmi: ["KM8", "5NM"] },
+
+            { code: "JM", model: "Tucson", gen: "Mk1", body: "SUV", years: [2004, 2009], pos4: "J", wmi: ["KM8", "KMH", "NLH"] },
+            { code: "LM", model: "Tucson / ix35", gen: "Mk2", body: "SUV", years: [2009, 2015], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+            { code: "EL", model: "ix35", gen: "Mk2", body: "SUV", years: [2009, 2015], pos4: "Z", wmi: ["U5Y"] }, // Kia Slovakia Prod
+            { code: "TL", model: "Tucson", gen: "Mk3", body: "SUV", years: [2015, 2020], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+            { code: "NX4", model: "Tucson", gen: "Mk4", body: "SUV", years: [2020, 2026], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+
+            { code: "SM", model: "Santa Fe", gen: "Mk1", body: "SUV", years: [2000, 2006], pos4: "S", wmi: ["KM8", "5NM"] },
+            { code: "CM", model: "Santa Fe", gen: "Mk2", body: "SUV", years: [2006, 2012], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "DM", model: "Santa Fe", gen: "Mk3", body: "SUV", years: [2012, 2018], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "TM", model: "Santa Fe", gen: "Mk4", body: "SUV", years: [2018, 2024], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "MX5", model: "Santa Fe", gen: "Mk5", body: "SUV", years: [2023, 2026], pos4: "S", wmi: ["KM8", "5NM"] },
+
+            { code: "LX2", model: "Palisade", gen: "Mk1", body: "SUV", years: [2018, 2026], pos4: "P", wmi: ["KM8", "5NM"] },
+            { code: "QX", model: "Venue", gen: "Mk1", body: "SUV", years: [2019, 2026], pos4: "Q", wmi: ["KM8", "MAL"] },
+            { code: "EN", model: "Veracruz", gen: "Mk1", body: "SUV", years: [2007, 2012], pos4: "N", wmi: ["KM8", "5NM"] },
+
+            // Ionic
+            { code: "AE", model: "Ioniq", gen: "Mk1", body: "liftback", years: [2016, 2022], pos4: "I", wmi: ["KMH"] },
+            { code: "NE", model: "Ioniq 5", gen: "Mk1", body: "SUV", years: [2021, 2026], pos4: "I", wmi: ["KM8", "KMH"] },
+            { code: "CE", model: "Ioniq 6", gen: "Mk1", body: "sedan", years: [2022, 2026], pos4: "I", wmi: ["KMH"] },
+
+            // Others
+            { code: "NX5", model: "Santa Cruz", gen: "Mk1", body: "pickup", years: [2021, 2026], pos4: "J", wmi: ["5NM", "KM8"] }, // Shares Pos J with Tucson!
+            { code: "FE", model: "Nexo", gen: "Mk1", body: "SUV", years: [2018, 2026], pos4: "J", wmi: ["KM8"] }, // Shares Pos J with Tucson!
+
+            { code: "TB", model: "Getz", gen: "Mk1", body: "3dr, 5dr", years: [2002, 2011], pos4: "B", wmi: ["KMH"] }, // Pos 4 B shared with i10/i20
+            { code: "FC", model: "Matrix", gen: "Mk1", body: "MPV", years: [2001, 2010], pos4: "M", wmi: ["KMH"] },
+            { code: "FC", model: "Matrix", gen: "Mk1", body: "MPV", years: [2001, 2010], pos4: "P", wmi: ["KMH"] },
+            { code: "TQ", model: "Grand Starex / H-1", gen: "Mk2", body: "van, bus", years: [2007, 2021], pos4: "W", wmi: ["KMH", "KMJ"] },
+            { code: "US4", model: "Staria", gen: "Mk1", body: "van, MPV", years: [2021, 2026], pos4: "T", wmi: ["KM8"] },
+            { code: "BC1", model: "Bayon", gen: "Mk1", body: "SUV", years: [2021, 2026], pos4: "B", wmi: ["KMH", "NLH"] }, // Shares B
+            { code: "GS", model: "Creta", gen: "Mk1", body: "SUV", years: [2015, 2020], pos4: "C", wmi: ["MAL"] }, // Shares C with Accent
+            { code: "SU2", model: "Creta", gen: "Mk2", body: "SUV", years: [2020, 2026], pos4: "C", wmi: ["MAL"] },
+            { code: "AX1", model: "Inster", gen: "Mk1", body: "SUV", years: [2024, 2026], pos4: "I", wmi: ["KMH"] }
+        ];
+
+        function decodeHyundai(vin) {
+            const wmi = vin.substring(0, 3);
+            const pos4 = vin.charAt(3);
+            const yearChar = vin.charAt(9);
+
+            // Is it Hyundai?
+            // Is it Hyundai?
+            const hyundaiWMIs = ["KMH", "KM8", "5NP", "5NM", "MAL", "NLH", "TMA", "U5Y"];
+            if (!hyundaiWMIs.some(p => wmi.startsWith(p))) return null;
+
+            // SPECIAL CHECK for U5Y (Kia Slovakia) which produces Hyundai ix35
+            // Ensure we don't aggressively claim all Kia U5Y as Hyundai if they aren't in our DB
+            // But since candidates match POS4, it should be fine.
+
+            // Estimate Year from Char to help disambiguate
+            let estimatedYear = getYearFromCode(yearChar); // "2018 / 1988"
+            let possibleYears = [];
+            if (estimatedYear) {
+                possibleYears = estimatedYear.split('/').map(y => parseInt(y.trim()));
+            }
+
+            // Filter candidates by Pos 4
+            let candidates = hyundaiData.filter(d => d.pos4 === pos4);
+
+            // Filter by WMI overlap (optional, but good for reducing candidates e.g. SUV vs Sedan factories)
+            // But usually platform code is key.
+            // SPECIAL CASE: Pos 4 'J' -> Elantra (J1/J2/XD) vs Tucson (JM/LM/TL/NX4) vs Santa Cruz (NX5) vs Nexo (FE)
+            // Elantra 'J' was older (pre-2006). Tucson 'J' is 2004+.
+            // This is where Year filtering is critical.
+
+            if (candidates.length === 0) return null;
+
+            // Match based on year overlap
+            // We want to find a candidate where ONE of the possibleYears falls within [start, end]
+            let matches = [];
+
+            for (let cand of candidates) {
+                for (let y of possibleYears) {
+                    if (y >= cand.years[0] && y <= cand.years[1]) {
+                        matches.push({ candidate: cand, exactYear: y });
+                    }
+                }
+            }
+
+            let bestMatch = null;
+            let finalModelStr = "";
+            let finalYearStr = "";
+            let finalBodyStr = "";
+
+            if (matches.length > 0) {
+                // Return ALL matches to avoid confusion
+                // Sort descending by year just for tidiness
+                matches.sort((a, b) => b.exactYear - a.exactYear);
+
+                // Unique Models
+                const uniqueModels = [...new Set(matches.map(m => m.candidate.model + " " + m.candidate.gen))];
+                finalModelStr = uniqueModels.join(" / ");
+
+                // Unique Years
+                const uniqueYears = [...new Set(matches.map(m => m.exactYear))];
+                finalYearStr = uniqueYears.join(" / ");
+
+                // Unique Bodies
+                const uniqueBodies = [...new Set(matches.map(m => m.candidate.body))];
+                finalBodyStr = uniqueBodies.join(" / ");
+
+                bestMatch = matches[0].candidate; // Keep one for reference if needed
+            } else {
+                // Fallback: If no year match (e.g. model year boundary issues), find closest
+                // Sort by year proximity to typical VIN year (assume modern prefered if ambiguous)
+                // Let's return the most "modern" one that fits the Pos4 as a fallback.
+                if (candidates.length > 0) {
+                    bestMatch = candidates[candidates.length - 1]; // Latest generation usually at bottom of list
+                    finalModelStr = bestMatch.model + " " + bestMatch.gen;
+                    finalYearStr = estimatedYear;
+                    finalBodyStr = bestMatch.body;
+                }
+            }
+
+            if (!bestMatch) return null;
+
+            return {
+                make: "Hyundai",
+                model: finalModelStr,
+                year: finalYearStr,
+                body: finalBodyStr,
+                strategy: "iso"
+            };
+        }
+
         // --- VIN LOGIC (Hybrid) ---
         async function decodeVIN() {
             const vinInput = document.getElementById('vin-input').value.toUpperCase().trim();
@@ -1025,6 +1231,9 @@
 
             // VOLVO Check
             const volvoData = decodeVolvo(vinInput);
+
+            // HYUNDAI Check
+            const hyundaiDataResult = decodeHyundai(vinInput);
 
             let vehicle = {};
             let isApiSuccess = false;
@@ -1077,12 +1286,11 @@
 
             // --- COMBINING DATA ---
 
-            // MAKE: API -> Local -> "Nieznana"
+            // 1. MAKE
             let finalMake = vehicle.Make || localData.make || "Nieznana";
 
-            // MODEL: API -> "Nieznany"
+            // 2. MODEL
             let finalModel = vehicle.Model || "Nieznany";
-            // Combine with Volvo-specific data
             if (volvoData && volvoData.model) {
                 if (finalModel !== "Nieznany" && !finalModel.includes(volvoData.model)) {
                     finalModel = `${finalModel} (${volvoData.model})`;
@@ -1090,29 +1298,31 @@
                     finalModel = volvoData.model;
                 }
             }
-
-            // Combine with VAG data
             const vagModel = decodeVAG(vinInput);
-            if (vagModel) {
-                // Prefer VAG DB exact model
-                finalModel = vagModel;
+            if (vagModel) finalModel = vagModel;
+
+            // 3. BODY
+            let finalBody = vehicle.BodyClass || "Nieznane";
+
+            // Apply Hyundai Overrides (Model + Body)
+            if (hyundaiDataResult) {
+                finalModel = hyundaiDataResult.model;
+                if (hyundaiDataResult.body) finalBody = hyundaiDataResult.body;
             }
 
-
-            // YEAR: 
-            // 1. API Year (High Confidence)
-            // 2. Ford Europe Check
-            // 3. Local ISO calculation (ONLY for SAFE brands)
-            let finalYear = "-";
-
+            // 4. YEAR
             // Helper to check if VAG (Volkswagen Group)
-            // VAG VINs strictly encode MODEL YEAR, not production year.
             const vagPrefixes = ["WAU", "TRU", "WUA", "WWA", "WVW", "WVG", "WV1", "WV2", "WP0", "WP1", "TMB", "TMP", "VSS", "VSE"];
             const isVag = vagPrefixes.some(p => wmi.startsWith(p));
 
-            // Priority: 1. Volvo -> 2. Ford -> 3. API -> 4. ISO
+            let finalYear = "-";
+
+            // Priority: 1. Volvo -> 2. Hyundai -> 3. Ford -> 4. API -> 5. ISO
             if (volvoData && volvoData.year) {
                 finalYear = volvoData.year;
+            }
+            else if (hyundaiDataResult && hyundaiDataResult.year) {
+                finalYear = hyundaiDataResult.year;
             }
             else if (wmi === "WF0") {
                 const fordDate = decodeFordDate(vinInput);
@@ -1130,9 +1340,6 @@
                     else finalYear = y + " (Szacowany z VIN)";
                 }
             }
-
-            // BODY/TYPE
-            let finalBody = vehicle.BodyClass || "Nieznane";
 
             // ENGINE
             let finalEngine = isApiSuccess ? formatEngine(vehicle) : "Brak danych (API)";
