@@ -831,6 +831,24 @@
                     if (data.Results && data.Results.length > 0) {
                         vehicle = data.Results[0];
 
+                        // FIX: VAG/ISO Year Override - Prefer newer year if ambiguous (e.g. 2018 vs 1988)
+                        if (vehicle.ModelYear && isIsoYearSafe(wmi)) {
+                            const localYearsStr = getYearFromCode(vinInput.charAt(9));
+                            if (localYearsStr) {
+                                // getYearFromCode returns e.g. "2018 / 1988"
+                                const localYears = localYearsStr.split('/').map(y => parseInt(y.trim()));
+                                const apiYear = parseInt(vehicle.ModelYear);
+
+                                // If API year is in our list, but there is a newer valid year in our list, use the newest.
+                                // Logic: 1988 (API) is valid, but 2018 (Local) is also valid and newer -> Prefer 2018.
+                                const maxYear = Math.max(...localYears);
+                                if (localYears.includes(apiYear) && maxYear > apiYear) {
+                                    console.log(`Overriding API Year ${apiYear} with calculated ${maxYear}`);
+                                    vehicle.ModelYear = maxYear.toString();
+                                }
+                            }
+                        }
+
                         // SANITY CHECK: The NHTSA API sometimes "hallucinates" years for non-US VINs 
                         // by forcing ISO logic (e.g. WF0 Ford Europe with 'S' at pos 10 -> 2025).
                         // If manufacturer is NOT in our safe ISO list, AND API reports errors (Check Digit etc.),
