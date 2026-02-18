@@ -199,93 +199,30 @@
             z-index: 2;
         }
 
-        .hero-slideshow {
-            position: absolute;
+        /* Hero Video Background */
+        .hero-video-container {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
-            background-color: #000;
+            overflow: hidden;
         }
 
-        .hero-slideshow div {
+        #hero-video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            animation: slideshowAnimation 30s linear infinite;
+            filter: blur(8px);
         }
 
-        .hero-slideshow div:nth-child(1) {
-            background-image: url('drift-bober-przód.webp');
-            animation-delay: 0s;
-        }
-
-        .hero-slideshow div:nth-child(2) {
-            background-image: url('BMW-M3-F.webp');
-            animation-delay: 5s;
-        }
-
-        .hero-slideshow div:nth-child(3) {
-            background-image: url('eclipse-przód.webp');
-            animation-delay: 10s;
-        }
-
-        .hero-slideshow div:nth-child(4) {
-            background-image: url('mandaryna-bok-1.webp');
-            animation-delay: 15s;
-        }
-
-        .hero-slideshow div:nth-child(5) {
-            background-image: url('Gt-63-S-przód.webp');
-            animation-delay: 20s;
-        }
-
-        .hero-slideshow div:nth-child(6) {
-            background-image: url('Maverick-przód.webp');
-            animation-delay: 25s;
-        }
-
-        @keyframes slideshowAnimation {
-            0% {
-                opacity: 0;
-                transform: scale(1.05);
-            }
-
-            4% {
-                opacity: 1;
-            }
-
-            17% {
-                opacity: 1;
-            }
-
-            22% {
-                opacity: 0;
-                transform: scale(1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(1);
-            }
-        }
-
+        /* Removed hero dark overlay */
         .hero::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.65);
-            z-index: 1;
-            pointer-events: none;
+            display: none;
         }
 
         .hero::before {
@@ -1043,14 +980,11 @@
     </header>
 
     <div class="hero">
-        <div class="hero-slideshow">
-            <!-- Tła ładowane w CSS -->
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
+        <div class="hero-video-container">
+            <video id="hero-video" preload="auto" muted playsinline>
+                <source src="Clean_Smooth_transition.mp4" type="video/mp4">
+                Twoja przeglądarka nie obsługuje wideo.
+            </video>
         </div>
 
         <div class="hero-content">
@@ -1464,6 +1398,82 @@
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
             });
+        });
+    </script>
+    <script>
+        const video = document.getElementById('hero-video');
+        const pricingSection = document.getElementById('cennik');
+
+        let maxScroll = 0;
+        let targetProgress = 0;
+        let currentProgress = 0;
+        let ticking = false;
+
+        // Configuration for smoothing
+        // Lower makes it "heavier" (more inertia) but smoother
+        const SMOOTHING_FACTOR = 0.05;
+
+        function updateMaxScroll() {
+            if (pricingSection) {
+                maxScroll = pricingSection.offsetTop - window.innerHeight * 0.5;
+            } else {
+                maxScroll = document.body.scrollHeight - window.innerHeight;
+            }
+            maxScroll = Math.max(maxScroll, 100);
+        }
+
+        if (video) {
+            video.pause();
+            video.addEventListener('loadedmetadata', function () {
+                video.currentTime = 0;
+                updateMaxScroll();
+            });
+        }
+
+        window.addEventListener('resize', updateMaxScroll);
+        updateMaxScroll();
+
+        function updateVideo() {
+            const diff = targetProgress - currentProgress;
+
+            if (Math.abs(diff) < 0.0001) {
+                currentProgress = targetProgress;
+                ticking = false;
+            } else {
+                currentProgress += diff * SMOOTHING_FACTOR;
+                ticking = true;
+                window.requestAnimationFrame(updateVideo);
+            }
+
+            if (video && video.duration) {
+                // IMPORTANT: Prevent seek stacking
+                // Only update if not currently seeking to avoid browser lockup/lag
+                if (!video.seeking) {
+                    const targetTime = currentProgress * video.duration;
+
+                    // Tolerance check (approx 1/30s)
+                    if (Math.abs(video.currentTime - targetTime) > 0.03) {
+                        video.currentTime = targetTime;
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('scroll', function () {
+            const scrollY = window.scrollY;
+            targetProgress = Math.max(0, Math.min(scrollY / maxScroll, 1));
+
+            if (!ticking) {
+                ticking = true;
+                window.requestAnimationFrame(updateVideo);
+            }
+        });
+
+        window.addEventListener('load', function () {
+            updateMaxScroll();
+            targetProgress = Math.max(0, Math.min(window.scrollY / maxScroll, 1));
+            currentProgress = targetProgress;
+            if (video) video.currentTime = targetProgress * (video.duration || 0);
         });
     </script>
 </body>
