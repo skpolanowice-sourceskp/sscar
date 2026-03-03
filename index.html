@@ -516,6 +516,10 @@
             white-space: nowrap;
         }
 
+        .pricing-table td.price-sm {
+            font-size: 1.1rem;
+        }
+
         .category-header {
             background-color: rgba(50, 50, 50, 0.5) !important;
             backdrop-filter: blur(5px);
@@ -697,6 +701,30 @@
             color: var(--primary-red) !important;
             margin-bottom: 5px;
             letter-spacing: 1px;
+        }
+
+        .opening-hours {
+            margin-top: 3rem;
+            border-top: 1px solid #333;
+            padding-top: 2rem;
+        }
+
+        .opening-hours h4 {
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .opening-hours p {
+            margin-bottom: 5px;
+        }
+
+        .contact-phone {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #fff;
+            text-decoration: none;
         }
 
         .map-container {
@@ -884,12 +912,12 @@
 
             /* Sekcje */
             section {
-                padding: 4rem 5%;
+                padding: 2.5rem 5%;
             }
 
             h2 {
-                font-size: 2rem;
-                margin-bottom: 2.5rem;
+                font-size: 1.75rem;
+                margin-bottom: 1.5rem;
             }
 
             /* Hero */
@@ -897,9 +925,14 @@
                 padding-top: 100px;
             }
 
+            .hero-logo-main {
+                max-width: 85%;
+            }
+
             .hero p {
-                font-size: 1.1rem;
+                font-size: 1rem;
                 padding: 0 10px;
+                margin-bottom: 1.5rem;
             }
 
             .btn-group {
@@ -940,29 +973,97 @@
                 font-size: 0.9rem;
             }
 
+            .pricing-table td.price-sm {
+                font-size: 0.8rem;
+            }
+
             /* Kontakt */
             .contact-info {
-                padding: 2.5rem 1.5rem;
+                padding: 1.5rem 1rem;
                 min-width: 100%;
             }
 
+            .contact-info h3 {
+                margin-bottom: 1.5rem;
+                font-size: 1.5rem;
+            }
+
             .contact-item {
-                flex-direction: column;
-                align-items: flex-start;
+                margin-bottom: 1.5rem;
+                flex-direction: row;
+                align-items: center;
                 text-align: left;
             }
 
             .contact-item i {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin-bottom: 0;
+                margin-right: 15px;
+            }
+
+            .contact-item span,
+            .contact-item a,
+            .contact-info p {
+                font-size: 0.95rem;
+            }
+
+            .contact-phone {
+                font-size: 1.1rem;
+            }
+
+            .opening-hours {
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+            }
+
+            .opening-hours h4 {
                 margin-bottom: 10px;
-                margin-right: 0;
+                font-size: 0.9rem;
             }
 
             .map-container {
-                min-height: 400px;
+                min-height: 250px;
             }
 
             .glass-panel {
-                padding: 2rem;
+                padding: 1.5rem;
+            }
+
+            .service-card,
+            .review-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .ac-container {
+                gap: 0.5rem;
+                flex-wrap: nowrap;
+            }
+
+            .ac-card {
+                padding: 1rem 0.5rem;
+                min-width: 0;
+            }
+
+            .ac-card h3 {
+                font-size: 0.9rem;
+                margin-bottom: 5px;
+            }
+
+            .ac-main-price {
+                font-size: 1.8rem;
+                margin: 8px 0;
+            }
+
+            .ac-sub-price,
+            .ac-detail {
+                font-size: 0.75rem;
+            }
+
+            .services-grid,
+            .contact-container {
+                gap: 1.5rem;
             }
         }
     </style>
@@ -1130,7 +1231,7 @@
                     </tr>
                     <tr>
                         <td>Udostępnienie kanału</td>
-                        <td class="price" style="font-size: 1.1rem;">50 zł / 10 min</td>
+                        <td class="price price-sm">50 zł / 10 min</td>
                     </tr>
                 </tbody>
             </table>
@@ -1241,8 +1342,7 @@
                     <i class="fas fa-phone-alt"></i>
                     <div>
                         <span class="label-tag">Stacja Kontroli Pojazdów</span>
-                        <a href="tel:+48796995620" style="font-weight:bold; font-size:1.3rem; color: #fff;">796 995
-                            620</a>
+                        <a href="tel:+48796995620" class="contact-phone">796 995 620</a>
                     </div>
                 </div>
 
@@ -1250,8 +1350,7 @@
                     <i class="fas fa-dharmachakra"></i>
                     <div>
                         <span class="label-tag">Wulkanizacja (Opony)</span>
-                        <a href="tel:+48609995620" style="font-weight:bold; font-size:1.3rem; color: #fff;">609 995
-                            620</a>
+                        <a href="tel:+48609995620" class="contact-phone">609 995 620</a>
                     </div>
                 </div>
 
@@ -1271,11 +1370,9 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 3rem; border-top: 1px solid #333; padding-top: 2rem;">
-                    <h4 style="margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: #888;">
-                        Godziny otwarcia:</h4>
-                    <p style="margin-bottom: 5px;">Poniedziałek - Piątek: <strong style="color:var(--primary-red)">07:00
-                            - 18:00</strong></p>
+                <div class="opening-hours">
+                    <h4>Godziny otwarcia:</h4>
+                    <p>Poniedziałek - Piątek: <strong style="color:var(--primary-red)">07:00 - 18:00</strong></p>
                     <p>Sobota: <strong style="color:var(--primary-red)">08:00 - 14:00</strong></p>
                 </div>
             </div>
