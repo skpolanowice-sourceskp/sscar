@@ -398,6 +398,7 @@
                 border-bottom: 2px solid var(--primary-red);
                 transform: translateY(-150%);
                 transition: transform 0.4s;
+                z-index: 999;
                 padding: 20px 0;
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             }
@@ -559,6 +560,8 @@
 
         const menuBtn = document.getElementById('mobile-menu-btn');
         const navMenu = document.getElementById('nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
         menuBtn.addEventListener('click', () => {
             navMenu.classList.toggle('active');
             const icon = menuBtn.querySelector('i');
@@ -569,6 +572,15 @@
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
             }
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                const icon = menuBtn.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
         });
 
         // Simple Animation Trigger
