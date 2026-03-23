@@ -205,24 +205,60 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 0;
-            overflow: hidden;
-        }
 
+    /* Hero Section */
+    .hero {
+        height: 95vh;
+        min-height: 600px;
+        background-color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 0 20px;
+        margin-top: 0;
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+    }
+
+    /* Hero Video Background */
+    .hero-video-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    #hero-video {
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        filter: blur(8px);
+        will-change: transform;
+        transform: translateZ(0);
+    }
+
+    /* Optymalizacje dla urządzeń mobilnych */
+    @media (max-width: 768px) {
         #hero-video {
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            filter: blur(8px);
+            filter: blur(6px);
+            opacity: 0.7;
         }
+    }
 
-        /* Removed hero dark overlay */
-        .hero::after {
-            display: none;
+    /* Optymalizacje dla wolniejszych urządzeń */
+    .low-performance-device #hero-video {
+        filter: blur(4px);
+        opacity: 0.6;
+    }
         }
 
         .hero::before {
@@ -1516,17 +1552,31 @@
         });
     </script>
     <script>
+        // Detekcja urządzeń mobilnych i wydajności
+        function detectDeviceCapabilities() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isLowEnd = navigator.hardwareConcurrency <= 4 || navigator.deviceMemory <= 2;
+            
+            if (isMobile || isLowEnd) {
+                document.body.classList.add('low-performance-device');
+                return true;
+            }
+            return false;
+        }
+
         const video = document.getElementById('hero-video');
         const pricingSection = document.getElementById('cennik');
+        const isLowPerformance = detectDeviceCapabilities();
 
         let maxScroll = 0;
         let targetProgress = 0;
         let currentProgress = 0;
         let ticking = false;
+        let lastUpdateTime = 0;
 
-        // Configuration for smoothing
-        // Lower makes it "heavier" (more inertia) but smoother
-        const SMOOTHING_FACTOR = 0.05;
+        // Configuration for smoothing - różne dla różnych urządzeń
+        const SMOOTHING_FACTOR = isLowPerformance ? 0.02 : 0.05;
+        const UPDATE_THROTTLE = isLowPerformance ? 100 : 16; // ms
 
         function updateMaxScroll() {
             if (pricingSection) {
@@ -1539,6 +1589,17 @@
 
         if (video) {
             video.pause();
+            
+            // Optymalizacje wideo dla słabszych urządzeń
+            if (isLowPerformance) {
+                video.playbackRate = 0.8;
+                // Obniżamy jakość wideo jeśli przeglądarka wspiera
+                if ('videoQuality' in video) {
+                    // Ustaw najniższą dostępną jakość
+                    video.videoQuality = 'low';
+                }
+            }
+            
             video.addEventListener('loadedmetadata', function () {
                 video.currentTime = 0;
                 updateMaxScroll();
@@ -1548,7 +1609,16 @@
         window.addEventListener('resize', updateMaxScroll);
         updateMaxScroll();
 
-        function updateVideo() {
+        function updateVideo(timestamp) {
+            // Throttle updates na słabszych urządzeniach
+            if (isLowPerformance && timestamp - lastUpdateTime < UPDATE_THROTTLE) {
+                if (ticking) {
+                    window.requestAnimationFrame(updateVideo);
+                }
+                return;
+            }
+            lastUpdateTime = timestamp;
+
             const diff = targetProgress - currentProgress;
 
             if (Math.abs(diff) < 0.0001) {
@@ -1566,8 +1636,9 @@
                 if (!video.seeking) {
                     const targetTime = currentProgress * video.duration;
 
-                    // Tolerance check (approx 1/30s)
-                    if (Math.abs(video.currentTime - targetTime) > 0.03) {
+                    // Większa tolerancja dla słabszych urządzeń
+                    const tolerance = isLowPerformance ? 0.1 : 0.03;
+                    if (Math.abs(video.currentTime - targetTime) > tolerance) {
                         video.currentTime = targetTime;
                     }
                 }
@@ -1590,6 +1661,26 @@
             currentProgress = targetProgress;
             if (video) video.currentTime = targetProgress * (video.duration || 0);
         });
+
+        // Dodatkowe optymalizacje dla urządzeń mobilnych
+        if (isLowPerformance) {
+            // Wyłącz niektóre efekty wizualne na słabszych urządzeniach
+            document.addEventListener('DOMContentLoaded', function() {
+                const mouseGlow = document.querySelector('.mouse-glow');
+                if (mouseGlow) {
+                    mouseGlow.style.display = 'none';
+                }
+                
+                // Ogranicz liczbę animacji scroll
+                const animatedElements = document.querySelectorAll('.animate-on-scroll');
+                animatedElements.forEach((el, index) => {
+                    if (index > 3) { // Animuj tylko pierwsze 4 elementy
+                        el.classList.remove('animate-on-scroll');
+                        el.style.opacity = '1';
+                    }
+                });
+            });
+        }
     </script>
 </body>
 
