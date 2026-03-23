@@ -180,6 +180,50 @@
             color: var(--text-main);
             cursor: pointer;
             z-index: 1002;
+            width: 30px;
+            height: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle span {
+            display: block;
+            position: absolute;
+            height: 3px;
+            width: 100%;
+            background: var(--text-main);
+            border-radius: 3px;
+            opacity: 1;
+            left: 0;
+            transform: rotate(0deg);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .menu-toggle span:nth-child(1) {
+            top: 0px;
+        }
+
+        .menu-toggle span:nth-child(2) {
+            top: 8px;
+        }
+
+        .menu-toggle span:nth-child(3) {
+            top: 16px;
+        }
+
+        .menu-toggle.open span:nth-child(1) {
+            top: 8px;
+            transform: rotate(135deg);
+        }
+
+        .menu-toggle.open span:nth-child(2) {
+            opacity: 0;
+            left: -30px;
+        }
+
+        .menu-toggle.open span:nth-child(3) {
+            top: 8px;
+            transform: rotate(-135deg);
         }
 
         /* Hero Section */
@@ -205,60 +249,35 @@
             top: 0;
             left: 0;
             width: 100%;
-
-    /* Hero Section */
-    .hero {
-        height: 95vh;
-        min-height: 600px;
-        background-color: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 0 20px;
-        margin-top: 0;
-        position: relative;
-        overflow: hidden;
-        z-index: 2;
-    }
-
-    /* Hero Video Background */
-    .hero-video-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-        overflow: hidden;
-    }
-
-    #hero-video {
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
-        position: absolute;
-        top: 0;
-        left: 0;
-        filter: blur(8px);
-        will-change: transform;
-        transform: translateZ(0);
-    }
-
-    /* Optymalizacje dla urządzeń mobilnych */
-    @media (max-width: 768px) {
-        #hero-video {
-            filter: blur(6px);
-            opacity: 0.7;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
         }
-    }
 
-    /* Optymalizacje dla wolniejszych urządzeń */
-    .low-performance-device #hero-video {
-        filter: blur(4px);
-        opacity: 0.6;
-    }
+        #hero-video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            filter: blur(8px);
+            will-change: transform;
+            transform: translateZ(0);
+        }
+
+        /* Optymalizacje dla urządzeń mobilnych */
+        @media (max-width: 768px) {
+            #hero-video {
+                filter: blur(6px);
+                opacity: 0.7;
+            }
+        }
+
+        /* Optymalizacje dla wolniejszych urządzeń */
+        .low-performance-device #hero-video {
+            filter: blur(4px);
+            opacity: 0.6;
         }
 
         .hero::before {
@@ -917,15 +936,19 @@
                 background: rgba(10, 10, 10, 0.98);
                 backdrop-filter: blur(15px);
                 border-bottom: 2px solid var(--primary-red);
-                transform: translateY(-150%);
-                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transform: translateY(-100%);
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 z-index: 999;
                 padding: 20px 0;
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+                opacity: 0;
+                visibility: hidden;
             }
 
             nav.active {
                 transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
             }
 
             nav ul {
@@ -938,7 +961,22 @@
                 margin: 15px 0;
                 width: 100%;
                 text-align: center;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.3s ease;
             }
+
+            nav.active ul li {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            nav.active ul li:nth-child(1) { transition-delay: 0.1s; }
+            nav.active ul li:nth-child(2) { transition-delay: 0.2s; }
+            nav.active ul li:nth-child(3) { transition-delay: 0.3s; }
+            nav.active ul li:nth-child(4) { transition-delay: 0.4s; }
+            nav.active ul li:nth-child(5) { transition-delay: 0.5s; }
+            nav.active ul li:nth-child(6) { transition-delay: 0.6s; }
 
             nav ul li a {
                 font-size: 1.2rem;
@@ -1115,7 +1153,9 @@
 
         <!-- Przycisk Hamburger -->
         <div class="menu-toggle" id="mobile-menu-btn">
-            <i class="fas fa-bars"></i>
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
 
         <nav id="nav-menu">
@@ -1532,22 +1572,13 @@
 
         menuBtn.addEventListener('click', () => {
             navMenu.classList.toggle('active');
-            const icon = menuBtn.querySelector('i');
-            if (navMenu.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
+            menuBtn.classList.toggle('open');
         });
 
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
-                const icon = menuBtn.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+                menuBtn.classList.remove('open');
             });
         });
     </script>
