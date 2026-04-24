@@ -1287,13 +1287,13 @@ function drawCaster(pct){
     xCast.stroke();
 
     // --- WAHACZ ---
-    const bjX = 3, bjY = -(tireR - 16);
-    const bx1 = 78, by1 = -38;
-    const bx2 = 76, by2 = -18;
+    const bjX = -3, bjY = -(tireR - 16);
+    const bx1 = -78, by1 = -38;
+    const bx2 = -76, by2 = -18;
 
     xCast.fillStyle = 'rgba(62,62,62,0.92)';
     xCast.beginPath();
-    xCast.roundRect(72, by2-4, 16, by1-by2+8, 3);
+    xCast.roundRect(-88, by2-4, 16, by1-by2+8, 3);
     xCast.fill();
 
     xCast.strokeStyle = '#6e6e6e';
@@ -1416,6 +1416,20 @@ function drawCaster(pct){
     }
 
     xCast.restore();
+
+    // Strzałka kierunku jazdy
+    const arrowY = 36, arrowX2 = W - 12, arrowX1 = arrowX2 - 38;
+    xCast.strokeStyle = 'rgba(255,255,255,0.45)';
+    xCast.lineWidth = 2;
+    xCast.lineCap = 'round';
+    xCast.beginPath();
+    xCast.moveTo(arrowX1, arrowY); xCast.lineTo(arrowX2, arrowY);
+    xCast.moveTo(arrowX2 - 8, arrowY - 5); xCast.lineTo(arrowX2, arrowY); xCast.lineTo(arrowX2 - 8, arrowY + 5);
+    xCast.stroke();
+    xCast.fillStyle = 'rgba(255,255,255,0.42)';
+    xCast.font = '10px Segoe UI';
+    xCast.textAlign = 'right';
+    xCast.fillText('kierunek jazdy', arrowX2, arrowY - 7);
 
     xCast.fillStyle = 'rgba(255,255,255,0.35)';
     xCast.font = '11px Segoe UI';
