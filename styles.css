@@ -1,9 +1,9 @@
 :root {
-    --primary-red: #e31e24;
-    --dark-bg: #121212;
-    --card-bg: #1e1e1e;
-    --text-main: #f0f0f0;
-    --text-muted: #aaaaaa;
+    --primary-red: oklch(48.5% 0.222 25.8);
+    --dark-bg: oklch(13% 0.006 30);
+    --card-bg: oklch(17% 0.005 30);
+    --text-main: oklch(95% 0.005 30);
+    --text-muted: oklch(68% 0.005 30);
     --mouse-x: 50%;
     --mouse-y: 50%;
 }
@@ -411,59 +411,61 @@ h2::after {
 
 .about-text strong { color: var(--primary-red); }
 
-/* Services */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2.5rem;
-    max-width: 1200px;
+/* Services (oferta.html) */
+.service-list {
+    max-width: 840px;
     margin: 0 auto;
+    border-top: 1px solid oklch(25% 0.005 30);
 }
 
-.service-card {
-    background: rgba(30, 30, 30, 0.7);
-    backdrop-filter: blur(10px);
-    padding: 3rem 2rem;
-    text-align: center;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid var(--primary-red);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden;
+.service-entry {
+    display: block;
+    padding: 3rem 0;
+    border-bottom: 1px solid oklch(25% 0.005 30);
     text-decoration: none;
-    display: block;
     color: inherit;
+    transition: padding-left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.service-card:hover {
-    transform: translateY(-15px) scale(1.03);
-    box-shadow: 0 20px 40px rgba(227, 30, 36, 0.2);
-    background: rgba(40, 40, 40, 0.8);
-    border-top: 4px solid var(--primary-red);
+.service-entry:hover { padding-left: 1.5rem; }
+
+.service-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
 }
 
-.service-card i {
-    font-size: 4rem;
-    color: var(--primary-red);
-    margin-bottom: 1.5rem;
-    transition: transform 0.5s;
-    display: block;
-}
-
-.service-card:hover i { transform: rotateY(180deg); }
-
-.service-card h3 {
-    margin-bottom: 1rem;
-    color: #fff;
-    font-weight: 800;
+.service-entry-title {
+    font-size: clamp(1.4rem, 4vw, 2.25rem);
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
+    color: oklch(93% 0.005 30);
+    transition: color 0.2s;
 }
 
-.service-card p { color: var(--text-muted); }
+.service-entry:hover .service-entry-title { color: var(--primary-red); }
+
+.service-entry-arrow {
+    font-size: 1.6rem;
+    color: var(--primary-red);
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+    line-height: 1;
+}
+
+.service-entry:hover .service-entry-arrow { transform: translateX(10px); }
+
+.service-entry-desc {
+    margin-top: 0.65rem;
+    font-size: 0.925rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 62ch;
+}
+
+.section-cta { padding-top: 0; text-align: center; }
 
 /* Navigation Cards Section (index) */
 .nav-cards-section {
@@ -527,6 +529,95 @@ h2::after {
     color: var(--text-muted);
     font-size: 0.85rem;
     line-height: 1.5;
+}
+
+/* Navigation Index (index.html) */
+.nav-index {
+    max-width: 860px;
+    margin: 0 auto;
+    border-top: 1px solid oklch(28% 0.005 30);
+}
+
+.nav-index-item {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.75rem 0.5rem;
+    border-bottom: 1px solid oklch(28% 0.005 30);
+    text-decoration: none;
+    color: inherit;
+    border-radius: 4px;
+    transition: padding-left 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
+                background 0.25s;
+}
+
+.nav-index-item:hover {
+    padding-left: 1.25rem;
+    background: oklch(20% 0.006 25 / 0.5);
+}
+
+.nav-index-num {
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: var(--primary-red);
+    letter-spacing: 2px;
+    font-style: italic;
+    align-self: start;
+    padding-top: 0.3rem;
+}
+
+.nav-index-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.nav-index-title {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: oklch(95% 0.005 30);
+    transition: color 0.2s;
+    line-height: 1.2;
+}
+
+.nav-index-item:hover .nav-index-title {
+    color: var(--primary-red);
+}
+
+.nav-index-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.nav-index-arrow {
+    font-size: 1.4rem;
+    color: var(--primary-red);
+    transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+    line-height: 1;
+    padding-right: 0.25rem;
+}
+
+.nav-index-item:hover .nav-index-arrow {
+    transform: translateX(8px);
+}
+
+@media (max-width: 600px) {
+    .nav-index-item {
+        grid-template-columns: 2.5rem 1fr auto;
+        gap: 1rem;
+        padding: 1.25rem 0.25rem;
+    }
+    .nav-index-arrow { font-size: 1.1rem; }
+    .nav-index-num { padding-top: 0.2rem; }
+}
+
+@media (max-width: 640px) {
+    .service-entry { padding: 2rem 0; }
+    .service-entry-title { letter-spacing: 1.5px; }
 }
 
 /* Pricing */
@@ -716,14 +807,22 @@ h2::after {
     background: radial-gradient(circle at top right, rgba(227, 30, 36, 0.2), transparent 70%);
 }
 
+.contact-section-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--primary-red);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
 .contact-info h3 {
     margin-bottom: 2.5rem;
     color: #fff;
     font-size: 2rem;
     text-transform: uppercase;
     font-weight: 800;
-    border-left: 5px solid var(--primary-red);
-    padding-left: 15px;
 }
 
 .contact-item {
@@ -970,7 +1069,7 @@ footer a:hover { color: var(--primary-red); }
     .map-container { min-height: 250px; }
 
     .glass-panel { padding: 1.5rem; }
-    .service-card, .review-card { padding: 1.5rem 1rem; }
+    .review-card { padding: 1.5rem 1rem; }
 
     .ac-container { gap: 0.5rem; flex-wrap: nowrap; }
     .ac-card { padding: 1rem 0.5rem; min-width: 0; }

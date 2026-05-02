@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Read(//c/Users/User/.claude/skills/impeccable/reference/**)"
     ]
   }
 }
