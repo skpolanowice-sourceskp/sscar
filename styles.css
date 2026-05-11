@@ -16,6 +16,10 @@
     scroll-behavior: smooth;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     line-height: 1.6;
     color: var(--text-main);
@@ -994,8 +998,8 @@ footer a:hover { color: var(--primary-red); }
     .logo-img { max-height: 50px; }
     .menu-toggle { display: block; }
 
-    nav {
-        position: absolute;
+    #nav-menu {
+        position: fixed;
         top: 80px; left: 0;
         width: 100%;
         background: rgba(10, 10, 10, 0.98);
@@ -1010,15 +1014,15 @@ footer a:hover { color: var(--primary-red); }
         visibility: hidden;
     }
 
-    nav.active {
+    #nav-menu.active {
         transform: translateY(0);
         opacity: 1;
         visibility: visible;
     }
 
-    nav ul { flex-direction: column; align-items: center; margin: 0; }
+    #nav-menu ul { flex-direction: column; align-items: center; margin: 0; }
 
-    nav ul li {
+    #nav-menu ul li {
         margin: 15px 0;
         width: 100%;
         text-align: center;
@@ -1027,15 +1031,15 @@ footer a:hover { color: var(--primary-red); }
         transition: all 0.3s ease;
     }
 
-    nav.active ul li { opacity: 1; transform: translateY(0); }
-    nav.active ul li:nth-child(1) { transition-delay: 0.1s; }
-    nav.active ul li:nth-child(2) { transition-delay: 0.2s; }
-    nav.active ul li:nth-child(3) { transition-delay: 0.3s; }
-    nav.active ul li:nth-child(4) { transition-delay: 0.4s; }
-    nav.active ul li:nth-child(5) { transition-delay: 0.5s; }
-    nav.active ul li:nth-child(6) { transition-delay: 0.6s; }
+    #nav-menu.active ul li { opacity: 1; transform: translateY(0); }
+    #nav-menu.active ul li:nth-child(1) { transition-delay: 0.1s; }
+    #nav-menu.active ul li:nth-child(2) { transition-delay: 0.2s; }
+    #nav-menu.active ul li:nth-child(3) { transition-delay: 0.3s; }
+    #nav-menu.active ul li:nth-child(4) { transition-delay: 0.4s; }
+    #nav-menu.active ul li:nth-child(5) { transition-delay: 0.5s; }
+    #nav-menu.active ul li:nth-child(6) { transition-delay: 0.6s; }
 
-    nav ul li a { font-size: 1.2rem; display: block; padding: 10px; }
+    #nav-menu ul li a { font-size: 1.2rem; display: block; padding: 10px; }
 
     section { padding: 2.5rem 5%; }
 
