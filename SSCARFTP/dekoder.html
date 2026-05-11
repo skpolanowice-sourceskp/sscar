@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dekoder VIN i DAM/ORGA – Darmowy – SSCAR Wrocław</title>
+    <meta name="description"
+        content="Darmowy dekoder VIN i DAM (ORGA). Sprawdź rok produkcji, markę i podstawowe informacje o pojeździe. Narzędzie SSCAR – Stacja Kontroli Pojazdów Wrocław.">
+    <link rel="canonical" href="https://skpolanowice-sourceskp.github.io/sscar/dekoder.html">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://skpolanowice-sourceskp.github.io/sscar/dekoder.html">
+    <meta property="og:title" content="Dekoder VIN i DAM/ORGA – Darmowy – SSCAR Wrocław">
+    <meta property="og:description" content="Darmowy dekoder VIN i DAM (ORGA). Sprawdź rok produkcji i podstawowe informacje o pojeździe. Narzędzie SSCAR Wrocław.">
+    <meta property="og:image" content="https://skpolanowice-sourceskp.github.io/sscar/Logo-SSCAR.png">
+    <meta property="og:locale" content="pl_PL">
+    <meta property="og:site_name" content="SSCAR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Dekoder VIN i DAM/ORGA – Darmowy – SSCAR Wrocław">
+    <meta name="twitter:description" content="Darmowy dekoder VIN i DAM (ORGA). Sprawdź rok produkcji i podstawowe informacje o pojeździe.">
+    <meta name="twitter:image" content="https://skpolanowice-sourceskp.github.io/sscar/Logo-SSCAR.png">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Strona główna",
+              "item": "https://skpolanowice-sourceskp.github.io/sscar/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Dekoder VIN / DAM",
+              "item": "https://skpolanowice-sourceskp.github.io/sscar/dekoder.html"
+            }
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "name": "Dekoder VIN i DAM SSCAR",
+          "url": "https://skpolanowice-sourceskp.github.io/sscar/dekoder.html",
+          "description": "Darmowe narzędzie do dekodowania numerów VIN i DAM/ORGA pojazdów.",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Any",
+          "isAccessibleForFree": true,
+          "author": {
+            "@type": "Organization",
+            "name": "SSCAR - Stacja Kontroli Pojazdów",
+            "url": "https://skpolanowice-sourceskp.github.io/sscar/"
+          }
+        }
+      ]
+    }
+    </script>
+
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e31e24;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #f0f0f0;
+            --text-muted: #aaaaaa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--dark-bg);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Decoration */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(227, 30, 36, 0.05), transparent 40%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Header logic consistent with index.html */
+        header {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0 5%;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            height: 100px;
+            border-bottom: 2px solid var(--primary-red);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .logo-link {
+            position: absolute;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1001;
+        }
+
+        .logo-img {
+            max-height: 130px;
+            width: auto;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
+            transition: transform 0.3s;
+            display: block;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 30px;
+        }
+
+        nav ul li a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: color 0.3s, text-shadow 0.3s;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-red);
+            text-shadow: 0 0 10px rgba(227, 30, 36, 0.6);
+        }
+
+        nav ul li a::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 2px;
+            background: var(--primary-red);
+            transition: width .3s ease;
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            box-shadow: 0 0 8px var(--primary-red);
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        /* Hamburger Menu Icon */
+        .menu-toggle {
+            display: none;
+            font-size: 1.8rem;
+            color: var(--text-main);
+            cursor: pointer;
+            z-index: 1002;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 4rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--white);
+            text-transform: uppercase;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 span {
+            color: var(--primary-red);
+        }
+
+        /* Decoder Section styling */
+        .decoder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.3s;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(227, 30, 36, 0.3);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-red);
+            padding-left: 1rem;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            box-shadow: 0 0 10px rgba(227, 30, 36, 0.2);
+        }
+
+        .btn-decode {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .btn-decode:hover {
+            background: #c0151b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(227, 30, 36, 0.3);
+        }
+
+        /* Result styling needed for API response */
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .result-box.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Footer consistent with index.html */
+        footer {
+            background: #0a0a0a;
+            color: #555;
+            text-align: center;
+            padding: 3rem 2rem;
+            font-size: 0.9rem;
+            border-top: 3px solid var(--primary-red);
+            margin-top: 50px;
+        }
+
+        footer a {
+            color: #777;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: var(--primary-red);
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) {
+
+            /* Header Mobile */
+            header {
+                height: 80px;
+                padding: 0 20px;
+                justify-content: space-between;
+            }
+
+            .logo-link {
+                position: static;
+                transform: none;
+            }
+
+            .logo-img {
+                max-height: 50px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            nav {
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(15px);
+                border-bottom: 2px solid var(--primary-red);
+                transform: translateY(-150%);
+                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                z-index: 999;
+                padding: 20px 0;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            }
+
+            nav.active {
+                transform: translateY(0);
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                margin: 0;
+            }
+
+            nav ul li {
+                margin: 15px 0;
+                width: 100%;
+                text-align: center;
+            }
+
+            nav ul li a {
+                font-size: 1.2rem;
+                display: block;
+                padding: 10px;
+            }
+
+            main {
+                padding: 2rem 5%;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 2rem;
+            }
+
+            .glass-panel {
+                padding: 1.5rem;
+            }
+
+            .decoder-grid {
+                gap: 1.5rem;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                padding: 10px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="index.html" class="logo-link">
+            <img src="Logo-SSCAR.png" alt="SSCAR" class="logo-img">
+        </a>
+
+        <!-- Przycisk Hamburger -->
+        <div class="menu-toggle" id="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
+            <ul>
+                <li><a href="o-nas.html" class="nav-link">O nas</a></li>
+                <li><a href="oferta.html" class="nav-link">Oferta</a></li>
+                <li><a href="cennik.html" class="nav-link">Cennik</a></li>
+                <li><a href="dekoder.html" class="nav-link">Dekoder VIN</a></li>
+                <li><a href="klima.html" class="nav-link" style="color:#ffffff">Baza Klimatyzacji</a></li>
+                <li><a href="index.html#kontakt" class="nav-link">Kontakt</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Systemy <span>SSCAR</span></h1>
+
+        <div class="decoder-grid">
+            <!-- VIN DECODER -->
+            <div class="glass-panel">
+                <h2><i class="fas fa-car"></i> Dekoder VIN</h2>
+                <div class="input-group">
+                    <label for="vin-input">Wprowadź numer VIN (17 znaków):</label>
+                    <input type="text" id="vin-input" maxlength="17" placeholder="np. WBA...">
+                </div>
+                <button class="btn-decode" id="btn-check-vin" onclick="decodeVIN()">Sprawdź VIN</button>
+                <div id="vin-loader" class="loader"
+                    style="display: none; text-align: center; margin-top: 20px; color: var(--primary-red);"><i
+                        class="fas fa-spinner fa-spin fa-2x"></i></div>
+                <div id="vin-error" class="error-msg"></div>
+
+                <div id="vin-result" class="result-box">
+                    <div class="result-item">
+                        <span class="result-label">Marka:</span>
+                        <span class="result-value" id="res-make">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Model:</span>
+                        <span class="result-value" id="res-model">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Rok produkcji:</span>
+                        <span class="result-value" id="res-year"
+                            style="color: var(--primary-red); font-size: 1.1em;">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Nadwozie:</span>
+                        <span class="result-value" id="res-body">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Silnik:</span>
+                        <span class="result-value" id="res-engine">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Moc (kW/KM):</span>
+                        <span class="result-value" id="res-power">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Miejsce produkcji:</span>
+                        <span class="result-value" id="res-plant">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">WMI:</span>
+                        <span class="result-value" id="res-wmi">-</span>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.75rem; color: #666; text-align: center;">
+                    Dane są odczytywane i łączone z różnych źródeł, aby otrzymać jak najlepszy wynik, jednak nadal mogą
+                    być błędne.
+                </p>
+            </div>
+
+            <!-- DAM DECODER -->
+            <div class="glass-panel">
+                <h2><i class="fas fa-calendar-check"></i> Dekoder DAM / ORGA</h2>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: #ccc; line-height: 1.5;">
+                    Kod DAM (lub ORGA) pozwala określić dokładny dzień produkcji.
+                    <br><br>
+                    <strong>Obsługiwane marki:</strong> Peugeot, Citroën, DS, Opel (modele 2017+), a także Fiat/Toyota
+                    (modele dostawcze z grupy Stellantis).
+                    <br><br>
+                    <i class="fas fa-info-circle"></i> Kod znajdziesz na naklejce na słupku drzwi kierowcy (zwykle 5-7
+                    cyfr, np. <em>12456</em>).
+                </p>
+                <div class="input-group">
+                    <label for="dam-input">Wprowadź kod DAM / ORGA:</label>
+                    <input type="text" id="dam-input" maxlength="7" placeholder="np. 12000">
+                </div>
+                <button class="btn-decode" onclick="decodeDAM()">Sprawdź Datę</button>
+                <div id="dam-error" class="error-msg"></div>
+
+                <div id="dam-result" class="result-box">
+                    <div class="result-item">
+                        <span class="result-label">Data produkcji:</span>
+                        <span class="result-value" id="res-dam-date"
+                            style="color: var(--primary-red); font-size: 1.2rem;">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kod fabryki:</span>
+                        <span class="result-value" id="res-dam-factory">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Potrzebujesz taką profesjonalną stronę spersonalizowaną pod twoje potrzeby? <br>
+            Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
+            Lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> - Michał Jarosiński
+        </p>
+    </footer>
+
+    <script>
+        // --- EXTENDED WMI DATABASE (European & Major Global) ---
+        // strategy: 'iso' (10th digit year) or 'none' (do not guess)
+        const wmiDB = {
+            // GERMANY
+            "WWA": { make: "Audi", strategy: "iso" }, "WAU": { make: "Audi", strategy: "iso" }, "TRU": { make: "Audi (Hungary)", strategy: "iso" },
+            "WBA": { make: "BMW", strategy: "iso" }, "WBS": { make: "BMW M", strategy: "iso" }, "WMW": { make: "MINI", strategy: "iso" },
+            "WDB": { make: "Mercedes-Benz", strategy: "iso" }, "WDD": { make: "Mercedes-Benz", strategy: "iso" }, "WDC": { make: "Mercedes-Benz", strategy: "iso" }, "WMX": { make: "Mercedes-AMG", strategy: "iso" },
+            "WP0": { make: "Porsche", strategy: "iso" }, "WP1": { make: "Porsche (SUV)", strategy: "iso" },
+            "WVW": { make: "Volkswagen", strategy: "iso" }, "WVG": { make: "Volkswagen (SUV/MPV)", strategy: "iso" }, "WV1": { make: "VW Commercial", strategy: "iso" }, "WV2": { make: "VW Bus/Van", strategy: "iso" },
+            "W0L": { make: "Opel / Vauxhall", strategy: "iso" }, "W0V": { make: "Opel", strategy: "iso" },
+            "W1K": { make: "Mercedes-Benz", strategy: "iso" }, "W1N": { make: "Mercedes-Benz", strategy: "iso" },
+
+            // FRANCE (Often NO ISO year)
+            "VF1": { make: "Renault", strategy: "none" }, "VF2": { make: "Renault", strategy: "none" },
+            "VF3": { make: "Peugeot", strategy: "none" },
+            "VF7": { make: "Citroën", strategy: "none" },
+            "VR1": { make: "DS Automobiles", strategy: "none" },
+            "VF9": { make: "Bugatti", strategy: "none" },
+
+            // ITALY (Often NO ISO year for Fiat/Alfa)
+            "ZFA": { make: "Fiat", strategy: "none" },
+            "ZFF": { make: "Ferrari", strategy: "iso" }, // Ferrari uses ISO often
+            "ZHW": { make: "Lamborghini", strategy: "iso" },
+            "ZAR": { make: "Alfa Romeo", strategy: "none" },
+            "ZLA": { make: "Lancia", strategy: "none" },
+            "ZAM": { make: "Maserati", strategy: "iso" },
+
+            // UK
+            "SAJ": { make: "Jaguar", strategy: "iso" }, "SAL": { make: "Land Rover", strategy: "iso" },
+            "SCC": { make: "Lotus", strategy: "iso" }, "SAR": { make: "Rover", strategy: "iso" },
+
+            // OTHERS EUROPE
+            "TMB": { make: "Škoda", strategy: "iso" },
+            "UU1": { make: "Dacia", strategy: "none" }, // Dacia often Renault logic
+            "YV1": { make: "Volvo", strategy: "iso" }, "YS3": { make: "Saab", strategy: "iso" },
+            "VSS": { make: "SEAT", strategy: "iso" },
+            "TMK": { make: "Tatra", strategy: "none" },
+            "NLH": { make: "Hyundai (Czech)", strategy: "iso" },
+            "U5Y": { make: "Kia (Slovakia)", strategy: "iso" },
+
+            // ASIA (ISO usually for export)
+            "JMZ": { make: "Mazda", strategy: "iso" }, "JHM": { make: "Honda", strategy: "iso" },
+            "JT1": { make: "Toyota", strategy: "iso" }, "JTD": { make: "Toyota", strategy: "iso" },
+            "JF1": { make: "Subaru", strategy: "iso" }, "JK1": { make: "Subaru", strategy: "iso" },
+            "KMH": { make: "Hyundai", strategy: "iso" }, "KNA": { make: "Kia", strategy: "iso" },
+            "KM8": { make: "Hyundai (SUV/MPV)", strategy: "iso" },
+            "MAL": { make: "Hyundai (India)", strategy: "iso" },
+            "5NP": { make: "Hyundai (USA)", strategy: "iso" },
+            "5NM": { make: "Hyundai (USA/SUV)", strategy: "iso" },
+            "NLH": { make: "Hyundai (Turkey)", strategy: "iso" },
+            "U5Y": { make: "Kia (Slovakia) / Hyundai (ix35)", strategy: "iso" },
+
+            // US/AMERICAS
+            "1FA": { make: "Ford USA", strategy: "iso" }, "WF0": { make: "Ford Europe", strategy: "iso" },
+            "1G1": { make: "Chevrolet", strategy: "iso" }, "1J4": { make: "Jeep", strategy: "iso" },
+            "5UX": { make: "BMW (USA)", strategy: "iso" },
+            "TMA": { make: "Hyundai (Czech)", strategy: "iso" }
+        };
+
+        const wmiRegions = [
+            { code: "SA-SM", name: "Wielka Brytania" },
+            { code: "SN-ST", name: "Niemcy" },
+            { code: "SU-SZ", name: "Polska" },
+            { code: "VA-VE", name: "Austria" },
+            { code: "VF-VR", name: "Francja" },
+            { code: "VS-VW", name: "Hiszpania" },
+            { code: "WA-W0", name: "Niemcy" },
+            { code: "XA-XE", name: "Bułgaria" },
+            { code: "XL-XR", name: "Holandia" },
+            { code: "YA-YE", name: "Belgia" },
+            { code: "YS-YW", name: "Szwecja" },
+            { code: "ZA-ZR", name: "Włochy" },
+            { code: "1A-10", name: "USA" },
+            { code: "4A-40", name: "USA" },
+            { code: "5A-50", name: "USA" },
+            { code: "J0-J9", name: "Japonia" },
+            { code: "KL-KR", name: "Korea Południowa" },
+            { code: "L0-L9", name: "Chiny" },
+            { code: "AA-AH", name: "RPA" },
+            { code: "6A-6W", name: "Australia" }
+        ];
+
+        // VAG Model Database (Position 7-8)
+        const vagModelDB = {
+            "Volkswagen": {
+                "11": "VW 1200 (Typ 111) / Tipo 1",
+                "12": "up! (Typ 6A1, 6A5)",
+                "13": "Scirocco (Typ 137, 138)",
+                "14": "Caddy I (Typ 147, 148)",
+                "15": "Golf I Cabrio / Jetta I / Golf II / Bora",
+                "16": "Golf II / Jetta II / Jetta / New Beetle",
+                "17": "Golf I Cabrio / Golf II / Jetta II / Caddy / Rabbit / Lavida",
+                "18": "Iltis / Lavida",
+                "19": "Golf II / Jetta II",
+                "1B": "Tipo 1 / Volkswagen Kaffer",
+                "1C": "New Beetle (1998-2010)",
+                "1E": "Golf III Cabrio",
+                "1F": "EOS",
+                "1G": "Golf II / Jetta II",
+                "1H": "Golf III / Vento / Golf III Variant",
+                "1J": "Golf IV / Bora / Golf IV Variant / Golf IV Cabrio",
+                "1K": "Golf V / Golf Plus / Golf V Variant",
+                "1L": "XL-1",
+                "1T": "Touran (2003-2016)",
+                "1V": "Golf Cabrio",
+                "1W": "Golf / Jetta / Vento",
+                "1Y": "New Beetle Convertible",
+                "21": "LT",
+                "24": "Transporter (onboard)",
+                "25": "Transporter / Multivan / California T3",
+                "28": "LT",
+                "2A": "Transporter Syncro",
+                "2C": "Caddy III (2010-2015)",
+                "2D": "LT (1996-2006)",
+                "2E": "Crafter",
+                "2F": "Crafter (2006+)",
+                "2H": "Amarok",
+                "2K": "Caddy II (2004-2010)",
+                "2V": "L80",
+                "31": "Passat B3",
+                "32": "Passat B2 / B1",
+                "33": "Passat B1",
+                "35": "Passat CC (2008-2013)",
+                "36": "Passat B7 (2010-2015)",
+                "3A": "Passat B4",
+                "3B": "Passat B5",
+                "3C": "Passat B6 / B7 / B8",
+                "3D": "Phaeton",
+                "3G": "Passat B8",
+                "3H": "Arteon",
+                "50": "Corrado",
+                "53": "Scirocco",
+                "5C": "New Beetle II / Cabrio (2012+)",
+                "5K": "Golf VI",
+                "5M": "Golf Plus (2009-2014)",
+                "5N": "Tiguan (2007-2016)",
+                "5T": "Touran II",
+                "5U": "Gol",
+                "5Z": "Fox / Suran / Spacebox",
+                "60": "Ameo / Polo (sedan India)",
+                "61": "Polo Sedan",
+                "6C": "Polo V (2015+)",
+                "6E": "Lupo 3L TDI",
+                "6K": "Polo III Classic / Variant",
+                "6N": "Polo III",
+                "6R": "Polo V (2009-2014)",
+                "6S": "Polo Vivo (Classic)",
+                "6V": "Polo Classic / Variant",
+                "6X": "Lupo",
+                "70": "Transporter / Caravelle / Multivan T4 (1991-1996)",
+                "7A": "Taro",
+                "7D": "Transporter / Caravelle / Multivan T4 (1996-2003)",
+                "7E": "Transporter / Multivan / Caravelle / California T5 (2010-2015)",
+                "7H": "Transporter / Multivan / Caravelle / California T5 (2003-2009)",
+                "7L": "Touareg (2002-2010)",
+                "7M": "Sharan I",
+                "7N": "Sharan II",
+                "7P": "Touareg II",
+                "80": "Polo (1990-1994)",
+                "82": "Polo Coupe",
+                "86": "Polo I / II",
+                "87": "Polo Classic / Coupe",
+                "9C": "New Beetle Europa",
+                "9K": "Caddy",
+                "9M": "Jetta",
+                "9N": "Polo IV",
+                "9U": "Caddy",
+                "A1": "T-Roc",
+                "A7": "Polo (sedan India)",
+                "AA": "up!",
+                "AD": "Tiguan II",
+                "AM": "Golf Sportsvan",
+                "AU": "Golf VII",
+                "BR": "Gran Santana",
+                "C1": "T-Cross",
+                "CA": "Atlas / Terramont",
+                "CD": "Golf VIII",
+                "SA": "Caddy IV",
+                "SE": "Caddy IV",
+                "SG": "Transporter / Multivan / Caravelle / California T6",
+                "SV": "Transporter / Multivan / Caravelle / California T6.1",
+                "SY": "Crafter / E-Crafter covered body",
+                "SZ": "Crafter / E-Crafter chassis",
+                "UY": "MAN TGE 35 box body",
+                "UZ": "MAN TGE 35 chassis"
+            },
+            "Audi": {
+                "2G": "A4 Allroad",
+                "4A": "A6 C4",
+                "4B": "A6 C5 / S6",
+                "4F": "A6 C6 / S6 / RS6 / A6 Allroad",
+                "4G": "A6 C7 / S6 / RS6 / A7 / S7 / RS7",
+                "8C": "A4 B5",
+                "8D": "A4 B5",
+                "8E": "A4 B6 / B7 / S4 / RS4",
+                "8H": "TT Mk2",
+                "8J": "TT Mk2",
+                "8K": "A4 B8 / A5 / S4 / S5 / RS4 / RS5 / Q5",
+                "8N": "TT Mk1",
+                "8P": "A3 8P",
+                "8R": "Q5",
+                "8S": "TT Mk3",
+                "8T": "A5 / S5",
+                "8U": "Q3",
+                "8V": "A3 8V / S3 / RS3",
+                "8W": "A4 B9 / S4 / RS4 / A5 / S5 / RS5",
+                "8X": "A1",
+                "A4": "A3 Sportback e-tron",
+                "C6": "A6 C4",
+                "C7": "A6 C7 / A7",
+                "C8": "A6 C8 / A7",
+                "D2": "A8 D2",
+                "D3": "A8 D3",
+                "D4": "A8 D4",
+                "D5": "A8 D5",
+                "F1": "A8 Long",
+                "F2": "A8",
+                "F3": "A8",
+                "F5": "Q5",
+                "F7": "e-tron Sportback",
+                "FY": "Q3",
+                "GA": "e-tron / e-tron Sportback",
+                "GB": "A3 / S3",
+                "GE": "e-tron GT",
+                "GY": "Q3 Sportback",
+                "NF": "A8 D2",
+                "Q2": "Q2",
+                "Q3": "Q3",
+                "Q5": "Q5",
+                "Q7": "Q7",
+                "Q8": "Q8",
+                "SQ": "Q8 Sportback e-tron"
+            },
+            "Skoda": {
+                "1U": "Octavia Mk1",
+                "1Z": "Octavia Mk2",
+                "3U": "Superb Mk1",
+                "3T": "Superb Mk2",
+                "3V": "Superb Mk3",
+                "5E": "Octavia Mk3",
+                "5J": "Fabia Mk2",
+                "6Y": "Fabia Mk1",
+                "NA": "Rapid",
+                "NH": "Rapid Spaceback",
+                "NJ": "Octavia Mk4",
+                "NW": "Karoq",
+                "NU": "Kodiaq",
+                "PJ": "Fabia Mk3",
+                "KV": "Citigo"
+            },
+            "Seat": {
+                "1M": "Leon Mk1",
+                "1P": "Leon Mk2",
+                "5F": "Leon Mk3",
+                "6J": "Ibiza Mk4",
+                "6K": "Ibiza Mk2",
+                "6L": "Ibiza Mk3",
+                "KJ": "Ibiza Mk5",
+                "KL": "Leon Mk4",
+                "NH": "Ateca",
+                "KN": "Arona",
+                "KU": "Tarraco"
+            }
+        };
+
+        function decodeVAG(vin) {
+            const wmi = vin.substring(0, 3);
+            const code = vin.substring(6, 8); // Characters 7 and 8
+
+            // Determine Brand
+            let brandKey = null;
+
+            // Explicit WMI checks
+            if (wmi.startsWith("WAU") || wmi.startsWith("TRU") || wmi.startsWith("WUA") || wmi.startsWith("WWA")) brandKey = "Audi";
+            else if (wmi.startsWith("WVW") || wmi.startsWith("WVG") || wmi.startsWith("WV1") || wmi.startsWith("WV2") || wmi.startsWith("1VW") || wmi.startsWith("3VW")) brandKey = "Volkswagen";
+            else if (wmi.startsWith("TMB") || wmi.startsWith("TMP")) brandKey = "Skoda";
+            else if (wmi.startsWith("VSS") || wmi.startsWith("VSE")) brandKey = "Seat";
+
+            if (!brandKey) return null;
+
+            const brandData = vagModelDB[brandKey];
+            if (brandData && brandData[code]) {
+                return brandData[code];
+            }
+            return null;
+        }
+
+        function getDetailsFromLocal(vin) {
+            const wmi = vin.substring(0, 3);
+            let entry = wmiDB[wmi];
+            let make = entry ? entry.make : null;
+            let strategy = entry ? entry.strategy : "none"; // Default to NO YEAR GUESS if unknown make
+            let country = null;
+
+            // Region Lookup
+            const wmi2 = vin.substring(0, 2);
+            for (let r of wmiRegions) {
+                const parts = r.code.split('-');
+                if (parts.length === 2) {
+                    const start = parts[0];
+                    const end = parts[1];
+                    // Simple lexicographical check for 2-char logic
+                    if (wmi2 >= start && wmi2 <= end) {
+                        country = r.name;
+                        break;
+                    }
+                }
+            }
+
+            return { make, country, strategy };
+        }
+
+        // Year Code Map (ISO 3779)
+        function getYearFromCode(code) {
+            const yearCodes = {
+                'A': 1980, 'B': 1981, 'C': 1982, 'D': 1983, 'E': 1984, 'F': 1985, 'G': 1986, 'H': 1987,
+                'J': 1988, 'K': 1989, 'L': 1990, 'M': 1991, 'N': 1992, 'P': 1993, 'R': 1994, 'S': 1995,
+                'T': 1996, 'V': 1997, 'W': 1998, 'X': 1999, 'Y': 2000,
+                '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, '6': 2006, '7': 2007, '8': 2008, '9': 2009
+            };
+
+            let year = yearCodes[code];
+            if (!year) return null;
+
+            // Handle the 30-year cycle ambiguity
+            // We return the formatted string with alternatives
+            // e.g. "2000 lub 2030"
+            // Since we are currently in known time, usually cars are < 30 years old or obvious.
+            // But let's return the simplified logical one (2010+ priority for modern UI usually?)
+            // Actually, safer to show range or assume logic.
+            // Simple logic: If code is digit (1-9), it's 2001-2009 (or 2031+). 
+            // If code is letter A-Y, likely 2010-2030 or 1980-2000.
+
+            // Current year
+            const currentYear = new Date().getFullYear();
+
+            // Prepare alternatives
+            const possibleYears = [year, year + 30, year + 60].filter(y => y <= currentYear + 1); // +1 for next model year
+
+            // If we have mulitple valid years (e.g. 1990 and 2020), it's ambiguous.
+            // For the purpose of "certainty", unless we differentiate, maybe we show both.
+
+            // Prefer the one closest to recent if multiple?
+            // Let's basically return the array join.
+            return possibleYears.reverse().join(" / ");
+        }
+
+        // List of WMI prefixes known to strictly follow ISO year (10th digit)
+        // Excludes: Ford Europe (WF0), Opel (W0L mixed), French (VF1/VF3/VF7), Fiat (ZFA)
+        const isoSafeWMIs = [
+            "WAU", "TRU", "WUA", "WWA", // Audi
+            "WBA", "WBS", "5UX", "WMW", // BMW
+            "WDB", "WDD", "WDC", "WMX", // Mercedes
+            "WVW", "WVG", "WV1", "WV2", "1VW", "3VW", // VW
+            "WP0", "WP1", // Porsche
+            "TMB", "TMP", "VSS", "VSE", // Skoda / Seat (VAG)
+            "YV1", "YS3", // Volvo/Saab
+            "JMZ", "JHM", "JTD", "JT1", "JF1", "JK1", // Jap (Mazda, Honda, Toyota, Subaru)
+            "KMH", "KNA", "KNC", // Korean
+            "1F", "2F", "3F", // Ford Americas (NOT WF0)
+            "1G", "2G", "1J", "1C", "1D", "1L", "1M" // GM/Chrysler Americas
+        ];
+
+        function isIsoYearSafe(wmi) {
+            return isoSafeWMIs.some(prefix => wmi.startsWith(prefix));
+        }
+
+        // Ford Europe Date Decoder (Positions 11 & 12)
+        function decodeFordDate(vin) {
+            // Pos 11 = Year, Pos 12 = Month
+            const yearChar = vin.charAt(10);
+            const monthChar = vin.charAt(11);
+
+            // Year Mapping (Standard ISO table usually works for chars, plus Ford specific mapping)
+            // Ford Chart: L=1990... Y=2000, 1=2001...9=2009, A=2010, B=2011 in chart pattern.
+            // This generally matches standard VIN year codes EXCEPT for 2001-2009 which are digits.
+            // Re-using getYearFromCode helper carefully.
+
+            let year = null;
+            // Handle numeric 2001-2009 explicitly just in case standard helper varies
+            if (yearChar >= '1' && yearChar <= '9') {
+                year = 2000 + parseInt(yearChar);
+            } else {
+                const y = getYearFromCode(yearChar);
+                if (y) {
+                    // getYearFromCode returns "2010 / 1980". We need to pick one.
+                    // Ford cycle from chart starts 1990 (L).
+                    // If y is 1990, it's 1990. If y is 1980/2010... -> 2010 (A).
+                    // Let's parse the int.
+                    const y1 = parseInt(y.split('/')[0]); // 2010 or 1980(modernized to 2010 in helper) depending on helper logic
+
+                    // Simple override for clarity based on Chart context:
+                    // L=1990, M=1991... Y=2000.
+                    const manualMap = {
+                        'L': 1990, 'M': 1991, 'N': 1992, 'P': 1993, 'R': 1994, 'S': 1995, 'T': 1996, 'V': 1997, 'W': 1998, 'X': 1999, 'Y': 2000,
+                        'A': 2010, 'B': 2011, 'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015, 'G': 2016, 'H': 2017, 'J': 2018, 'K': 2019, 'L': 2020, 'M': 2021,
+                        'N': 2022, 'P': 2023, 'R': 2024, 'S': 2025, 'T': 2026, 'V': 2027
+                    };
+                    if (manualMap[yearChar]) year = manualMap[yearChar];
+                    else year = y1; // fallback
+                }
+            }
+
+            if (!year) return null;
+
+            // Month Mapping (4 Year Cycle)
+            // 1990 (rem 2): L Y S T J U M P B R A G
+            // 1991 (rem 3): C K D E L Y S T J U M P
+            // 1992 (rem 0): B R A G C K D E L Y S T
+            // 1993 (rem 1): J U M P B R A G C K D E
+
+            const monthPatterns = {
+                2: "LYSTJUMPBRAG",
+                3: "CKDELYSTJUMP",
+                0: "BRAGCKDELYST",
+                1: "JUMPBRAGCKDE"
+            };
+
+            const pattern = monthPatterns[year % 4];
+            const monthIndex = pattern.indexOf(monthChar);
+
+            if (monthIndex === -1) return `${year} (Miesiąc nieznany: ${monthChar})`;
+
+            const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+            return `${year} (${monthNames[monthIndex]})`;
+        }
+
+        // Volvo Decoder (User Provided Data)
+        function decodeVolvo(vin) {
+            const wmi = vin.substring(0, 3);
+            if (!['YV1', 'YV4', '4V1', 'LVY'].includes(wmi)) return null;
+
+            const seriesCode = vin.charAt(3);
+            const yearChar = vin.charAt(9);
+            const factoryChar = vin.charAt(10);
+
+            // 1. Factory Map
+            const factoryMap = {
+                '1': 'Torslanda, Sweden',
+                '2': 'Ghent, Belgium',
+                '7': 'Born, Netherlands (NedCar)',
+                'J': 'Uddevalla, Sweden',
+                'M': 'Charleston, USA',
+                'L': 'Daqing, China',
+                '0': 'Kalmar, Sweden',
+                'V': 'Torslanda, Sweden'
+            };
+
+            // 2. Model/Series Map (Position 4)
+            const seriesMap = {
+                'A': "S80 / V70 / XC70 (P3) lub S90 / V90 (SPA)",
+                'B': "V60 (SPA)",
+                'F': "S60 (P3/SPA)",
+                'K': "S60 (SPA - USA)",
+                'M': "S40 / V50 / C30 (P1) lub XC90 (SPA)",
+                'Y': "XC60 (P3)",
+                '2': "XC90 (P2)",
+                'X': "XC40 (CMA)"
+            };
+
+            // 3. Year Map (Explicit User Map)
+            const yearMap = {
+                'Y': 2000, '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005,
+                '6': 2006, '7': 2007, '8': 2008, '9': 2009, 'A': 2010, 'B': 2011,
+                'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015, 'G': 2016, 'H': 2017,
+                'J': 2018, 'K': 2019, 'L': 2020, 'M': 2021, 'N': 2022, 'P': 2023,
+                'R': 2024, 'S': 2025, 'T': 2026
+            };
+
+            let year = yearMap[yearChar] ? yearMap[yearChar] : getYearFromCode(yearChar);
+            if (year && typeof year === 'string' && year.includes('/')) year = year.split('/')[0].trim();
+
+            return {
+                isVolvo: true,
+                factory: factoryMap[factoryChar] || null,
+                model: seriesMap[seriesCode] || null,
+                year: year
+            };
+        }
+
+        // --- HYUNDAI DATA & LOGIC ---
+        const hyundaiData = [
+            // Accent
+            { code: "X3", model: "Accent", gen: "Mk1", body: "3dr, 5dr, sedan, coupe", years: [1994, 1999], pos4: "C", wmi: ["KMH"] },
+            { code: "LC", model: "Accent", gen: "Mk2", body: "3dr, 5dr, sedan", years: [1999, 2005], pos4: "C", wmi: ["KMH"] },
+            { code: "MC", model: "Accent", gen: "Mk3", body: "3dr, sedan", years: [2005, 2011], pos4: "C", wmi: ["KMH", "MAL"] },
+            { code: "RB", model: "Accent", gen: "Mk4", body: "5dr, sedan", years: [2011, 2018], pos4: "C", wmi: ["KMH", "MAL"] },
+            { code: "HC", model: "Accent", gen: "Mk5", body: "5dr, sedan, estate", years: [2017, 2025], pos4: "C", wmi: ["KMH", "MAL"] },
+
+            // Elantra
+            { code: "J1", model: "Elantra", gen: "Mk1", body: "sedan", years: [1990, 1995], pos4: "J", wmi: ["KMH"] },
+            { code: "J2/RD", model: "Elantra", gen: "Mk2", body: "sedan, estate", years: [1995, 2000], pos4: "J", wmi: ["KMH"] },
+            { code: "XD", model: "Elantra", gen: "Mk3", body: "5dr, sedan", years: [2000, 2006], pos4: "J", wmi: ["KMH"] },
+            { code: "HD", model: "Elantra", gen: "Mk4", body: "sedan", years: [2006, 2010], pos4: "D", wmi: ["KMH"] },
+            { code: "MD/UD", model: "Elantra", gen: "Mk5", body: "sedan, coupe", years: [2010, 2015], pos4: "D", wmi: ["KMH", "5NP"] },
+            { code: "AD", model: "Elantra", gen: "Mk6", body: "sedan", years: [2015, 2020], pos4: "D", wmi: ["KMH", "5NP"] },
+            { code: "CN7", model: "Elantra", gen: "Mk7", body: "sedan", years: [2020, 2026], pos4: "D", wmi: ["KMH", "5NP"] },
+
+            // i10 / i20 / i30
+            { code: "PA", model: "i10", gen: "Mk1", body: "5dr", years: [2007, 2017], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "PA", model: "i10", gen: "Mk1", body: "5dr", years: [2007, 2017], pos4: "A", wmi: ["MAL", "NLH"] }, // India/Turkey Pos 4 A
+            { code: "IA/BA", model: "i10", gen: "Mk2", body: "5dr", years: [2013, 2019], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "IA/BA", model: "i10", gen: "Mk2", body: "5dr", years: [2013, 2019], pos4: "A", wmi: ["MAL", "NLH"] }, // India/Turkey Pos 4 A
+            { code: "LA", model: "i10", gen: "Mk3", body: "5dr", years: [2019, 2026], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "AC3", model: "i10", gen: "Mk3", body: "5dr, sedan", years: [2019, 2026], pos4: "D", wmi: ["NLH", "MAL"] }, // Turkish prod often D?
+
+            { code: "PB", model: "i20", gen: "Mk1", body: "3dr, 5dr", years: [2008, 2014], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "GB", model: "i20", gen: "Mk2", body: "3dr, 5dr", years: [2014, 2020], pos4: "B", wmi: ["KMH", "MAL"] },
+            { code: "BC3", model: "i20", gen: "Mk3", body: "5dr", years: [2020, 2026], pos4: "B", wmi: ["KMH", "MAL"] },
+
+            { code: "FD", model: "i30", gen: "Mk1", body: "5dr, estate", years: [2007, 2012], pos4: "F", wmi: ["KMH", "NLH"] }, // NLH Czech
+            { code: "FD", model: "i30", gen: "Mk1", body: "5dr, estate", years: [2007, 2012], pos4: "D", wmi: ["KMH"] }, // Early Mk1 with Pos 4 D
+            { code: "GD", model: "i30", gen: "Mk2", body: "3dr, 5dr, estate", years: [2011, 2017], pos4: "F", wmi: ["KMH", "NLH"] },
+            { code: "GDH", model: "i30", gen: "Mk2", body: "3dr, 5dr, estate", years: [2011, 2017], pos4: "D", wmi: ["TMA", "NLH"] }, // Czech/Turkey prod
+            { code: "PD", model: "i30", gen: "Mk3", body: "5dr, estate, liftback", years: [2017, 2026], pos4: "F", wmi: ["KMH", "NLH"] },
+            { code: "PDE", model: "i30", gen: "Mk3", body: "5dr, estate, liftback", years: [2016, 2026], pos4: "H", wmi: ["TMA"] }, // Czech prod starts late 2016
+
+            // i40
+            { code: "VF", model: "i40", gen: "Mk1", body: "sedan, estate", years: [2011, 2019], pos4: "L", wmi: ["KMH", "TMA"] },
+
+            // Sonata
+            { code: "Y1", model: "Sonata", gen: "Mk1", body: "sedan", years: [1985, 1988], pos4: "E", wmi: ["KMH"] },
+            { code: "Y2", model: "Sonata", gen: "Mk2", body: "sedan", years: [1988, 1993], pos4: "E", wmi: ["KMH"] },
+            { code: "Y3", model: "Sonata", gen: "Mk3", body: "sedan", years: [1993, 1998], pos4: "E", wmi: ["KMH"] },
+            { code: "EF", model: "Sonata", gen: "Mk4", body: "sedan", years: [1998, 2004], pos4: "E", wmi: ["KMH"] },
+            { code: "NF", model: "Sonata", gen: "Mk5", body: "sedan", years: [2004, 2009], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "YF", model: "Sonata", gen: "Mk6", body: "sedan", years: [2009, 2014], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "LF", model: "Sonata", gen: "Mk7", body: "sedan", years: [2014, 2019], pos4: "E", wmi: ["KMH", "5NP"] },
+            { code: "DN8", model: "Sonata", gen: "Mk8", body: "sedan", years: [2019, 2026], pos4: "E", wmi: ["KMH", "5NP"] },
+
+            // Grandeur / Azera
+            { code: "XG", model: "Grandeur/Azera", gen: "Mk3", body: "sedan", years: [1999, 2005], pos4: "F", wmi: ["KMH"] },
+            { code: "TG", model: "Grandeur/Azera", gen: "Mk4", body: "sedan", years: [2006, 2011], pos4: "F", wmi: ["KMH"] },
+            { code: "HG", model: "Grandeur/Azera", gen: "Mk5", body: "sedan", years: [2012, 2017], pos4: "F", wmi: ["KMH"] },
+            { code: "IG", model: "Grandeur/Azera", gen: "Mk6", body: "sedan", years: [2018, 2026], pos4: "F", wmi: ["KMH"] },
+
+            // Coupe / Tiburon -> Pos 4 H? Or V? Review says Pos 4 H for Tiburon, V for Veloster
+            { code: "RC", model: "Tiburon/Coupe", gen: "Mk1", body: "coupe", years: [1996, 2001], pos4: "H", wmi: ["KMH"] },
+            { code: "GK", model: "Tiburon/Coupe", gen: "Mk2", body: "coupe", years: [2002, 2008], pos4: "H", wmi: ["KMH"] },
+
+            // Veloster
+            { code: "FS", model: "Veloster", gen: "Mk1", body: "3dr coupe", years: [2011, 2017], pos4: "V", wmi: ["KMH"] },
+            { code: "JS", model: "Veloster", gen: "Mk2", body: "3dr coupe", years: [2018, 2022], pos4: "V", wmi: ["KMH", "5NP"] },
+
+            // Genesis
+            { code: "BH", model: "Genesis", gen: "Mk1", body: "sedan", years: [2009, 2014], pos4: "G", wmi: ["KMH"] },
+            { code: "DH", model: "Genesis / G80", gen: "Mk2", body: "sedan", years: [2015, 2016], pos4: "G", wmi: ["KMH"] },
+
+            // SUVs
+            { code: "OS", model: "Kona", gen: "Mk1", body: "SUV", years: [2017, 2023], pos4: "H", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "OS", model: "Kona", gen: "Mk1", body: "SUV", years: [2017, 2023], pos4: "K", wmi: ["KMH"] },
+            { code: "SX2", model: "Kona", gen: "Mk2", body: "SUV", years: [2024, 2026], pos4: "H", wmi: ["KM8", "5NM"] },
+
+            { code: "JM", model: "Tucson", gen: "Mk1", body: "SUV", years: [2004, 2009], pos4: "J", wmi: ["KM8", "KMH", "NLH"] },
+            { code: "LM", model: "Tucson / ix35", gen: "Mk2", body: "SUV", years: [2009, 2015], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+            { code: "EL", model: "ix35", gen: "Mk2", body: "SUV", years: [2009, 2015], pos4: "Z", wmi: ["U5Y"] }, // Kia Slovakia Prod
+            { code: "TL", model: "Tucson", gen: "Mk3", body: "SUV", years: [2015, 2020], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+            { code: "NX4", model: "Tucson", gen: "Mk4", body: "SUV", years: [2020, 2026], pos4: "J", wmi: ["KM8", "5NM", "KMH", "NLH", "TMA"] },
+
+            { code: "SM", model: "Santa Fe", gen: "Mk1", body: "SUV", years: [2000, 2006], pos4: "S", wmi: ["KM8", "5NM"] },
+            { code: "CM", model: "Santa Fe", gen: "Mk2", body: "SUV", years: [2006, 2012], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "DM", model: "Santa Fe", gen: "Mk3", body: "SUV", years: [2012, 2018], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "TM", model: "Santa Fe", gen: "Mk4", body: "SUV", years: [2018, 2024], pos4: "S", wmi: ["KM8", "5NM", "KMH"] },
+            { code: "MX5", model: "Santa Fe", gen: "Mk5", body: "SUV", years: [2023, 2026], pos4: "S", wmi: ["KM8", "5NM"] },
+
+            { code: "LX2", model: "Palisade", gen: "Mk1", body: "SUV", years: [2018, 2026], pos4: "P", wmi: ["KM8", "5NM"] },
+            { code: "QX", model: "Venue", gen: "Mk1", body: "SUV", years: [2019, 2026], pos4: "Q", wmi: ["KM8", "MAL"] },
+            { code: "EN", model: "Veracruz", gen: "Mk1", body: "SUV", years: [2007, 2012], pos4: "N", wmi: ["KM8", "5NM"] },
+
+            // Ionic
+            { code: "AE", model: "Ioniq", gen: "Mk1", body: "liftback", years: [2016, 2022], pos4: "I", wmi: ["KMH"] },
+            { code: "NE", model: "Ioniq 5", gen: "Mk1", body: "SUV", years: [2021, 2026], pos4: "I", wmi: ["KM8", "KMH"] },
+            { code: "CE", model: "Ioniq 6", gen: "Mk1", body: "sedan", years: [2022, 2026], pos4: "I", wmi: ["KMH"] },
+
+            // Others
+            { code: "NX5", model: "Santa Cruz", gen: "Mk1", body: "pickup", years: [2021, 2026], pos4: "J", wmi: ["5NM", "KM8"] }, // Shares Pos J with Tucson!
+            { code: "FE", model: "Nexo", gen: "Mk1", body: "SUV", years: [2018, 2026], pos4: "J", wmi: ["KM8"] }, // Shares Pos J with Tucson!
+
+            { code: "TB", model: "Getz", gen: "Mk1", body: "3dr, 5dr", years: [2002, 2011], pos4: "B", wmi: ["KMH"] }, // Pos 4 B shared with i10/i20
+            { code: "FC", model: "Matrix", gen: "Mk1", body: "MPV", years: [2001, 2010], pos4: "M", wmi: ["KMH"] },
+            { code: "FC", model: "Matrix", gen: "Mk1", body: "MPV", years: [2001, 2010], pos4: "P", wmi: ["KMH"] },
+            { code: "TQ", model: "Grand Starex / H-1", gen: "Mk2", body: "van, bus", years: [2007, 2021], pos4: "W", wmi: ["KMH", "KMJ"] },
+            { code: "US4", model: "Staria", gen: "Mk1", body: "van, MPV", years: [2021, 2026], pos4: "T", wmi: ["KM8"] },
+            { code: "BC1", model: "Bayon", gen: "Mk1", body: "SUV", years: [2021, 2026], pos4: "B", wmi: ["KMH", "NLH"] }, // Shares B
+            { code: "GS", model: "Creta", gen: "Mk1", body: "SUV", years: [2015, 2020], pos4: "C", wmi: ["MAL"] }, // Shares C with Accent
+            { code: "SU2", model: "Creta", gen: "Mk2", body: "SUV", years: [2020, 2026], pos4: "C", wmi: ["MAL"] },
+            { code: "AX1", model: "Inster", gen: "Mk1", body: "SUV", years: [2024, 2026], pos4: "I", wmi: ["KMH"] }
+        ];
+
+        function decodeHyundai(vin) {
+            const wmi = vin.substring(0, 3);
+            const pos4 = vin.charAt(3);
+            const yearChar = vin.charAt(9);
+
+            // Is it Hyundai?
+            // Is it Hyundai?
+            const hyundaiWMIs = ["KMH", "KM8", "5NP", "5NM", "MAL", "NLH", "TMA", "U5Y"];
+            if (!hyundaiWMIs.some(p => wmi.startsWith(p))) return null;
+
+            // SPECIAL CHECK for U5Y (Kia Slovakia) which produces Hyundai ix35
+            // Ensure we don't aggressively claim all Kia U5Y as Hyundai if they aren't in our DB
+            // But since candidates match POS4, it should be fine.
+
+            // Estimate Year from Char to help disambiguate
+            let estimatedYear = getYearFromCode(yearChar); // "2018 / 1988"
+            let possibleYears = [];
+            if (estimatedYear) {
+                possibleYears = estimatedYear.split('/').map(y => parseInt(y.trim()));
+            }
+
+            // Filter candidates by Pos 4
+            let candidates = hyundaiData.filter(d => d.pos4 === pos4);
+
+            // Filter by WMI overlap (optional, but good for reducing candidates e.g. SUV vs Sedan factories)
+            // But usually platform code is key.
+            // SPECIAL CASE: Pos 4 'J' -> Elantra (J1/J2/XD) vs Tucson (JM/LM/TL/NX4) vs Santa Cruz (NX5) vs Nexo (FE)
+            // Elantra 'J' was older (pre-2006). Tucson 'J' is 2004+.
+            // This is where Year filtering is critical.
+
+            if (candidates.length === 0) return null;
+
+            // Match based on year overlap
+            // We want to find a candidate where ONE of the possibleYears falls within [start, end]
+            let matches = [];
+
+            for (let cand of candidates) {
+                for (let y of possibleYears) {
+                    if (y >= cand.years[0] && y <= cand.years[1]) {
+                        matches.push({ candidate: cand, exactYear: y });
+                    }
+                }
+            }
+
+            let bestMatch = null;
+            let finalModelStr = "";
+            let finalYearStr = "";
+            let finalBodyStr = "";
+
+            if (matches.length > 0) {
+                // Return ALL matches to avoid confusion
+                // Sort descending by year just for tidiness
+                matches.sort((a, b) => b.exactYear - a.exactYear);
+
+                // Unique Models
+                const uniqueModels = [...new Set(matches.map(m => m.candidate.model + " " + m.candidate.gen))];
+                finalModelStr = uniqueModels.join(" / ");
+
+                // Unique Years
+                const uniqueYears = [...new Set(matches.map(m => m.exactYear))];
+                finalYearStr = uniqueYears.join(" / ");
+
+                // Unique Bodies
+                const uniqueBodies = [...new Set(matches.map(m => m.candidate.body))];
+                finalBodyStr = uniqueBodies.join(" / ");
+
+                bestMatch = matches[0].candidate; // Keep one for reference if needed
+            } else {
+                // Fallback: If no year match (e.g. model year boundary issues), find closest
+                // Sort by year proximity to typical VIN year (assume modern prefered if ambiguous)
+                // Let's return the most "modern" one that fits the Pos4 as a fallback.
+                if (candidates.length > 0) {
+                    bestMatch = candidates[candidates.length - 1]; // Latest generation usually at bottom of list
+                    finalModelStr = bestMatch.model + " " + bestMatch.gen;
+                    finalYearStr = estimatedYear;
+                    finalBodyStr = bestMatch.body;
+                }
+            }
+
+            if (!bestMatch) return null;
+
+            return {
+                make: "Hyundai",
+                model: finalModelStr,
+                year: finalYearStr,
+                body: finalBodyStr,
+                strategy: "iso"
+            };
+        }
+
+        // --- VIN LOGIC (Hybrid) ---
+        async function decodeVIN() {
+            const vinInput = document.getElementById('vin-input').value.toUpperCase().trim();
+            const errorDiv = document.getElementById('vin-error');
+            const resultDiv = document.getElementById('vin-result');
+            const loader = document.getElementById('vin-loader');
+            const btn = document.getElementById('btn-check-vin');
+
+            // Reset UI
+            errorDiv.style.display = 'none';
+            resultDiv.classList.remove('active');
+            ['res-make', 'res-model', 'res-year', 'res-body', 'res-engine', 'res-power', 'res-plant', 'res-wmi'].forEach(id => {
+                document.getElementById(id).innerText = '-';
+            });
+
+            // Validation
+            if (vinInput.length !== 17) {
+                errorDiv.innerText = "Numer VIN musi składać się z 17 znaków.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!/^[A-HJ-NPR-Z0-9]+$/.test(vinInput)) {
+                errorDiv.innerText = "Numer VIN zawiera niedozwolone znaki (np. I, O, Q).";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Start Loading
+            loader.style.display = 'block';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            // 1. Local Lookup
+            const localData = getDetailsFromLocal(vinInput);
+            const wmi = vinInput.substring(0, 3);
+
+            // VOLVO Check
+            const volvoData = decodeVolvo(vinInput);
+
+            // HYUNDAI Check
+            const hyundaiDataResult = decodeHyundai(vinInput);
+
+            let vehicle = {};
+            let isApiSuccess = false;
+
+            try {
+                const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${vinInput}?format=json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.Results && data.Results.length > 0) {
+                        vehicle = data.Results[0];
+
+                        // FIX: VAG/ISO Year Override - Prefer newer year if ambiguous (e.g. 2018 vs 1988)
+                        if (vehicle.ModelYear && isIsoYearSafe(wmi)) {
+                            const localYearsStr = getYearFromCode(vinInput.charAt(9));
+                            if (localYearsStr) {
+                                // getYearFromCode returns e.g. "2018 / 1988"
+                                const localYears = localYearsStr.split('/').map(y => parseInt(y.trim()));
+                                const apiYear = parseInt(vehicle.ModelYear);
+
+                                // If API year is in our list, but there is a newer valid year in our list, use the newest.
+                                // Logic: 1988 (API) is valid, but 2018 (Local) is also valid and newer -> Prefer 2018.
+                                const maxYear = Math.max(...localYears);
+                                if (localYears.includes(apiYear) && maxYear > apiYear) {
+                                    console.log(`Overriding API Year ${apiYear} with calculated ${maxYear}`);
+                                    vehicle.ModelYear = maxYear.toString();
+                                }
+                            }
+                        }
+
+                        // SANITY CHECK: The NHTSA API sometimes "hallucinates" years for non-US VINs 
+                        // by forcing ISO logic (e.g. WF0 Ford Europe with 'S' at pos 10 -> 2025).
+                        // If manufacturer is NOT in our safe ISO list, AND API reports errors (Check Digit etc.),
+                        // we should DISTRUST the API's year.
+                        if (!isIsoYearSafe(wmi) && vehicle.ModelYear) {
+                            if (vehicle.ErrorCode && vehicle.ErrorCode !== "0") {
+                                console.warn("Discarding API Year guess for non-ISO VIN:", vehicle.ModelYear);
+                                vehicle.ModelYear = null;
+                            }
+                        }
+
+                        // NHTSA check: if ErrorCode is "0" or sparse data
+                        if (vehicle.Make || vehicle.ModelYear) {
+                            isApiSuccess = true;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("API Error, falling back to local:", err);
+            }
+
+            // --- COMBINING DATA ---
+
+            // 1. MAKE
+            let finalMake = vehicle.Make || localData.make || "Nieznana";
+
+            // 2. MODEL
+            let finalModel = vehicle.Model || "Nieznany";
+            if (volvoData && volvoData.model) {
+                if (finalModel !== "Nieznany" && !finalModel.includes(volvoData.model)) {
+                    finalModel = `${finalModel} (${volvoData.model})`;
+                } else {
+                    finalModel = volvoData.model;
+                }
+            }
+            const vagModel = decodeVAG(vinInput);
+            if (vagModel) finalModel = vagModel;
+
+            // 3. BODY
+            let finalBody = vehicle.BodyClass || "Nieznane";
+
+            // Apply Hyundai Overrides (Model + Body)
+            if (hyundaiDataResult) {
+                finalModel = hyundaiDataResult.model;
+                if (hyundaiDataResult.body) finalBody = hyundaiDataResult.body;
+            }
+
+            // 4. YEAR
+            // Helper to check if VAG (Volkswagen Group)
+            const vagPrefixes = ["WAU", "TRU", "WUA", "WWA", "WVW", "WVG", "WV1", "WV2", "WP0", "WP1", "TMB", "TMP", "VSS", "VSE"];
+            const isVag = vagPrefixes.some(p => wmi.startsWith(p));
+
+            let finalYear = "-";
+
+            // Priority: 1. Volvo -> 2. Hyundai -> 3. Ford -> 4. API -> 5. ISO
+            if (volvoData && volvoData.year) {
+                finalYear = volvoData.year;
+            }
+            else if (hyundaiDataResult && hyundaiDataResult.year) {
+                finalYear = hyundaiDataResult.year;
+            }
+            else if (wmi === "WF0") {
+                const fordDate = decodeFordDate(vinInput);
+                if (fordDate) finalYear = fordDate + " (Kod Forda)";
+                else if (vehicle.ModelYear) finalYear = vehicle.ModelYear;
+            }
+            else if (vehicle.ModelYear) {
+                finalYear = vehicle.ModelYear;
+                if (isVag) finalYear += " (Rok Modelowy)";
+            }
+            else if (isIsoYearSafe(wmi)) {
+                const y = getYearFromCode(vinInput.charAt(9));
+                if (y) {
+                    if (isVag) finalYear = y + " (Rok Modelowy)";
+                    else finalYear = y + " (Szacowany z VIN)";
+                }
+            }
+
+            // ENGINE
+            let finalEngine = isApiSuccess ? formatEngine(vehicle) : "Brak danych (API)";
+
+            // POWER
+            let finalPower = "-";
+            if (vehicle.EngineHP) {
+                const kw = Math.round(vehicle.EngineHP / 1.34102);
+                finalPower = `${kw} kW / ${vehicle.EngineHP} KM`;
+            }
+
+            // PLANT / COUNTRY
+            let finalPlant = "";
+            if (volvoData && volvoData.factory) {
+                finalPlant = volvoData.factory;
+            } else if (vehicle.PlantCountry) {
+                finalPlant = vehicle.PlantCity ? `${vehicle.PlantCity}, ${vehicle.PlantCountry}` : vehicle.PlantCountry;
+            } else if (localData.country) {
+                finalPlant = localData.country + " (wg WMI)";
+            } else {
+                finalPlant = getRegionFromWMI(wmi);
+            }
+
+            // --- RENDER ---
+            document.getElementById('res-make').innerText = finalMake;
+            document.getElementById('res-model').innerText = finalModel;
+            document.getElementById('res-year').innerText = finalYear;
+            document.getElementById('res-body').innerText = finalBody;
+            document.getElementById('res-engine').innerText = finalEngine;
+            document.getElementById('res-power').innerText = finalPower;
+            document.getElementById('res-plant').innerText = finalPlant;
+            document.getElementById('res-wmi').innerText = wmi;
+
+            loader.style.display = 'none';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            resultDiv.classList.add('active');
+        }
+
+        function formatEngine(v) {
+            if (!v.EngineCylinders && !v.DisplacementL) return "Brak szczegółowych danych";
+            let parts = [];
+            if (v.DisplacementL) parts.push(v.DisplacementL + "L");
+            if (v.EngineConfiguration && v.EngineCylinders) parts.push(v.EngineConfiguration + v.EngineCylinders);
+            else if (v.EngineCylinders) parts.push("V" + v.EngineCylinders);
+            return parts.join(" ") || "Brak danych";
+        }
+
+        function getRegionFromWMI(wmi) {
+            return "Inny / Nieznany";
+        }
+
+        // --- DAM LOGIC (Unchanged) ---
+        function decodeDAM() {
+            const damInput = document.getElementById('dam-input').value.trim();
+            const errorDiv = document.getElementById('dam-error');
+            const resultDiv = document.getElementById('dam-result');
+
+            errorDiv.style.display = 'none';
+            resultDiv.classList.remove('active');
+
+            if (damInput.length < 4 || isNaN(damInput)) {
+                errorDiv.innerText = "Numer DAM musi być liczbą (min 4 cyfry).";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Split into DAM and Factory Code (usually last 2 digits if length > 5, but usually DAM is 4-5 digits + 2 factory)
+            // Format: 1234588 -> 12345 (DAM), 88 (Factory)
+            // Or just 12345.
+
+            let damNumber = parseInt(damInput);
+            let factoryCode = "-";
+
+            // If input is long (e.g. 7 digits), split
+            if (damInput.length >= 6) {
+                damNumber = parseInt(damInput.substring(0, damInput.length - 2));
+                factoryCode = damInput.substring(damInput.length - 2);
+            }
+
+            // Calculation
+            // Base date: 8 Nov 1976
+            const baseDate = new Date(1976, 10, 8); // Month is 0-indexed (10 = NOV)
+
+            // Add days
+            const targetDate = new Date(baseDate.getTime() + (damNumber * 24 * 60 * 60 * 1000));
+
+            // Format Date
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = targetDate.toLocaleDateString('pl-PL', options);
+
+            document.getElementById('res-dam-date').innerText = dateStr;
+            document.getElementById('res-dam-factory').innerText = factoryCode;
+
+            resultDiv.classList.add('active');
+        }
+
+        // --- Obsługa Menu Mobilnego ---
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const navMenu = document.getElementById('nav-menu');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        if (menuBtn && navMenu) {
+            menuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                const icon = menuBtn.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    const icon = menuBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            });
+        }
+    </script>
+
+</body>
+
+</html>
