@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Read(//c/Users/User/.claude/skills/impeccable/reference/**)"
+      "Read(//c/Users/User/.claude/skills/impeccable/reference/**)",
+      "WebFetch(domain:isap.sejm.gov.pl)"
     ]
   }
 }
