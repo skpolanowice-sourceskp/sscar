@@ -1066,7 +1066,10 @@ footer a:hover { color: var(--primary-red); }
     .contact-phone { font-size: 1.1rem; }
     .opening-hours { margin-top: 1.5rem; padding-top: 1.5rem; }
     .opening-hours h4 { margin-bottom: 10px; font-size: 0.9rem; }
-    .map-container { min-height: 250px; }
+    .map-container { min-width: 0; min-height: 250px; }
+
+    .section-cta { padding: 2rem 5%; }
+    .section-cta .btn { display: block; width: 100%; max-width: 380px; margin: 0 auto; padding: 14px 20px; }
 
     .glass-panel { padding: 1.5rem; }
     .review-card { padding: 1.5rem 1rem; }
@@ -1084,6 +1087,8 @@ footer a:hover { color: var(--primary-red); }
 
 @media (max-width: 480px) {
     .nav-cards-grid { grid-template-columns: 1fr; }
+    .page-hero h1 { font-size: 1.5rem; letter-spacing: 1px; }
+    .page-hero h1::after { width: 80px; }
 }
 
 /* =============================================
