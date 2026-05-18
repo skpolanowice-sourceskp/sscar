@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /guide.html
 
-Sitemap: https://skpolanowice-sourceskp.github.io/sscar/sitemap.xml
+Sitemap: https://www.sscar.pl/sitemap.xml
