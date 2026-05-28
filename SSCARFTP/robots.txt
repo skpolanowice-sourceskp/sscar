@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /guide.html
-
-Sitemap: https://www.sscar.pl/sitemap.xml

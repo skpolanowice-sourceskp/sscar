@@ -67,535 +67,401 @@
     </script>
 
     <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,900;1,700;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --primary-red: #e31e24;
-            --dark-bg: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #f0f0f0;
-            --text-muted: #aaaaaa;
+        /* ===== dekoder.html — narzędzia diagnosty ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1px;
+            max-width: 1100px;
+            margin: 0 auto;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--border-subtle);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            scroll-behavior: smooth;
-        }
-
-        body {
-            line-height: 1.6;
-            color: var(--text-main);
-            background-color: var(--dark-bg);
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            position: relative;
-            overflow-x: hidden;
+        .tool-panel {
+            background: var(--surface-1);
+            padding: 2.5rem 2.25rem;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            transition: background-color 0.25s;
         }
 
-        /* Decoration */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: radial-gradient(circle at 10% 20%, rgba(227, 30, 36, 0.05), transparent 40%);
-            z-index: -1;
-            pointer-events: none;
-        }
+        .tool-panel:hover { background: var(--surface-2); }
 
-        /* Header logic consistent with index.html */
-        header {
-            background: rgba(18, 18, 18, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 0 5%;
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            height: 100px;
-            border-bottom: 2px solid var(--primary-red);
-            position: relative;
-            z-index: 1000;
-        }
-
-        .logo-link {
-            position: absolute;
-            left: 5%;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1001;
-        }
-
-        .logo-img {
-            max-height: 130px;
-            width: auto;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.1));
-            transition: transform 0.3s;
-            display: block;
-        }
-
-        .logo-img:hover {
-            transform: scale(1.05);
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-        }
-
-        nav ul li {
-            margin-left: 30px;
-        }
-
-        nav ul li a {
-            color: var(--text-main);
-            text-decoration: none;
+        .tool-eyebrow {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.75rem;
             font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            transition: color 0.3s, text-shadow 0.3s;
-            position: relative;
-            letter-spacing: 1px;
-        }
-
-        nav ul li a:hover {
+            letter-spacing: 0.18em;
             color: var(--primary-red);
-            text-shadow: 0 0 10px rgba(227, 30, 36, 0.6);
-        }
-
-        nav ul li a::after {
-            content: '';
-            display: block;
-            width: 0;
-            height: 2px;
-            background: var(--primary-red);
-            transition: width .3s ease;
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            box-shadow: 0 0 8px var(--primary-red);
-        }
-
-        nav ul li a:hover::after {
-            width: 100%;
-        }
-
-        nav ul li a:hover::after {
-            width: 100%;
-        }
-
-        /* Hamburger Menu Icon */
-        .menu-toggle {
-            display: none;
-            font-size: 1.8rem;
-            color: var(--text-main);
-            cursor: pointer;
-            z-index: 1002;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 4rem 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: var(--white);
             text-transform: uppercase;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .tool-eyebrow .tool-num {
+            font-style: italic;
             font-weight: 900;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-size: 0.85rem;
         }
 
-        h1 span {
-            color: var(--primary-red);
-        }
-
-        /* Decoder Section styling */
-        .decoder-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .glass-panel {
-            background: rgba(30, 30, 30, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: border-color 0.3s;
-        }
-
-        .glass-panel:hover {
-            border-color: rgba(227, 30, 36, 0.3);
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            color: var(--text-main);
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary-red);
-            padding-left: 1rem;
+        .tool-panel h2.tool-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 900;
             text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-main);
+            text-align: left;
+            margin: 0 0 0.85rem;
+            line-height: 1.1;
+        }
+
+        .tool-panel h2.tool-title::after { display: none; }
+
+        .tool-desc {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin-bottom: 1.75rem;
         }
 
         .input-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        label {
+        .input-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            transition: all 0.3s;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
 
-        input:focus {
+        .tool-panel input[type="text"],
+        .tool-panel input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: oklch(11% 0.006 30);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .tool-panel input::placeholder { color: oklch(45% 0.005 30); letter-spacing: 0.04em; }
+
+        .tool-panel input:focus {
             outline: none;
             border-color: var(--primary-red);
-            box-shadow: 0 0 10px rgba(227, 30, 36, 0.2);
+            background: oklch(13% 0.008 25);
         }
 
         .btn-decode {
+            margin-top: 1rem;
             width: 100%;
-            padding: 14px;
+            padding: 14px 20px;
             background: var(--primary-red);
-            color: white;
-            border: none;
-            border-radius: 6px;
+            color: oklch(97% 0.004 30);
+            border: 1px solid var(--primary-red);
+            border-radius: 4px;
+            font-family: 'Barlow Condensed', sans-serif;
             font-weight: 800;
+            font-size: 0.95rem;
             text-transform: uppercase;
+            letter-spacing: 0.12em;
             cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
+            transition: background-color 0.2s, transform 0.2s;
         }
 
         .btn-decode:hover {
-            background: #c0151b;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(227, 30, 36, 0.3);
+            background: oklch(42% 0.21 25.8);
+            transform: translateY(-1px);
         }
 
-        /* Result styling needed for API response */
-        .result-box {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
+        .btn-decode:active { transform: translateY(0); }
+
+        .tool-loader {
+            text-align: center;
+            color: var(--primary-red);
+            margin-top: 1.25rem;
+        }
+
+        .error-msg {
+            color: oklch(70% 0.18 25);
+            margin-top: 0.9rem;
+            font-size: 0.88rem;
             display: none;
-            /* Hidden by default */
+        }
+
+        .result-box {
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-subtle);
+            display: none;
         }
 
         .result-box.active {
             display: block;
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .result-box-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
 
         .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.8rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: baseline;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
-        .result-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
+        .result-item:last-child { border-bottom: none; }
 
         .result-label {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .result-value {
-            font-weight: bold;
-            color: #fff;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            text-align: right;
+            letter-spacing: 0.02em;
         }
 
-        .error-msg {
-            color: #ff4d4d;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Footer consistent with index.html */
-        footer {
-            background: #0a0a0a;
-            color: #555;
-            text-align: center;
-            padding: 3rem 2rem;
-            font-size: 0.9rem;
-            border-top: 3px solid var(--primary-red);
-            margin-top: 50px;
-        }
-
-        footer a {
-            color: #777;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        footer a:hover {
+        .result-value.accent {
             color: var(--primary-red);
+            font-style: italic;
+            font-weight: 900;
+            font-size: 1.2rem;
         }
 
-        /* Mobile specific adjustments */
+        .tool-disclaimer {
+            margin-top: 1.5rem;
+            font-size: 0.78rem;
+            color: oklch(55% 0.005 30);
+            line-height: 1.55;
+            border-top: 1px dashed var(--border-subtle);
+            padding-top: 1rem;
+        }
+
+        .tool-supported {
+            display: inline-block;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--primary-red);
+            margin-right: 0.4rem;
+        }
+
         @media (max-width: 768px) {
-
-            /* Header Mobile */
-            header {
-                height: 80px;
-                padding: 0 20px;
-                justify-content: space-between;
-            }
-
-            .logo-link {
-                position: static;
-                transform: none;
-            }
-
-            .logo-img {
-                max-height: 50px;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            nav {
-                position: absolute;
-                top: 80px;
-                left: 0;
-                width: 100%;
-                background: rgba(10, 10, 10, 0.98);
-                backdrop-filter: blur(15px);
-                border-bottom: 2px solid var(--primary-red);
-                transform: translateY(-150%);
-                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                z-index: 999;
-                padding: 20px 0;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            }
-
-            nav.active {
-                transform: translateY(0);
-            }
-
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-                margin: 0;
-            }
-
-            nav ul li {
-                margin: 15px 0;
-                width: 100%;
-                text-align: center;
-            }
-
-            nav ul li a {
-                font-size: 1.2rem;
-                display: block;
-                padding: 10px;
-            }
-
-            main {
-                padding: 2rem 5%;
-            }
-
-            h1 {
-                font-size: 1.8rem;
-                margin-bottom: 2rem;
-            }
-
-            .glass-panel {
-                padding: 1.5rem;
-            }
-
-            .decoder-grid {
-                gap: 1.5rem;
-            }
-
-            input[type="text"],
-            input[type="number"] {
-                padding: 10px;
-                font-size: 1rem;
-            }
+            .tool-grid { grid-template-columns: 1fr; max-width: 100%; }
+            .tool-panel { padding: 2rem 1.5rem; }
+            .tool-panel h2.tool-title { font-size: 1.4rem; }
+            .result-value { font-size: 0.95rem; }
+            .result-value.accent { font-size: 1.05rem; }
         }
     </style>
 </head>
 
 <body>
+<div class="mouse-glow"></div>
 
-    <header>
-        <a href="index.html" class="logo-link">
-            <img src="Logo-SSCAR.png" alt="SSCAR" class="logo-img">
-        </a>
+<header>
+    <a href="index.html" class="logo-link"><img src="Logo-SSCAR.png" alt="SSCAR Logo" class="logo-img"></a>
+    <div class="menu-toggle" id="mobile-menu-btn"><span></span><span></span><span></span></div>
+    <nav id="nav-menu">
+        <ul>
+            <li><a href="o-nas.html" class="nav-link">O nas</a></li>
+            <li><a href="oferta.html" class="nav-link">Oferta</a></li>
+            <li><a href="cennik.html" class="nav-link">Cennik</a></li>
+            <li><a href="dekoder.html" class="nav-link active">Dekoder VIN</a></li>
+            <li><a href="klima.html" class="nav-link">Baza Klimatyzacji</a></li>
+            <li><a href="index.html#kontakt" class="nav-link">Kontakt</a></li>
+        </ul>
+    </nav>
+</header>
 
-        <!-- Przycisk Hamburger -->
-        <div class="menu-toggle" id="mobile-menu-btn">
-            <i class="fas fa-bars"></i>
-        </div>
+<nav class="breadcrumb">
+    <a href="index.html">Strona główna</a>
+    <span>›</span>
+    Dekoder VIN / DAM
+</nav>
 
-        <nav id="nav-menu">
-            <ul>
-                <li><a href="o-nas.html" class="nav-link">O nas</a></li>
-                <li><a href="oferta.html" class="nav-link">Oferta</a></li>
-                <li><a href="cennik.html" class="nav-link">Cennik</a></li>
-                <li><a href="dekoder.html" class="nav-link">Dekoder VIN</a></li>
-                <li><a href="klima.html" class="nav-link" style="color:#ffffff">Baza Klimatyzacji</a></li>
-                <li><a href="index.html#kontakt" class="nav-link">Kontakt</a></li>
-            </ul>
-        </nav>
-    </header>
+<div class="service-page-hero animate-on-scroll">
+    <i class="fas fa-barcode hero-icon-large"></i>
+    <h1>Dekoder VIN / DAM</h1>
+    <p class="hero-tagline">Bezpłatne narzędzia diagnosty. Odczytaj markę, model, rok produkcji i dokładną datę montażu pojazdu z numerów wybitych na nadwoziu.</p>
+</div>
 
-    <main>
-        <h1>Systemy <span>SSCAR</span></h1>
+<!-- Tools -->
+<section class="animate-on-scroll" style="padding-top:3rem;">
+    <div class="tool-grid">
 
-        <div class="decoder-grid">
-            <!-- VIN DECODER -->
-            <div class="glass-panel">
-                <h2><i class="fas fa-car"></i> Dekoder VIN</h2>
-                <div class="input-group">
-                    <label for="vin-input">Wprowadź numer VIN (17 znaków):</label>
-                    <input type="text" id="vin-input" maxlength="17" placeholder="np. WBA...">
+        <!-- VIN DECODER -->
+        <article class="tool-panel">
+            <div class="tool-eyebrow"><span class="tool-num">01</span> Numer identyfikacyjny pojazdu</div>
+            <h2 class="tool-title">Dekoder VIN</h2>
+            <p class="tool-desc">17 znaków na słupku drzwi kierowcy, podszybiu lub w dowodzie rejestracyjnym. Zawiera kraj produkcji, markę, rok i często model.</p>
+
+            <div class="input-group">
+                <label for="vin-input">Numer VIN — 17 znaków</label>
+                <input type="text" id="vin-input" maxlength="17" placeholder="WBA...">
+            </div>
+            <button class="btn-decode" id="btn-check-vin" onclick="decodeVIN()">Sprawdź VIN</button>
+
+            <div id="vin-loader" class="tool-loader" style="display:none;"><i class="fas fa-spinner fa-spin fa-lg"></i></div>
+            <div id="vin-error" class="error-msg"></div>
+
+            <div id="vin-result" class="result-box">
+                <div class="result-box-label">Wynik dekodowania</div>
+                <div class="result-item">
+                    <span class="result-label">Marka</span>
+                    <span class="result-value" id="res-make">—</span>
                 </div>
-                <button class="btn-decode" id="btn-check-vin" onclick="decodeVIN()">Sprawdź VIN</button>
-                <div id="vin-loader" class="loader"
-                    style="display: none; text-align: center; margin-top: 20px; color: var(--primary-red);"><i
-                        class="fas fa-spinner fa-spin fa-2x"></i></div>
-                <div id="vin-error" class="error-msg"></div>
-
-                <div id="vin-result" class="result-box">
-                    <div class="result-item">
-                        <span class="result-label">Marka:</span>
-                        <span class="result-value" id="res-make">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Model:</span>
-                        <span class="result-value" id="res-model">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Rok produkcji:</span>
-                        <span class="result-value" id="res-year"
-                            style="color: var(--primary-red); font-size: 1.1em;">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Nadwozie:</span>
-                        <span class="result-value" id="res-body">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Silnik:</span>
-                        <span class="result-value" id="res-engine">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Moc (kW/KM):</span>
-                        <span class="result-value" id="res-power">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Miejsce produkcji:</span>
-                        <span class="result-value" id="res-plant">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">WMI:</span>
-                        <span class="result-value" id="res-wmi">-</span>
-                    </div>
+                <div class="result-item">
+                    <span class="result-label">Model</span>
+                    <span class="result-value" id="res-model">—</span>
                 </div>
-                <p style="margin-top: 15px; font-size: 0.75rem; color: #666; text-align: center;">
-                    Dane są odczytywane i łączone z różnych źródeł, aby otrzymać jak najlepszy wynik, jednak nadal mogą
-                    być błędne.
-                </p>
+                <div class="result-item">
+                    <span class="result-label">Rok produkcji</span>
+                    <span class="result-value accent" id="res-year">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Nadwozie</span>
+                    <span class="result-value" id="res-body">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Silnik</span>
+                    <span class="result-value" id="res-engine">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Moc (kW / KM)</span>
+                    <span class="result-value" id="res-power">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Miejsce produkcji</span>
+                    <span class="result-value" id="res-plant">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Kod WMI</span>
+                    <span class="result-value" id="res-wmi">—</span>
+                </div>
             </div>
 
-            <!-- DAM DECODER -->
-            <div class="glass-panel">
-                <h2><i class="fas fa-calendar-check"></i> Dekoder DAM / ORGA</h2>
-                <p style="margin-bottom: 20px; font-size: 0.9rem; color: #ccc; line-height: 1.5;">
-                    Kod DAM (lub ORGA) pozwala określić dokładny dzień produkcji.
-                    <br><br>
-                    <strong>Obsługiwane marki:</strong> Peugeot, Citroën, DS, Opel (modele 2017+), a także Fiat/Toyota
-                    (modele dostawcze z grupy Stellantis).
-                    <br><br>
-                    <i class="fas fa-info-circle"></i> Kod znajdziesz na naklejce na słupku drzwi kierowcy (zwykle 5-7
-                    cyfr, np. <em>12456</em>).
-                </p>
-                <div class="input-group">
-                    <label for="dam-input">Wprowadź kod DAM / ORGA:</label>
-                    <input type="text" id="dam-input" maxlength="7" placeholder="np. 12000">
-                </div>
-                <button class="btn-decode" onclick="decodeDAM()">Sprawdź Datę</button>
-                <div id="dam-error" class="error-msg"></div>
+            <p class="tool-disclaimer">Dane łączymy z kilku otwartych źródeł. Wynik traktuj jako wstępną identyfikację, nie jako oficjalny dokument pojazdu.</p>
+        </article>
 
-                <div id="dam-result" class="result-box">
-                    <div class="result-item">
-                        <span class="result-label">Data produkcji:</span>
-                        <span class="result-value" id="res-dam-date"
-                            style="color: var(--primary-red); font-size: 1.2rem;">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Kod fabryki:</span>
-                        <span class="result-value" id="res-dam-factory">-</span>
-                    </div>
+        <!-- DAM DECODER -->
+        <article class="tool-panel">
+            <div class="tool-eyebrow"><span class="tool-num">02</span> Data montażu pojazdu</div>
+            <h2 class="tool-title">Dekoder DAM / ORGA</h2>
+            <p class="tool-desc">Kod DAM (ORGA) wskazuje dokładny dzień montażu samochodu. Znajdziesz go na naklejce na słupku drzwi kierowcy — zwykle 5–7 cyfr, np. <strong style="color:var(--text-main);">12456</strong>.</p>
+
+            <p style="margin:-0.5rem 0 1.5rem; font-size:0.85rem; color:var(--text-muted); line-height:1.55;">
+                <span class="tool-supported">Marki obsługiwane:</span>
+                Peugeot, Citroën, DS, Opel (2017+), Fiat / Toyota dostawcze z grupy Stellantis.
+            </p>
+
+            <div class="input-group">
+                <label for="dam-input">Kod DAM / ORGA</label>
+                <input type="text" id="dam-input" maxlength="7" placeholder="12000">
+            </div>
+            <button class="btn-decode" onclick="decodeDAM()">Sprawdź datę</button>
+
+            <div id="dam-error" class="error-msg"></div>
+
+            <div id="dam-result" class="result-box">
+                <div class="result-box-label">Wynik dekodowania</div>
+                <div class="result-item">
+                    <span class="result-label">Data produkcji</span>
+                    <span class="result-value accent" id="res-dam-date">—</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Kod fabryki</span>
+                    <span class="result-value" id="res-dam-factory">—</span>
                 </div>
             </div>
-        </div>
-    </main>
+        </article>
 
-    <footer>
-        <p>Potrzebujesz taką profesjonalną stronę spersonalizowaną pod twoje potrzeby? <br>
-            Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
-            Lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> - Michał Jarosiński
-        </p>
-    </footer>
+    </div>
+</section>
+
+<!-- Where to find -->
+<section class="animate-on-scroll" style="background:oklch(15% 0.005 30 / 0.5);">
+    <h2>Gdzie szukać numerów</h2>
+    <p class="section-subtitle">Każdy producent umieszcza VIN w kilku miejscach — dla pewności porównuj minimum dwa.</p>
+    <div class="feature-grid">
+        <div class="feature-item">
+            <i class="fas fa-id-card"></i>
+            <h4>Dowód rejestracyjny</h4>
+            <p>Pole „E" — pełny 17-znakowy numer VIN. Najszybsze źródło, ale warto zweryfikować z numerem na nadwoziu, czy się zgadza.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-door-open"></i>
+            <h4>Słupek drzwi kierowcy</h4>
+            <p>Naklejka z numerem VIN, kodami DAM/ORGA, kolorem fabrycznym i wagą dopuszczalną. Tu znajdziesz oba kody do naszych dekoderów.</p>
+        </div>
+        <div class="feature-item">
+            <i class="fas fa-cogs"></i>
+            <h4>Komora silnika lub podłoga bagażnika</h4>
+            <p>Numer wybity bezpośrednio w blasze — referencyjny dla rzeczoznawców. Pozycja zależy od marki, w razie wątpliwości pytaj diagnostę.</p>
+        </div>
+    </div>
+</section>
+
+<div class="cta-section">
+    <h3>Numer to dopiero początek</h3>
+    <p>Dekoder powie Ci, co kupujesz. My powiemy, w jakim stanie. Umów inspekcję techniczną lub pełne sprawdzenie pojazdu przed zakupem.</p>
+    <div class="btn-group" style="animation:none; justify-content:center;">
+        <a href="tel:+48796995620" class="btn"><i class="fas fa-phone"></i>&nbsp; Zadzwoń: 796 995 620</a>
+        <a href="sprawdzenie-przed-zakupem.html" class="btn btn-outline"><i class="fas fa-search"></i>&nbsp; Sprawdzenie przed zakupem</a>
+    </div>
+</div>
+
+<footer>
+    <p>Potrzebujesz takiej strony dla swojej firmy?<br>
+        Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
+        lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> &ndash; Michał Jarosiński
+    </p>
+</footer>
+
+<script src="nav.js"></script>
+<script>initPage();</script>
 
     <script>
         // --- EXTENDED WMI DATABASE (European & Major Global) ---
@@ -1519,36 +1385,6 @@
             document.getElementById('res-dam-factory').innerText = factoryCode;
 
             resultDiv.classList.add('active');
-        }
-
-        // --- Obsługa Menu Mobilnego ---
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const navMenu = document.getElementById('nav-menu');
-        const navLinks = document.querySelectorAll('.nav-link');
-
-        if (menuBtn && navMenu) {
-            menuBtn.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-                const icon = menuBtn.querySelector('i');
-                if (navMenu.classList.contains('active')) {
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-times');
-                } else {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    navMenu.classList.remove('active');
-                    const icon = menuBtn.querySelector('i');
-                    if (icon) {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-bars');
-                    }
-                });
-            });
         }
     </script>
 
