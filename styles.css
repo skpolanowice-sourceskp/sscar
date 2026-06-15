@@ -1621,3 +1621,610 @@ footer a:hover { color: var(--primary-red); }
     .process-step { min-width: 100%; max-width: 100%; flex-direction: row; text-align: left; gap: 1rem; padding-bottom: 1rem; }
     .step-number { margin: 0; flex-shrink: 0; width: 50px; height: 50px; font-size: 1.3rem; }
 }
+
+/* =============================================
+   RESERVATION MODULE (rezerwacja.html)
+   ============================================= */
+
+.rez-section { padding-top: 2rem; }
+
+.rez-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* ---- Step blocks ---- */
+.rez-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.rez-step {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    transition: border-color 0.25s, opacity 0.25s;
+}
+
+.rez-step.is-active { border-color: var(--border-accent); }
+
+.rez-step.is-locked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.rez-step-head {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.4rem 1.6rem;
+}
+
+.rez-step-num {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: oklch(20% 0.01 25);
+    border: 1px solid var(--border-accent);
+    color: var(--primary-red);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s, color 0.25s;
+}
+
+.rez-step.is-done .rez-step-num {
+    background: var(--primary-red);
+    color: #fff;
+    border-color: var(--primary-red);
+    font-style: normal;
+}
+
+.rez-step-titles { min-width: 0; }
+
+.rez-step-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.15rem;
+    color: var(--text-main);
+    line-height: 1.15;
+}
+
+.rez-step-recap {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rez-step.is-done .rez-step-recap { color: oklch(80% 0.04 145); }
+
+.rez-edit {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.rez-edit:hover { color: var(--primary-red); border-color: var(--border-accent); }
+
+/* collapsible body */
+.rez-step-body-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.rez-step.is-active .rez-step-body-wrap { grid-template-rows: 1fr; }
+
+.rez-step-body-inner { overflow: hidden; }
+
+.rez-step-body {
+    padding: 0 1.6rem 1.7rem;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: -1px;
+    padding-top: 1.5rem;
+}
+
+/* ---- Field labels inside steps ---- */
+.rez-sublabel {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin: 1.6rem 0 0.9rem;
+}
+.rez-sublabel:first-child { margin-top: 0; }
+
+/* ---- Service tiles ---- */
+.rez-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+}
+
+.rez-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 1.1rem 1.2rem;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    font-family: inherit;
+}
+
+.rez-tile i {
+    font-size: 1.5rem;
+    color: var(--primary-red);
+    width: 1.8rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.rez-tile-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1.05rem;
+    line-height: 1.1;
+}
+
+.rez-tile:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+
+.rez-tile[aria-checked="true"] {
+    border-color: var(--primary-red);
+    background: oklch(18% 0.03 25);
+}
+
+/* ---- Subtype chips ---- */
+.rez-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+}
+
+.rez-chip {
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.rez-chip-name { font-weight: 700; font-size: 0.95rem; }
+
+.rez-chip-meta {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.rez-chip:hover { border-color: var(--border-accent); }
+
+.rez-chip[aria-checked="true"] {
+    border-color: var(--primary-red);
+    background: oklch(18% 0.03 25);
+}
+
+.rez-chip[aria-checked="true"] .rez-chip-meta { color: oklch(72% 0.06 25); }
+
+/* ---- Day strip ---- */
+.rez-days {
+    display: flex;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.8rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-accent) transparent;
+}
+
+.rez-days::-webkit-scrollbar { height: 6px; }
+.rez-days::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px; }
+
+.rez-day {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    width: 64px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 0.7rem 0.4rem;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: border-color 0.2s, background 0.2s;
+    font-family: inherit;
+}
+
+.rez-day-dow {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.rez-day-num {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+
+.rez-day-mon {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+}
+
+.rez-day:hover:not(:disabled) { border-color: var(--border-accent); }
+
+.rez-day[aria-pressed="true"] {
+    border-color: var(--primary-red);
+    background: var(--primary-red);
+}
+.rez-day[aria-pressed="true"] .rez-day-dow,
+.rez-day[aria-pressed="true"] .rez-day-mon { color: oklch(92% 0.02 25); }
+
+.rez-day:disabled { opacity: 0.32; cursor: not-allowed; }
+
+/* ---- Time slots ---- */
+.rez-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+    gap: 0.6rem;
+}
+
+.rez-slot {
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 0.7rem 0.4rem;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-main);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.rez-slot:hover:not(:disabled) { border-color: var(--border-accent); }
+
+.rez-slot[aria-pressed="true"] {
+    border-color: var(--primary-red);
+    background: var(--primary-red);
+    color: #fff;
+}
+
+.rez-slot:disabled {
+    opacity: 0.28;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* skeleton + empty + helper text */
+.rez-slot-skeleton {
+    height: 42px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--surface-2) 25%, oklch(24% 0.005 30) 37%, var(--surface-2) 63%);
+    background-size: 400% 100%;
+    animation: rezShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes rezShimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+.rez-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.rez-empty {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--text-muted);
+}
+.rez-empty i { font-size: 1.6rem; color: var(--primary-red); margin-bottom: 0.6rem; display: block; }
+.rez-link {
+    background: none;
+    border: none;
+    color: var(--primary-red);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+/* ---- Form ---- */
+.rez-form { display: grid; gap: 1.1rem; }
+
+.rez-field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.rez-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.rez-field label .req { color: var(--primary-red); }
+
+.rez-field input,
+.rez-field textarea {
+    background: oklch(13% 0.005 30);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    color: var(--text-main);
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.rez-field input::placeholder,
+.rez-field textarea::placeholder { color: oklch(45% 0.005 30); }
+
+.rez-field input:focus,
+.rez-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.18);
+}
+
+.rez-field.invalid input,
+.rez-field.invalid textarea { border-color: var(--primary-red); }
+
+.rez-error {
+    font-size: 0.78rem;
+    color: oklch(70% 0.16 25);
+    min-height: 0;
+}
+
+.rez-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+
+.rez-consent {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+.rez-consent input { margin-top: 0.2rem; width: 18px; height: 18px; accent-color: var(--primary-red); flex-shrink: 0; }
+.rez-consent a { color: var(--primary-red); }
+
+/* focus-visible across module */
+.rez-tile:focus-visible,
+.rez-chip:focus-visible,
+.rez-day:focus-visible,
+.rez-slot:focus-visible,
+.rez-edit:focus-visible,
+.rez-link:focus-visible,
+.rez-summary-cta:focus-visible {
+    outline: 2px solid var(--primary-red);
+    outline-offset: 2px;
+}
+
+/* ---- Summary panel ---- */
+.rez-summary {
+    position: sticky;
+    top: 120px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 1.6rem;
+}
+
+.rez-summary-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rez-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    font-size: 0.92rem;
+}
+.rez-summary-row dt { color: var(--text-muted); }
+.rez-summary-row dd { color: var(--text-main); font-weight: 700; text-align: right; }
+.rez-summary-row dd.empty { color: oklch(40% 0.005 30); font-weight: 400; font-style: italic; }
+
+.rez-summary-total {
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 0.6rem;
+    padding-top: 1rem;
+}
+.rez-summary-total dd { color: var(--primary-red); font-size: 1.15rem; }
+
+.rez-summary-cta {
+    width: 100%;
+    margin-top: 1.3rem;
+    background: var(--primary-red);
+    color: #fff;
+    border: 2px solid var(--primary-red);
+    border-radius: 4px;
+    padding: 0.95rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+}
+.rez-summary-cta:hover:not(:disabled) {
+    background: #c0151b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(227, 30, 36, 0.4);
+}
+.rez-summary-cta:disabled {
+    background: oklch(22% 0.02 25);
+    border-color: var(--border-subtle);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+.rez-summary-cta .fa-spinner { margin-right: 0.4rem; }
+
+.rez-summary-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.9rem;
+    line-height: 1.5;
+}
+.rez-summary-note a { color: var(--primary-red); text-decoration: none; font-weight: 700; }
+
+/* ---- Alert (errors) ---- */
+.rez-alert {
+    background: oklch(18% 0.04 25);
+    border: 1px solid oklch(40% 0.1 25);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    color: oklch(85% 0.04 25);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+}
+.rez-alert i { color: var(--primary-red); margin-top: 0.15rem; }
+
+/* ---- Success state ---- */
+.rez-success {
+    max-width: 640px;
+    margin: 0 auto;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+}
+
+.rez-success-check {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: oklch(55% 0.13 145 / 0.15);
+    border: 2px solid oklch(60% 0.15 145);
+    color: oklch(75% 0.16 145);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.1rem;
+    margin: 0 auto 1.5rem;
+    animation: rezPop 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes rezPop {
+    from { transform: scale(0.6); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.rez-success h2 { margin-bottom: 0.8rem; }
+.rez-success h2::after { display: none; }
+.rez-success p { color: var(--text-muted); max-width: 48ch; margin: 0 auto 1.5rem; line-height: 1.7; }
+
+.rez-recap {
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.5rem auto;
+    max-width: 420px;
+}
+.rez-recap .rez-summary-row:first-child { padding-top: 0; }
+
+.rez-ref {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--primary-red);
+}
+
+.rez-sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+}
+
+/* ---- Reservation responsive ---- */
+@media (max-width: 900px) {
+    .rez-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+    .rez-summary { position: static; top: auto; }
+}
+
+@media (max-width: 560px) {
+    .rez-tiles { grid-template-columns: 1fr; }
+    .rez-row-2 { grid-template-columns: 1fr; }
+    .rez-step-head { padding: 1.1rem 1.1rem; gap: 0.8rem; grid-template-columns: 2rem 1fr auto; }
+    .rez-step-body { padding: 1.3rem 1.1rem 1.4rem; }
+    .rez-step-title { font-size: 1rem; letter-spacing: 1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rez-step-body-wrap { transition: none; }
+    .rez-slot-skeleton { animation: none; }
+    .rez-success-check { animation: none; }
+    .rez-tile, .rez-day, .rez-slot, .rez-summary-cta { transition: none; }
+}

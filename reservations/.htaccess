@@ -1,0 +1,27 @@
+# SSCAR – rezerwacje: zezwalaj tylko na publiczne endpointy.
+# Pliki pomocnicze i konfiguracja nie mogą być pobierane bezpośrednio.
+
+<FilesMatch "\.(php)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(availability|book)\.php$">
+    Require all granted
+</FilesMatch>
+
+# Blokuj dostęp do konfiguracji, danych i kluczy, gdyby trafiły tu omyłkowo.
+<FilesMatch "\.(json|sql|md|sample\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Zapasowo dla starszego Apache (2.2):
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(php)$">
+        Order deny,allow
+        Deny from all
+    </FilesMatch>
+    <FilesMatch "^(availability|book)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</IfModule>

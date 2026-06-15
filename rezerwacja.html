@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezerwacja online – SSCAR SKP Wrocław</title>
+    <meta name="description" content="Zarezerwuj termin badania technicznego lub serwisu klimatyzacji online w SSCAR Wrocław. Wybierz usługę, dzień i wolną godzinę – bez dzwonienia, bez kolejki.">
+    <link rel="canonical" href="https://www.sscar.pl/rezerwacja.html">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.sscar.pl/rezerwacja.html">
+    <meta property="og:title" content="Rezerwacja online – SSCAR SKP Wrocław">
+    <meta property="og:description" content="Zarezerwuj termin badania technicznego lub serwisu klimatyzacji online. Wybierz wolny slot w grafiku stacji SSCAR przy ul. Polanowickiej 82 we Wrocławiu.">
+    <meta property="og:image" content="https://www.sscar.pl/Logo-SSCAR.png">
+    <meta property="og:image:alt" content="SSCAR – Stacja Kontroli Pojazdów Wrocław, ul. Polanowicka 82">
+    <meta property="og:locale" content="pl_PL">
+    <meta property="og:site_name" content="SSCAR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rezerwacja online – SSCAR SKP Wrocław">
+    <meta name="twitter:description" content="Zarezerwuj termin badania technicznego lub serwisu klimatyzacji online w SSCAR Wrocław.">
+    <meta name="twitter:image" content="https://www.sscar.pl/Logo-SSCAR.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://www.sscar.pl/"},
+            {"@type": "ListItem", "position": 2, "name": "Rezerwacja online", "item": "https://www.sscar.pl/rezerwacja.html"}
+          ]
+        },
+        {
+          "@type": "WebPage",
+          "name": "Rezerwacja online – SSCAR SKP Wrocław",
+          "url": "https://www.sscar.pl/rezerwacja.html",
+          "description": "Rezerwacja terminu badania technicznego lub serwisu klimatyzacji online w SSCAR Wrocław.",
+          "provider": {
+            "@type": "AutoRepair",
+            "name": "SSCAR - Stacja Kontroli Pojazdów",
+            "url": "https://www.sscar.pl/",
+            "telephone": "+48796995620",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "ul. Polanowicka 82",
+              "addressLocality": "Wrocław",
+              "postalCode": "51-180",
+              "addressCountry": "PL"
+            }
+          }
+        }
+      ]
+    }
+    </script>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,900;1,700;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=20260615">
+</head>
+<body>
+<div class="mouse-glow"></div>
+
+<header>
+    <a href="index.html" class="logo-link"><img src="Logo-SSCAR.png" alt="SSCAR Logo" class="logo-img"></a>
+    <div class="menu-toggle" id="mobile-menu-btn"><span></span><span></span><span></span></div>
+    <nav id="nav-menu">
+        <ul>
+            <li><a href="o-nas.html" class="nav-link">O nas</a></li>
+            <li><a href="oferta.html" class="nav-link">Oferta</a></li>
+            <li><a href="cennik.html" class="nav-link">Cennik</a></li>
+            <li><a href="rezerwacja.html" class="nav-link active">Rezerwacja</a></li>
+            <li><a href="dekoder.html" class="nav-link">Dekoder VIN</a></li>
+            <li><a href="index.html#kontakt" class="nav-link">Kontakt</a></li>
+        </ul>
+    </nav>
+</header>
+
+<nav class="breadcrumb">
+    <a href="index.html">Strona główna</a>
+    <span>›</span>
+    Rezerwacja online
+</nav>
+
+<div class="service-page-hero animate-on-scroll">
+    <i class="fas fa-calendar-check hero-icon-large"></i>
+    <h1>Rezerwacja online</h1>
+    <p class="hero-tagline">Wybierz usługę, dzień i wolną godzinę. Termin trafia prosto do grafiku stacji, a Ty masz to z głowy bez dzwonienia i bez kolejki.</p>
+</div>
+
+<section class="rez-section animate-on-scroll">
+
+    <!-- Success state (hidden until booking confirmed) -->
+    <div id="rez-success" class="rez-success" hidden>
+        <div class="rez-success-check"><i class="fas fa-check"></i></div>
+        <h2>Termin zarezerwowany</h2>
+        <p>Dziękujemy. Wpisaliśmy Twój termin do grafiku stacji. Jeśli coś się zmieni, zadzwonimy. Prosimy o przybycie kilka minut wcześniej z dowodem rejestracyjnym pojazdu.</p>
+        <dl class="rez-recap" id="rez-recap"></dl>
+        <p style="font-size:0.85rem;">Numer zgłoszenia: <span class="rez-ref" id="rez-ref-num">—</span></p>
+        <a href="index.html" class="btn" style="margin-top:0.5rem;"><i class="fas fa-home"></i>&nbsp; Wróć na stronę główną</a>
+    </div>
+
+    <!-- Booking widget -->
+    <div id="rez-widget" class="rez-layout">
+        <div class="rez-main">
+            <div class="rez-steps">
+
+                <!-- Step 1: service -->
+                <div class="rez-step is-active" id="rez-step-1" data-step="1">
+                    <div class="rez-step-head">
+                        <span class="rez-step-num">1</span>
+                        <span class="rez-step-titles">
+                            <span class="rez-step-title">Usługa</span>
+                            <span class="rez-step-recap" id="rez-recap-1">Wybierz, co chcesz zrobić</span>
+                        </span>
+                        <button type="button" class="rez-edit" data-edit="1" hidden>Zmień</button>
+                    </div>
+                    <div class="rez-step-body-wrap">
+                        <div class="rez-step-body-inner">
+                            <div class="rez-step-body">
+                                <span class="rez-sublabel">Rodzaj usługi</span>
+                                <div class="rez-tiles" id="rez-services" role="radiogroup" aria-label="Rodzaj usługi"></div>
+
+                                <div id="rez-subtypes-wrap" hidden>
+                                    <span class="rez-sublabel" id="rez-subtypes-label">Szczegóły</span>
+                                    <div class="rez-chips" id="rez-subtypes" role="radiogroup" aria-label="Szczegóły usługi"></div>
+                                </div>
+
+                                <p class="rez-hint" style="margin-top:1.1rem;">Inne usługi (np. geometria, sprawdzenie zawieszenia, sprawdzenie komputerem) umawiamy telefonicznie: <a href="tel:+48796995620" style="color:var(--primary-red); font-weight:700;">796 995 620</a>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: date + time -->
+                <div class="rez-step is-locked" id="rez-step-2" data-step="2">
+                    <div class="rez-step-head">
+                        <span class="rez-step-num">2</span>
+                        <span class="rez-step-titles">
+                            <span class="rez-step-title">Termin</span>
+                            <span class="rez-step-recap" id="rez-recap-2">Dzień i godzina</span>
+                        </span>
+                        <button type="button" class="rez-edit" data-edit="2" hidden>Zmień</button>
+                    </div>
+                    <div class="rez-step-body-wrap">
+                        <div class="rez-step-body-inner">
+                            <div class="rez-step-body">
+                                <span class="rez-sublabel">Wybierz dzień</span>
+                                <div class="rez-days" id="rez-days" role="group" aria-label="Wybór dnia"></div>
+
+                                <span class="rez-sublabel">Wolne godziny</span>
+                                <div id="rez-slots-area" aria-live="polite">
+                                    <p class="rez-hint">Najpierw wybierz dzień, aby zobaczyć wolne godziny.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: details -->
+                <div class="rez-step is-locked" id="rez-step-3" data-step="3">
+                    <div class="rez-step-head">
+                        <span class="rez-step-num">3</span>
+                        <span class="rez-step-titles">
+                            <span class="rez-step-title">Twoje dane</span>
+                            <span class="rez-step-recap" id="rez-recap-3">Kontakt i pojazd</span>
+                        </span>
+                        <button type="button" class="rez-edit" data-edit="3" hidden>Zmień</button>
+                    </div>
+                    <div class="rez-step-body-wrap">
+                        <div class="rez-step-body-inner">
+                            <div class="rez-step-body">
+                                <form class="rez-form" id="rez-form" novalidate>
+                                    <div class="rez-field" id="rez-f-name">
+                                        <label for="rez-name">Imię i nazwisko <span class="req">*</span></label>
+                                        <input type="text" id="rez-name" name="name" autocomplete="name" placeholder="np. Jan Kowalski" aria-describedby="rez-e-name">
+                                        <span class="rez-error" id="rez-e-name"></span>
+                                    </div>
+                                    <div class="rez-row-2">
+                                        <div class="rez-field" id="rez-f-phone">
+                                            <label for="rez-phone">Telefon <span class="req">*</span></label>
+                                            <input type="tel" id="rez-phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="np. 600 000 000" aria-describedby="rez-e-phone">
+                                            <span class="rez-error" id="rez-e-phone"></span>
+                                        </div>
+                                        <div class="rez-field" id="rez-f-plate">
+                                            <label for="rez-plate">Nr rejestracyjny <span class="req">*</span></label>
+                                            <input type="text" id="rez-plate" name="plate" placeholder="np. DW 12345" autocapitalize="characters" aria-describedby="rez-e-plate">
+                                            <span class="rez-error" id="rez-e-plate"></span>
+                                        </div>
+                                    </div>
+                                    <div class="rez-field" id="rez-f-vehicle">
+                                        <label for="rez-vehicle">Marka i model <span class="req">*</span></label>
+                                        <input type="text" id="rez-vehicle" name="vehicle" autocomplete="off" placeholder="np. Volkswagen Golf" aria-describedby="rez-e-vehicle">
+                                        <span class="rez-error" id="rez-e-vehicle"></span>
+                                    </div>
+                                    <div class="rez-field" id="rez-f-email">
+                                        <label for="rez-email">E-mail <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">(opcjonalnie, do potwierdzenia)</span></label>
+                                        <input type="email" id="rez-email" name="email" autocomplete="email" placeholder="np. jan@example.com" aria-describedby="rez-e-email">
+                                        <span class="rez-error" id="rez-e-email"></span>
+                                    </div>
+                                    <div class="rez-field">
+                                        <label for="rez-notes">Uwagi <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">(opcjonalnie)</span></label>
+                                        <textarea id="rez-notes" name="notes" rows="2" placeholder="np. instalacja LPG, auto dostawcze, prośba o fakturę"></textarea>
+                                    </div>
+                                    <label class="rez-consent" id="rez-f-consent">
+                                        <input type="checkbox" id="rez-consent" name="consent">
+                                        <span>Wyrażam zgodę na przetwarzanie moich danych w celu obsługi rezerwacji. <span class="req">*</span></span>
+                                    </label>
+                                    <span class="rez-error" id="rez-e-consent"></span>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <noscript>
+                <div class="rez-alert" style="margin-top:1.5rem;">
+                    <i class="fas fa-circle-info"></i>
+                    <span>Rezerwacja online wymaga włączonego JavaScriptu. Zadzwoń, a chętnie umówimy termin: <a href="tel:+48796995620" style="color:var(--primary-red); font-weight:700;">796 995 620</a>.</span>
+                </div>
+            </noscript>
+        </div>
+
+        <!-- Summary panel -->
+        <aside class="rez-summary" aria-label="Podsumowanie rezerwacji">
+            <div class="rez-summary-title">Twoja rezerwacja</div>
+            <dl>
+                <div class="rez-summary-row"><dt>Usługa</dt><dd class="empty" id="sum-service">—</dd></div>
+                <div class="rez-summary-row"><dt>Szczegóły</dt><dd class="empty" id="sum-subtype">—</dd></div>
+                <div class="rez-summary-row"><dt>Dzień</dt><dd class="empty" id="sum-date">—</dd></div>
+                <div class="rez-summary-row"><dt>Godzina</dt><dd class="empty" id="sum-time">—</dd></div>
+                <div class="rez-summary-row rez-summary-total"><dt>Czas trwania</dt><dd class="empty" id="sum-duration">—</dd></div>
+            </dl>
+            <button type="button" class="rez-summary-cta" id="rez-submit" disabled>Zarezerwuj termin</button>
+            <div id="rez-form-error" aria-live="assertive"></div>
+            <p class="rez-summary-note">Wolisz przez telefon? Zadzwoń: <a href="tel:+48796995620">796 995 620</a></p>
+        </aside>
+    </div>
+
+</section>
+
+<footer>
+    <p>Potrzebujesz takiej strony dla swojej firmy?<br>
+        Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
+        lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> &ndash; Michał Jarosiński
+    </p>
+</footer>
+
+<script src="nav.js"></script>
+<script src="rezerwacja.js?v=20260615e"></script>
+<script>initPage();</script>
+</body>
+</html>
