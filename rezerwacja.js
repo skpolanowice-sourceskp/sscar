@@ -51,8 +51,9 @@
                 { key: 'osobowy',     label: 'Osobowy',           meta: 'do 3.5t',                   duration: 20, price: '149 zł' },
                 { key: 'gaz',         label: 'Osobowy z LPG/CNG', meta: '+ badanie instalacji gazu', duration: 30, price: '245 zł' },
                 { key: 'taxi',        label: 'Taxi',              meta: 'osobowe + badanie taxi',    duration: 20, price: '213 zł' },
-                { key: 'motocykl',    label: 'Motocykl',          meta: '',                          duration: 20, price: '94 zł' },
-                { key: 'powypadkowe', label: 'Powypadkowe',       meta: 'łącznie z okresowym',       duration: 30, price: '292 zł' }
+                { key: 'motocykl',    label: 'Motocykl',          meta: '',                          duration: 10, price: '94 zł' },
+                { key: 'powypadkowe', label: 'Powypadkowe',       meta: 'łącznie z okresowym',       duration: 30, price: '292 zł' },
+                { key: 'pierwszarej', label: 'Pierwsza rejestracja w kraju', meta: 'pojazd do pierwszej rejestracji w PL', duration: 30, price: '240 zł' }
             ]
         },
         przedzakupem: {

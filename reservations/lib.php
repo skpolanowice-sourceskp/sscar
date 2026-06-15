@@ -42,8 +42,9 @@ function rez_services() {
                 'osobowy'     => ['label' => 'Osobowy',           'duration' => 20],
                 'gaz'         => ['label' => 'Osobowy z LPG/CNG', 'duration' => 30],
                 'taxi'        => ['label' => 'Taxi',              'duration' => 20],
-                'motocykl'    => ['label' => 'Motocykl',          'duration' => 20],
+                'motocykl'    => ['label' => 'Motocykl',          'duration' => 10],
                 'powypadkowe' => ['label' => 'Powypadkowe',       'duration' => 30],
+                'pierwszarej' => ['label' => 'Pierwsza rejestracja w kraju', 'duration' => 30],
             ],
         ],
         'przedzakupem' => [
