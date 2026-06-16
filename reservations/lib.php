@@ -95,6 +95,41 @@ function rez_slots_for_day($dateISO, $duration) {
     return $out;
 }
 
+/** Niedziela Wielkanocna danego roku (algorytm computus, bez ext/calendar). */
+function rez_easter($year) {
+    $a = $year % 19;
+    $b = intdiv($year, 100);
+    $c = $year % 100;
+    $d = intdiv($b, 4);
+    $e = $b % 4;
+    $f = intdiv($b + 8, 25);
+    $g = intdiv($b - $f + 1, 3);
+    $h = (19 * $a + $b - $d - $g + 15) % 30;
+    $i = intdiv($c, 4);
+    $k = $c % 4;
+    $l = (32 + 2 * $e + 2 * $i - $h - $k) % 7;
+    $m = intdiv($a + 11 * $h + 22 * $l, 451);
+    $month = intdiv($h + $l - 7 * $m + 114, 31);
+    $day = (($h + $l - 7 * $m + 114) % 31) + 1;
+    return new DateTime(sprintf('%04d-%02d-%02d', $year, $month, $day));
+}
+
+/** Czy data to dzień ustawowo wolny od pracy w Polsce (stacja nieczynna). */
+function rez_is_holiday($dateISO) {
+    $d = DateTime::createFromFormat('Y-m-d', $dateISO);
+    if (!$d || $d->format('Y-m-d') !== $dateISO) return false;
+    // Stałe święta (m-d). Wielkanoc i Zielone Świątki to niedziele – i tak zamknięte.
+    static $fixed = ['01-01', '01-06', '05-01', '05-03', '08-15', '11-01', '11-11', '12-25', '12-26'];
+    if (in_array($d->format('m-d'), $fixed, true)) return true;
+    // Ruchome (liczone od Wielkanocy): Poniedziałek Wielkanocny (+1), Boże Ciało (+60).
+    $easter = rez_easter((int)$d->format('Y'));
+    $movable = [
+        (clone $easter)->modify('+1 day')->format('Y-m-d'),
+        (clone $easter)->modify('+60 days')->format('Y-m-d'),
+    ];
+    return in_array($dateISO, $movable, true);
+}
+
 /** Sprawdza, czy data jest w dozwolonym oknie i dzień jest otwarty. */
 function rez_date_bookable($dateISO) {
     $d = DateTime::createFromFormat('Y-m-d', $dateISO);
@@ -105,6 +140,7 @@ function rez_date_bookable($dateISO) {
     $latest = (clone $today)->modify('+' . REZ_DAYS_AHEAD . ' day');
     if ($d < $earliest || $d > $latest) return false;
     if (!REZ_HOURS[(int)$d->format('w')]) return false;
+    if (rez_is_holiday($dateISO)) return false;
     return true;
 }
 

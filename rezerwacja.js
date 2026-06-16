@@ -119,6 +119,36 @@
 
     function minutesToHHMM(m) { return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
 
+    // Niedziela Wielkanocna danego roku (computus – ten sam wynik co w lib.php).
+    function easterDate(year) {
+        var a = year % 19;
+        var b = Math.floor(year / 100);
+        var c = year % 100;
+        var d = Math.floor(b / 4);
+        var e = b % 4;
+        var f = Math.floor((b + 8) / 25);
+        var g = Math.floor((b - f + 1) / 3);
+        var h = (19 * a + b - d - g + 15) % 30;
+        var i = Math.floor(c / 4);
+        var k = c % 4;
+        var l = (32 + 2 * e + 2 * i - h - k) % 7;
+        var m = Math.floor((a + 11 * h + 22 * l) / 451);
+        var month = Math.floor((h + l - 7 * m + 114) / 31);
+        var day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(year, month - 1, day);
+    }
+
+    // Dzień ustawowo wolny od pracy w PL (stacja nieczynna). Lustro rez_is_holiday().
+    var HOLIDAYS_FIXED = ['01-01', '01-06', '05-01', '05-03', '08-15', '11-01', '11-11', '12-25', '12-26'];
+    function isHoliday(d) {
+        var md = pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        if (HOLIDAYS_FIXED.indexOf(md) !== -1) return true;
+        var easter = easterDate(d.getFullYear());
+        var iso = toISO(d);
+        // Poniedziałek Wielkanocny (+1), Boże Ciało (+60).
+        return iso === toISO(addDays(easter, 1)) || iso === toISO(addDays(easter, 60));
+    }
+
     function dateLong(iso) {
         var d = fromISO(iso);
         return DOW_LONG[d.getDay()] + ', ' + d.getDate() + ' ' + MON_GEN[d.getMonth()];
@@ -340,7 +370,8 @@
             var d = addDays(today, i);
             var iso = toISO(d);
             var dow = d.getDay();
-            var closed = !HOURS[dow];
+            var holiday = isHoliday(d);
+            var closed = !HOURS[dow] || holiday;
             var tooSoon = d < earliest;
             var disabled = closed || tooSoon;
 
@@ -350,8 +381,8 @@
             btn.dataset.iso = iso;
             btn.disabled = disabled;
             btn.setAttribute('aria-pressed', state.date === iso ? 'true' : 'false');
-            var label = (i === 0 ? 'dziś, ' : '') + DOW_LONG[dow] + ' ' + d.getDate() + ' ' + MON_GEN[d.getMonth()]
-                + (closed ? ', nieczynne' : (tooSoon ? ', niedostępne' : ''));
+            var statusTxt = holiday ? ', święto – nieczynne' : (closed ? ', nieczynne' : (tooSoon ? ', niedostępne' : ''));
+            var label = (i === 0 ? 'dziś, ' : '') + DOW_LONG[dow] + ' ' + d.getDate() + ' ' + MON_GEN[d.getMonth()] + statusTxt;
             btn.setAttribute('aria-label', label);
             btn.innerHTML =
                 '<span class="rez-day-dow">' + (i === 0 ? 'dziś' : DOW_SHORT[dow]) + '</span>' +
@@ -419,7 +450,7 @@
         var dur = currentDuration();
         while (d < end) {
             var iso = toISO(d);
-            if (HOURS[d.getDay()] && d >= addDays(today, MIN_LEAD_DAYS)) {
+            if (HOURS[d.getDay()] && !isHoliday(d) && d >= addDays(today, MIN_LEAD_DAYS)) {
                 var all = slotsForDay(iso, dur);
                 for (var i = 0; i < all.length; i++) {
                     if (hash('stacja|' + iso + '|' + all[i]) >= 0.4) {
