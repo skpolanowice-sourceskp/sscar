@@ -72,7 +72,9 @@
             // Jeden wariant – bez wyboru czynnika (dla stacji bez różnicy).
             // Usługa z jednym wariantem pomija krok wyboru (patrz selectService).
             subtypes: [
-                { key: 'klima', label: 'Serwis klimatyzacji', meta: '', duration: 10, price: '' }
+                // duration = realny czas w grafiku (podłączenie/obsługa = 10 min, tyle blokuje slot i event).
+                // displayDuration = czas POKAZYWANY klientowi (cała obsługa klimy trwa ~50 min).
+                { key: 'klima', label: 'Serwis klimatyzacji', meta: '', duration: 10, displayDuration: 50, price: '' }
             ]
         }
     };
@@ -288,6 +290,11 @@
         return s ? s.duration : 30;
     }
 
+    // Czas POKAZYWANY klientowi (może różnić się od realnego slotu, np. klima 50 vs 10 min).
+    function displayMinutes(s) {
+        return (s && s.displayDuration) ? s.displayDuration : (s ? s.duration : 0);
+    }
+
     /* ---------- DOM skróty ---------- */
     function el(id) { return document.getElementById(id); }
 
@@ -347,7 +354,7 @@
         var items = SERVICES[state.service].subtypes.map(function (s) {
             var metaParts = [];
             if (s.meta) metaParts.push(s.meta);
-            metaParts.push(s.duration + ' min');
+            metaParts.push(displayMinutes(s) + ' min');
             metaParts.push(s.price);
             return {
                 key: s.key,
@@ -586,7 +593,7 @@
         setSummary('sum-subtype', sub ? sub.label : null);
         setSummary('sum-date', state.date ? dateLong(state.date) : null);
         setSummary('sum-time', state.slot);
-        setSummary('sum-duration', sub ? sub.duration + ' min' : null);
+        setSummary('sum-duration', sub ? displayMinutes(sub) + ' min' : null);
         // Ukryj wiersz "Szczegóły" dla usług bez wariantów (np. klima).
         var subRow = el('sum-subtype').closest('.rez-summary-row');
         if (subRow) {
