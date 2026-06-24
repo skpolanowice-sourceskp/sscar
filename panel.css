@@ -556,13 +556,28 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Uchwyt zmiany długości i stan przeciągania */
 .pnl-ev-resize {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 7px;
+    position: absolute; left: 0; right: 0; bottom: 0; height: 10px;
     cursor: ns-resize;
 }
 .pnl-ev { touch-action: none; }
 .pnl-ev.is-dragging { cursor: grabbing; filter: brightness(1.25); box-shadow: 0 8px 22px -8px rgba(0,0,0,0.85); z-index: 8; opacity: 0.95; }
-.pnl-cal-daycol { cursor: copy; }
+.pnl-cal-daycol { cursor: copy; touch-action: none; }
 .pnl-ev { cursor: grab; }
+
+/* „Duch" rysowanego terminu (przeciąganie od–do na pustej siatce) */
+.pnl-cal-ghost {
+    position: absolute; left: 2px; right: 2px;
+    z-index: 6;
+    border: 1px solid var(--pnl-red);
+    border-radius: 6px;
+    background: color-mix(in oklch, var(--pnl-red) 22%, transparent);
+    color: var(--pnl-text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 2px;
+    pointer-events: none;
+}
 
 /* =============================================================
    Klienci

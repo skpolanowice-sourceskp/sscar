@@ -7,7 +7,7 @@
 (function () {
     'use strict';
 
-    var PPM = 1.6;            // px na minutę (10 min = 16 px, godzina = 96 px)
+    var PPM = 2.6;            // px na minutę (10 min = 26 px, godzina = 156 px) – szersza podziałka, łatwiej trafić
     var GUTTER = 56;         // szerokość rynny z godzinami
     var DEFAULT_OPEN = 7;
     var DEFAULT_CLOSE = 20;
@@ -207,16 +207,8 @@
                 if (ev) openDrawer(ev);
             });
         });
-        // Klik w pusty obszar dnia → tworzenie (krok 3 wpina się przez PanelCalendarEdit)
-        Array.prototype.forEach.call(scroll.querySelectorAll('.pnl-cal-daycol'), function (col) {
-            col.addEventListener('click', function (e) {
-                if (e.target !== col) return;
-                if (!window.PanelCalendarEdit) return;
-                var rect = col.getBoundingClientRect();
-                var min = b.open * 60 + Math.round(((e.clientY - rect.top) / PPM) / 10) * 10;
-                window.PanelCalendarEdit.openCreate({ date: col.dataset.date, min: min });
-            });
-        });
+        // Tworzenie w pustym obszarze dnia (klik lub przeciągnięcie od–do) obsługuje
+        // moduł edycji w enhanceGrid – ma tam kontekst PPM i granic siatki.
 
         // Auto-scroll do godziny otwarcia (lub „teraz")
         var now = new Date();

@@ -150,8 +150,12 @@ function ev_update($in, $cfg, $tz, $calendarId) {
     $row = $stmt->fetch();
 
     $did = false;
-    $curStart = $row ? new DateTime($row['start_dt'], $tz) : null;
-    $curEnd   = $row ? new DateTime($row['end_dt'], $tz) : null;
+    // Czas bieżący liczymy LENIWIE. Gałąź przesunięcia/rozciągania (1) ustawia go
+    // wprost z żądania, więc nie odczytujemy tu start_dt z bazy – stare wpisy mogły
+    // mieć uszkodzoną wartość (np. tekst zamiast daty), co wywracało całą operację.
+    // Z bazy liczymy dopiero w gałęzi 3 i tylko gdy naprawdę potrzebne.
+    $curStart = null;
+    $curEnd   = null;
 
     // 1) Przesunięcie / zmiana długości (start + end).
     if (isset($in['start'], $in['end'])) {
@@ -183,12 +187,20 @@ function ev_update($in, $cfg, $tz, $calendarId) {
         $did = true;
     }
 
-    // 2) Tytuł blokady (wpis spoza bazy).
+    // 2) Tytuł blokady lub ręcznego wpisu Google (wpis spoza bazy).
+    //    kind=blok → dokładamy prefiks „Blokada:"; kind=inne → tytuł surowy.
     if (isset($in['title']) && !$row) {
         $title = trim((string)$in['title']);
-        if ($title === '') $title = 'Blokada';
         if (mb_strlen($title) > 120) rez_fail(422, 'Tytuł zbyt długi.');
-        try { gcal_update_event($calendarId, $id, ['summary' => 'Blokada: ' . $title]); }
+        $kind = (string)($in['kind'] ?? 'blok');
+        if ($kind === 'blok') {
+            if ($title === '') $title = 'Blokada';
+            $summary = 'Blokada: ' . $title;
+        } else {
+            if ($title === '') $title = '(bez tytułu)';
+            $summary = $title;
+        }
+        try { gcal_update_event($calendarId, $id, ['summary' => $summary]); }
         catch (Throwable $e) { rez_fail(502, 'Nie udało się zaktualizować wpisu.'); }
         $did = true;
     }
@@ -208,6 +220,17 @@ function ev_update($in, $cfg, $tz, $calendarId) {
         if (!$resolved) rez_fail(422, 'Nieprawidłowa usługa.');
         list($service, $subtype) = $resolved;
         if (mb_strlen($name) < 2) rez_fail(422, 'Podaj imię i nazwisko klienta.');
+
+        // Czas do odświeżenia wpisu w Google. Zwykle ustawiła go już gałąź 1
+        // (formularz edycji wysyła start+end); z bazy bierzemy tylko awaryjnie.
+        if (!$curStart || !$curEnd) {
+            try {
+                if (!$curStart) $curStart = new DateTime($row['start_dt'], $tz);
+                if (!$curEnd)   $curEnd   = new DateTime($row['end_dt'], $tz);
+            } catch (Throwable $e) {
+                rez_fail(409, 'Najpierw popraw termin tej rezerwacji (przeciągnij na siatce), potem zapisz dane klienta.');
+            }
+        }
 
         $pdo->prepare('UPDATE rez_bookings SET service=?,subtype=?,cust_name=?,cust_phone=?,cust_plate=?,cust_email=?,notes=? WHERE id=?')
             ->execute([$serviceKey, $subtypeKey, $name, $phone, $plate, ($email ?: null), ($notes ?: null), $row['id']]);

@@ -113,7 +113,10 @@
             var date = (seed && seed.date) || todayISO();
             var time = seed && seed.min != null ? minToHHMM(Math.round(seed.min / 10) * 10) : '08:00';
             var firstSvc = (meta.services[0] || { key: '', subtypes: [{}] });
-            var v = { date: date, time: time, dur: (firstSvc.subtypes[0] || {}).duration || 20,
+            // Czas trwania z przeciągnięcia na siatce (seed.durationMin) ma pierwszeństwo
+            // przed domyślnym czasem pierwszego wariantu usługi.
+            var seedDur = (seed && seed.durationMin) ? Math.max(5, seed.durationMin) : null;
+            var v = { date: date, time: time, dur: seedDur || (firstSvc.subtypes[0] || {}).duration || 20,
                 service: firstSvc.key, subtype: (firstSvc.subtypes[0] || {}).key, name: '', phone: '', plate: '', vehicle: '', email: '', notes: '' };
 
             var html =
@@ -130,7 +133,7 @@
                         '<label class="pnl-check"><input type="checkbox" id="ce-allday"> Cały dzień</label>' +
                         '<div class="pnl-form-row" id="ce-blok-time">' +
                             '<label class="pnl-field"><span class="pnl-label">Godzina</span><input type="time" id="ce-btime" step="600" value="' + esc(time) + '"></label>' +
-                            '<label class="pnl-field"><span class="pnl-label">Czas (min)</span><input type="number" id="ce-bdur" min="10" step="10" value="60"></label>' +
+                            '<label class="pnl-field"><span class="pnl-label">Czas (min)</span><input type="number" id="ce-bdur" min="10" step="10" value="' + (seedDur || 60) + '"></label>' +
                         '</div>' +
                     '</div>' +
                     '<p class="pnl-form-error" id="ce-error" role="alert"></p>' +
@@ -219,16 +222,21 @@
         return (s.subtypes[0] || {}).key || '';
     }
 
-    /* ---------- Edycja blokady ---------- */
-    function openBlockEdit(ev) {
+    /* ---------- Edycja blokady / wpisu Google (typ „inne") ---------- */
+    // Jeden formularz dla blokad i ręcznych wydarzeń z kalendarza – różni je tylko
+    // prefiks „Blokada:" (dokładany po stronie serwera na podstawie pola kind).
+    function openSimpleEdit(ev) {
+        var isBlok = ev.type === 'blok';
         var s = I().parseLocal(ev.start), en = I().parseLocal(ev.end);
-        var title = (ev.title || 'Blokada').replace(/^Blokada:\s*/i, '');
-        var dur = (s && en) ? (en.min - s.min) : 60;
+        var title = isBlok ? (ev.title || 'Blokada').replace(/^Blokada:\s*/i, '') : (ev.title || '');
+        var dur = (s && en && en.min > s.min) ? (en.min - s.min) : 60;
+        var heading = isBlok ? 'Edytuj blokadę' : 'Edytuj wpis';
+        var labelTitle = isBlok ? 'Opis' : 'Tytuł';
         var html =
-            '<div class="pnl-drawer-head"><span class="pnl-form-title">Edytuj blokadę</span>' +
+            '<div class="pnl-drawer-head"><span class="pnl-form-title">' + heading + '</span>' +
                 '<button type="button" class="pnl-iconbtn" data-close aria-label="Zamknij">✕</button></div>' +
             '<form class="pnl-form" id="ce-form" novalidate>' +
-                '<label class="pnl-field"><span class="pnl-label">Opis</span><input id="ce-title" value="' + esc(title) + '"></label>' +
+                '<label class="pnl-field"><span class="pnl-label">' + labelTitle + '</span><input id="ce-title" value="' + esc(title) + '"></label>' +
                 (ev.allDay ? '' :
                 '<div class="pnl-form-row">' +
                     '<label class="pnl-field"><span class="pnl-label">Data</span><input type="date" id="ce-date" value="' + esc(s ? s.date : todayISO()) + '"></label>' +
@@ -245,7 +253,7 @@
         document.getElementById('ce-form').addEventListener('submit', function (e) {
             e.preventDefault();
             var errEl = document.getElementById('ce-error'); errEl.textContent = '';
-            var payload = { id: ev.id, title: val('ce-title') };
+            var payload = { id: ev.id, kind: isBlok ? 'blok' : 'inne', title: val('ce-title') };
             if (!ev.allDay) {
                 var date = val('ce-date'), time = val('ce-time'), d = parseInt(val('ce-dur'), 10) || 60;
                 if (!date || !/^\d{2}:\d{2}$/.test(time)) { errEl.textContent = 'Podaj datę i godzinę.'; return; }
@@ -274,13 +282,15 @@
     function decorateDrawer(dr, ev, ctx) {
         var actions = dr.querySelector('#pnl-drawer-actions');
         if (!actions) return;
-        var canEdit = ev.type === 'rezerwacja' || ev.type === 'blok';
+        // Każdy wpis da się edytować bez kasowania: rezerwacja pełnym formularzem,
+        // blokady i ręczne wydarzenia Google – tytułem/terminem.
+        var canEdit = true;
         var delLabel = ev.type === 'rezerwacja' ? 'Anuluj rezerwację' : 'Usuń';
         actions.innerHTML =
             (canEdit ? '<button type="button" class="pnl-btn pnl-btn-subtle" data-edit>Edytuj</button>' : '') +
             '<button type="button" class="pnl-btn pnl-btn-danger" data-del>' + delLabel + '</button>';
         if (canEdit) actions.querySelector('[data-edit]').addEventListener('click', function () {
-            if (ev.type === 'rezerwacja') openBookingEdit(ev); else openBlockEdit(ev);
+            if (ev.type === 'rezerwacja') openBookingEdit(ev); else openSimpleEdit(ev);
         });
         actions.querySelector('[data-del]').addEventListener('click', function () {
             var msg = ev.type === 'rezerwacja'
@@ -306,6 +316,61 @@
             node.addEventListener('pointerdown', function (e) { startDrag(e, node, ev, 'move'); });
             handle.addEventListener('pointerdown', function (e) { e.stopPropagation(); startDrag(e, node, ev, 'resize'); });
         });
+        // Tworzenie terminu wprost na siatce: klik = domyślny czas, przeciągnięcie
+        // od–do = od razu zadana długość (jak w Google Calendar).
+        Array.prototype.forEach.call(scroll.querySelectorAll('.pnl-cal-daycol'), function (col) {
+            col.addEventListener('pointerdown', function (e) {
+                if (e.button !== undefined && e.button !== 0) return;
+                if (e.target !== col) return; // tylko puste miejsce, nie blok wydarzenia
+                startCreateDrag(e, col);
+            });
+        });
+    }
+
+    // Rysowanie nowego terminu przeciągnięciem na pustej kolumnie dnia.
+    function startCreateDrag(e, col) {
+        var ppm = gridCtx.ppm;
+        var openMin = gridCtx.open * 60, closeMin = gridCtx.close * 60;
+        var rect = col.getBoundingClientRect();
+        function minAt(clientY) {
+            var m = openMin + Math.round(((clientY - rect.top) / ppm) / 10) * 10;
+            return Math.max(openMin, Math.min(closeMin, m));
+        }
+        var anchor = minAt(e.clientY);
+        if (anchor >= closeMin) anchor = closeMin - 10;
+        var curEnd = anchor + 10, moved = false;
+
+        var ghost = document.createElement('div');
+        ghost.className = 'pnl-cal-ghost';
+        col.appendChild(ghost);
+
+        function paint() {
+            var a = Math.min(anchor, curEnd), b = Math.max(anchor, curEnd);
+            if (b - a < 10) b = a + 10;
+            ghost.style.top = ((a - openMin) * ppm) + 'px';
+            ghost.style.height = ((b - a) * ppm) + 'px';
+            ghost.textContent = minToHHMM(a) + '–' + minToHHMM(b);
+        }
+        paint();
+        col.setPointerCapture(e.pointerId);
+
+        function onMove(me) {
+            var m = minAt(me.clientY);
+            if (Math.abs(m - anchor) >= 10) moved = true;
+            curEnd = m;
+            paint();
+        }
+        function onUp() {
+            col.releasePointerCapture(e.pointerId);
+            col.removeEventListener('pointermove', onMove);
+            col.removeEventListener('pointerup', onUp);
+            if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+            var a = Math.min(anchor, curEnd), b = Math.max(anchor, curEnd), dur = b - a;
+            if (moved && dur >= 10) openCreate({ date: col.dataset.date, min: a, durationMin: dur });
+            else openCreate({ date: col.dataset.date, min: a });
+        }
+        col.addEventListener('pointermove', onMove);
+        col.addEventListener('pointerup', onUp);
     }
 
     function startDrag(e, node, ev, mode) {
