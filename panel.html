@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Panel · SSCAR</title>
+    <link rel="icon" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="panel.css?v=20260624">
+</head>
+<body class="pnl">
+
+    <!-- Stan startowy (do pierwszej decyzji JS) -->
+    <div id="pnl-boot" class="pnl-boot" aria-live="polite">Wczytywanie panelu…</div>
+
+    <!-- Logowanie -->
+    <section id="pnl-login" class="pnl-login" hidden>
+        <form class="pnl-login-card" id="pnl-login-form" autocomplete="off" novalidate>
+            <div class="pnl-brand">
+                <span class="pnl-brand-mark">SS<span class="pnl-brand-accent">CAR</span></span>
+                <span class="pnl-brand-tag">Panel obsługi</span>
+            </div>
+            <label class="pnl-field" for="pnl-pass">
+                <span class="pnl-label">Hasło</span>
+                <input type="password" id="pnl-pass" name="password" required
+                       autocomplete="current-password" autofocus>
+            </label>
+            <p class="pnl-form-error" id="pnl-login-error" role="alert" aria-live="assertive"></p>
+            <button type="submit" class="pnl-btn pnl-btn-primary pnl-btn-block" id="pnl-login-btn">
+                Zaloguj
+            </button>
+        </form>
+    </section>
+
+    <!-- Aplikacja -->
+    <div id="pnl-app" class="pnl-app" hidden>
+        <header class="pnl-topbar">
+            <div class="pnl-topbar-left">
+                <span class="pnl-brand-mark pnl-brand-mark--sm">SS<span class="pnl-brand-accent">CAR</span></span>
+                <nav class="pnl-tabs" role="tablist" aria-label="Sekcje panelu">
+                    <button type="button" class="pnl-tab is-active" data-view="calendar" role="tab" aria-selected="true">Kalendarz</button>
+                    <button type="button" class="pnl-tab" data-view="clients" role="tab" aria-selected="false">Klienci</button>
+                </nav>
+            </div>
+            <div class="pnl-topbar-right">
+                <button type="button" class="pnl-btn pnl-btn-ghost" id="pnl-logout">Wyloguj</button>
+            </div>
+        </header>
+
+        <main class="pnl-main" id="pnl-view" tabindex="-1">
+            <!-- Widoki montowane przez panel.js -->
+        </main>
+    </div>
+
+    <script src="panel-calendar.js?v=20260624"></script>
+    <script src="panel-calendar-edit.js?v=20260624"></script>
+    <script src="panel-clients.js?v=20260624"></script>
+    <script src="panel.js?v=20260624"></script>
+</body>
+</html>

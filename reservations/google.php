@@ -111,6 +111,56 @@ function gcal_slot_busy($startISO, $endISO, $intervals) {
     return false;
 }
 
+/** Lista wydarzeń kalendarza w zakresie [timeMin, timeMax] (RFC3339). */
+function gcal_list_events($calendarId, $timeMinISO, $timeMaxISO) {
+    $params = http_build_query([
+        'timeMin'      => $timeMinISO,
+        'timeMax'      => $timeMaxISO,
+        'singleEvents' => 'true',     // rozwiń serie cykliczne na pojedyncze wystąpienia
+        'orderBy'      => 'startTime',
+        'maxResults'   => 250,
+        'showDeleted'  => 'false',
+        'timeZone'     => rez_config()['timezone'],
+    ]);
+    $url = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode($calendarId) . '/events?' . $params;
+    list($status, $body) = gcal_http('GET', $url, gcal_token(), null, 'application/json');
+    $data = json_decode($body, true);
+    if ($status !== 200 || !isset($data['items'])) {
+        throw new RuntimeException('events.list error');
+    }
+    return $data['items'];
+}
+
+/** Aktualizuje (PATCH) wydarzenie. $patch = pola do zmiany. Zwraca dane wydarzenia. */
+function gcal_update_event($calendarId, $eventId, $patch) {
+    list($status, $body) = gcal_http(
+        'PATCH',
+        'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode($calendarId) . '/events/' . rawurlencode($eventId),
+        gcal_token(),
+        json_encode($patch),
+        'application/json'
+    );
+    $data = json_decode($body, true);
+    if ($status < 200 || $status >= 300 || empty($data['id'])) {
+        throw new RuntimeException('update event error');
+    }
+    return $data;
+}
+
+/** Usuwa wydarzenie z kalendarza. Zwraca true przy sukcesie (200/204/410). */
+function gcal_delete_event($calendarId, $eventId) {
+    list($status, ) = gcal_http(
+        'DELETE',
+        'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode($calendarId) . '/events/' . rawurlencode($eventId),
+        gcal_token(),
+        null,
+        'application/json'
+    );
+    // 410 Gone = już usunięte – traktujemy jak sukces.
+    if ($status === 200 || $status === 204 || $status === 410) return true;
+    throw new RuntimeException('delete event error (' . $status . ')');
+}
+
 /** Tworzy wydarzenie w kalendarzu. Zwraca dane wydarzenia (z 'id'). */
 function gcal_insert_event($calendarId, $event) {
     list($status, $body) = gcal_http(

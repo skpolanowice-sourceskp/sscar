@@ -103,10 +103,9 @@ Na komputerze to ~5 sekund (przeciągnięcie myszą), w telefonie ~15 sekund. Wa
 wpisuj w kalendarz **„SSCAR – Grafik"** (ten udostępniony koncie usługowemu), a nie
 w swój prywatny – tylko ten jest czytany przez stronę.
 
-> Kiedy warto dobudować własny panel admina? Dopiero gdyby przydała się lista rezerwacji
-> z numerami zgłoszeń, odwoływanie jednym kliknięciem albo blokady cykliczne. Na start
-> Kalendarz Google w zupełności wystarcza – jak poczujesz, że czegoś brakuje, dobudujemy
-> mały panel (czyta `rez_bookings`, dodaje blokady przez to samo API).
+> Ręczne blokowanie w Kalendarzu Google nadal działa, ale jest też **panel obsługi**
+> (`/panel.html`) z wygodniejszym kalendarzem (podziałka 10 min, motyw strony) i bazą
+> klientów – patrz sekcja „Panel obsługi” na końcu tego pliku.
 
 ## Zmiana reguł (godziny, czasy, usługi)
 
@@ -132,3 +131,57 @@ Zmieniając np. godziny pracy, popraw oba pliki.
 - **Złe godziny w kalendarzu** – sprawdź `timezone` (`Europe/Warsaw`) w `config.php`.
 - **Brak e-maili** – `mail()` bywa ograniczony; użyj adresu nadawcy w domenie sscar.pl,
   ewentualnie skonfiguruj SMTP w panelu vh.pl.
+
+---
+
+# Panel obsługi (`/panel.html`)
+
+Wewnętrzny panel: kalendarz (reskin Google Calendar, podziałka co 10 min, pełne
+zarządzanie terminami) oraz baza klientów (profile pod nr telefonu, notatki, blokada
+rezerwacji online dla wybranego numeru). Logowanie jednym wspólnym hasłem.
+
+## Wdrożenie panelu (jednorazowo)
+
+1. **Hasło panelu.** Wygeneruj hash (lokalnie lub na serwerze – NIE wpisuj hasła w repo):
+   ```
+   php -r "echo password_hash('TWOJE-HASLO', PASSWORD_DEFAULT), PHP_EOL;"
+   ```
+   Wynik wklej do `config.php` jako `'admin_pass_hash' => '...'` (wzór w `config.sample.php`).
+
+2. **Wgraj pliki** (FTP vh.pl, jak resztę):
+   - `panel.html`, `panel.css`, `panel.js`, `panel-calendar.js`, `panel-calendar-edit.js`, `panel-clients.js` (katalog strony),
+   - `reservations/admin/` (cały katalog z `.htaccess`),
+   - zaktualizowane `reservations/lib.php`, `reservations/google.php`, `reservations/book.php`.
+
+3. **Baza klientów – automatycznie.** Tabele (`rez_clients`, `rez_client_vehicles`, kolumna
+   `rez_bookings.client_id`) tworzą się **same** przy pierwszym wejściu w zakładkę **Klienci**,
+   a profile z dotychczasowych rezerwacji **importują się automatycznie** (jednorazowo).
+   Nic nie trzeba klikać w phpMyAdmin.
+   - *Awaryjnie* (gdyby użytkownik MySQL nie miał praw do tworzenia tabel): zaimportuj ręcznie
+     `reservations/schema_admin.sql` w phpMyAdmin, potem w panelu kliknij „Zaimportuj z rezerwacji”.
+   - Plik `reservations/admin/migrate_clients.php` można usunąć po pierwszym imporcie (opcjonalnie).
+
+4. **Sprawdź dostęp.** `/panel.html` ma prosić o hasło; bezpośrednie wejście na
+   `reservations/admin/events.php` bez logowania ma zwracać `401`, a na `auth.php` – `403`.
+   Jeśli zamiast tego pojawia się `403` na endpointach po zalogowaniu, hosting może mieć
+   nietypowy `AuthMerging` – wtedy przenieś allow-listę z `reservations/admin/.htaccess`
+   do reguł nadrzędnego `reservations/.htaccess`.
+
+## Jak działa
+
+- **Kalendarz = Google Calendar.** Panel czyta wydarzenia przez `events.list` i zapisuje
+  przez `events.insert/patch/delete`. Wpisy dodane ręcznie w Google też się pokazują.
+  Rezerwacje online trzymane są dodatkowo w `rez_bookings` (struktura danych + profile);
+  „Blokady” żyją tylko w Google.
+- **Tworzenie:** „+ Termin” lub klik w pusty obszar dnia. **Edycja/przeniesienie:** klik w
+  termin → szuflada, albo przeciągnij blok (zmiana godziny) / dolną krawędź (czas trwania).
+- **Klienci:** profil powstaje automatycznie przy każdej rezerwacji (online i z panelu),
+  kluczem jest znormalizowany telefon (ostatnie 9 cyfr). Blokada numeru = `book.php`
+  odrzuca rezerwację online z tego numeru (panel może nadal umówić ręcznie).
+
+## Bezpieczeństwo panelu
+
+- Sesja PHP w cookie `HttpOnly`+`SameSite=Lax` (`Secure` pod HTTPS); token CSRF na zapisach.
+- `reservations/admin/.htaccess` wpuszcza tylko wyznaczone endpointy; `auth.php` (include) i
+  konfiguracja są zablokowane. `panel.html` ma `noindex`.
+- Throttling logowania (10 prób / 5 min na IP).

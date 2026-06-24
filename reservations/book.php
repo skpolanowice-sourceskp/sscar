@@ -74,6 +74,12 @@ $end = (clone $start)->modify('+' . $subtype['duration'] . ' minutes');
 $startDb = $start->format('Y-m-d H:i:s');
 $endDb = $end->format('Y-m-d H:i:s');
 
+/* ---------- 1b. Blokada numeru telefonu (czarna lista) ---------- */
+$phoneNorm = rez_phone_norm($phone);
+if (rez_phone_blocked(rez_db(), $phoneNorm)) {
+    rez_fail(403, 'Rezerwacja online dla tego numeru jest niedostępna. Prosimy o kontakt telefoniczny.');
+}
+
 /* ---------- 2. Atomowa blokada NAKŁADAJĄCYCH SIĘ terminów ---------- */
 // Jeden pracownik: żadne dwie rezerwacje nie mogą się pokrywać w czasie
 // (także różne usługi startujące o różnych minutach). FOR UPDATE + indeks
@@ -143,6 +149,13 @@ try {
 
 $pdo->prepare('UPDATE rez_bookings SET google_event_id=?, ref=? WHERE id=?')
     ->execute([$event['id'], $ref, $id]);
+
+/* ---------- 4b. Profil klienta (best-effort) ---------- */
+$clientId = rez_upsert_client($pdo, $phoneNorm, $phone, $name, $email, $plate, $vehicle);
+if ($clientId) {
+    try { $pdo->prepare('UPDATE rez_bookings SET client_id=? WHERE id=?')->execute([$clientId, $id]); }
+    catch (Throwable $e) { /* kolumna client_id pojawia się po migracji – pomiń */ }
+}
 
 /* ---------- 5. Powiadomienia e-mail (best-effort) ---------- */
 rez_send_emails($cfg, $service, $subtype, compact('name', 'phone', 'plate', 'email', 'notes', 'ref') + [

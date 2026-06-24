@@ -163,6 +163,116 @@ function rez_db() {
     return $pdo;
 }
 
+/* ---------- Klienci (baza profili) ---------- */
+
+/** Normalizuje telefon do klucza profilu: same cyfry, ostatnie 9 (PL). */
+function rez_phone_norm($raw) {
+    $d = preg_replace('/\D/', '', (string)$raw);
+    if (strlen($d) > 9) $d = substr($d, -9);
+    return $d;
+}
+
+/**
+ * Zapewnia tabele bazy klientów (idempotentnie, raz na żądanie).
+ * Dzięki temu panel działa bez ręcznego importu schema_admin.sql – o ile
+ * użytkownik MySQL ma prawa DDL (na vh.pl właściciel bazy zwykle ma).
+ */
+function rez_ensure_client_schema($pdo) {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    try {
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS rez_clients (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                phone_norm VARCHAR(20) NOT NULL,
+                phone_display VARCHAR(40) NOT NULL,
+                name VARCHAR(120) DEFAULT NULL,
+                email VARCHAR(160) DEFAULT NULL,
+                notes TEXT DEFAULT NULL,
+                blocked TINYINT(1) NOT NULL DEFAULT 0,
+                blocked_reason VARCHAR(255) DEFAULT NULL,
+                blocked_at DATETIME DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uniq_phone (phone_norm)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+        );
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS rez_client_vehicles (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                client_id INT NOT NULL,
+                plate VARCHAR(20) NOT NULL,
+                vehicle VARCHAR(80) DEFAULT NULL,
+                last_seen DATETIME DEFAULT NULL,
+                UNIQUE KEY uniq_client_plate (client_id, plate),
+                KEY idx_plate (plate),
+                CONSTRAINT fk_vehicle_client FOREIGN KEY (client_id) REFERENCES rez_clients(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+        );
+        $col = $pdo->query(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rez_bookings' AND COLUMN_NAME = 'client_id'"
+        )->fetchColumn();
+        if (!$col) {
+            $pdo->exec('ALTER TABLE rez_bookings ADD COLUMN client_id INT DEFAULT NULL');
+            $pdo->exec('ALTER TABLE rez_bookings ADD KEY idx_client (client_id)');
+        }
+    } catch (Throwable $e) {
+        // brak uprawnień DDL – pozostaje ręczny import schema_admin.sql
+    }
+}
+
+/** Czy numer jest zablokowany dla rezerwacji online. Fail-open (błąd/brak tabeli = niezablokowany). */
+function rez_phone_blocked($pdo, $phoneNorm) {
+    if ($phoneNorm === '') return false;
+    try {
+        $stmt = $pdo->prepare('SELECT blocked FROM rez_clients WHERE phone_norm=?');
+        $stmt->execute([$phoneNorm]);
+        $row = $stmt->fetch();
+        return $row ? (int)$row['blocked'] === 1 : false;
+    } catch (Throwable $e) {
+        return false; // tabela jeszcze nie istnieje – nie blokuj zapisu
+    }
+}
+
+/**
+ * Tworzy/aktualizuje profil klienta i jego pojazd. Zwraca client_id albo null.
+ * Best-effort: przy braku tabel (przed migracją) zwraca null bez błędu.
+ */
+function rez_upsert_client($pdo, $phoneNorm, $phoneDisplay, $name, $email, $plate, $vehicle) {
+    if ($phoneNorm === '') return null;
+    try {
+        $pdo->prepare(
+            'INSERT INTO rez_clients (phone_norm, phone_display, name, email)
+             VALUES (?,?,?,?)
+             ON DUPLICATE KEY UPDATE
+                name = IF(name IS NULL OR LENGTH(name) = 0, VALUES(name), name),
+                email = IF((email IS NULL OR LENGTH(email) = 0) AND VALUES(email) IS NOT NULL, VALUES(email), email),
+                phone_display = VALUES(phone_display),
+                updated_at = CURRENT_TIMESTAMP'
+        )->execute([$phoneNorm, $phoneDisplay, ($name ?: null), ($email ?: null)]);
+
+        $sel = $pdo->prepare('SELECT id FROM rez_clients WHERE phone_norm=?');
+        $sel->execute([$phoneNorm]);
+        $clientId = (int)$sel->fetchColumn();
+        if (!$clientId) return null;
+
+        if ($plate !== '') {
+            $pdo->prepare(
+                'INSERT INTO rez_client_vehicles (client_id, plate, vehicle, last_seen)
+                 VALUES (?,?,?,NOW())
+                 ON DUPLICATE KEY UPDATE
+                    vehicle = IF(VALUES(vehicle) IS NOT NULL AND LENGTH(VALUES(vehicle)) > 0, VALUES(vehicle), vehicle),
+                    last_seen = NOW()'
+            )->execute([$clientId, $plate, ($vehicle ?: null)]);
+        }
+        return $clientId;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
 /* ---------- Odpowiedzi JSON ---------- */
 function rez_json($data, $code = 200) {
     http_response_code($code);

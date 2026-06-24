@@ -37,4 +37,10 @@ return [
 
     // --- Bezpieczeństwo ---
     'allowed_origin' => 'https://www.sscar.pl', // dozwolone źródło zapytań
+
+    // --- Panel admina (/panel.html) ---
+    // Hash wspólnego hasła do panelu. Wygeneruj (NIE wpisuj hasła jawnie):
+    //   php -r "echo password_hash('TWOJE-HASLO', PASSWORD_DEFAULT), PHP_EOL;"
+    // i wklej wynik poniżej. Puste = panel zablokowany.
+    'admin_pass_hash' => '',
 ];

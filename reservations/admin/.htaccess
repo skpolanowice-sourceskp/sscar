@@ -1,0 +1,33 @@
+# SSCAR – panel admina: zezwalaj tylko na wyznaczone endpointy.
+# (AuthMerging Off = domyślne w Apache 2.4 → te reguły zastępują reguły z ../.htaccess
+#  dla plików w tym katalogu.)
+
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(login|logout|session|meta|events|event|clients|client|migrate_clients)\.php$">
+    Require all granted
+</FilesMatch>
+
+# auth.php to plik dołączany (include) – nigdy bezpośrednio.
+<FilesMatch "^auth\.php$">
+    Require all denied
+</FilesMatch>
+
+# Nigdy nie wydawaj konfiguracji, danych ani kluczy.
+<FilesMatch "\.(json|sql|md|sample\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Zapasowo dla starszego Apache (2.2):
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.php$">
+        Order deny,allow
+        Deny from all
+    </FilesMatch>
+    <FilesMatch "^(login|logout|session|meta|events|event|clients|client|migrate_clients)\.php$">
+        Order allow,deny
+        Allow from all
+    </FilesMatch>
+</IfModule>
