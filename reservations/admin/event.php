@@ -27,10 +27,17 @@ $method = $_SERVER['REQUEST_METHOD'] ?? '';
 $in = json_decode((string)file_get_contents('php://input'), true);
 if (!is_array($in)) $in = [];
 
-if ($method === 'POST')        ev_create($in, $cfg, $tz, $calendarId);
-elseif ($method === 'PATCH')   ev_update($in, $cfg, $tz, $calendarId);
-elseif ($method === 'DELETE')  ev_delete($in, $cfg, $calendarId);
-else rez_fail(405, 'Metoda niedozwolona.');
+// Akcja może iść metodą HTTP (PATCH/DELETE) albo polem op (POST) – dla hostów,
+// które ograniczają metody. rez_fail wewnątrz funkcji robi exit (nie złapie go catch).
+$op = (string)($in['op'] ?? '');
+try {
+    if ($op === 'update' || $method === 'PATCH')      ev_update($in, $cfg, $tz, $calendarId);
+    elseif ($op === 'delete' || $method === 'DELETE') ev_delete($in, $cfg, $calendarId);
+    elseif ($op === 'create' || $method === 'POST')   ev_create($in, $cfg, $tz, $calendarId);
+    else rez_fail(405, 'Metoda niedozwolona.');
+} catch (Throwable $e) {
+    rez_fail(500, 'Błąd serwera: ' . $e->getMessage());
+}
 
 /* ---------- Tworzenie ---------- */
 function ev_create($in, $cfg, $tz, $calendarId) {
@@ -164,7 +171,14 @@ function ev_update($in, $cfg, $tz, $calendarId) {
                 'end'   => ['dateTime' => $endD->format(DateTime::RFC3339), 'timeZone' => $cfg['timezone']],
             ]);
         } catch (Throwable $e) { rez_fail(502, 'Nie udało się zaktualizować kalendarza.'); }
-        if ($row) $pdo->prepare('UPDATE rez_bookings SET start_dt=?, end_dt=? WHERE id=?')->execute([$startDb, $endDb, $row['id']]);
+        if ($row) {
+            try {
+                $pdo->prepare('UPDATE rez_bookings SET start_dt=?, end_dt=? WHERE id=?')->execute([$startDb, $endDb, $row['id']]);
+            } catch (PDOException $e) {
+                if ($e->getCode() === '23000') rez_fail(409, 'Termin koliduje z inną rezerwacją (ten sam początek).');
+                throw $e;
+            }
+        }
         $curStart = $startD; $curEnd = $endD;
         $did = true;
     }

@@ -40,6 +40,9 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Atrybut hidden musi wygrać z display:grid/flex na .pnl-boot/.pnl-login/.pnl-app. */
+[hidden] { display: none !important; }
+
 html, body { height: 100%; }
 
 body.pnl {
