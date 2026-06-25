@@ -173,6 +173,33 @@ function rez_phone_norm($raw) {
 }
 
 /**
+ * Wyłuskuje polski numer telefonu z DOWOLNEGO tekstu (np. z opisu wydarzenia
+ * albo rozjechanych pól rezerwacji). Akceptuje 9 cyfr pod rząd lub grupy
+ * 3-3-3 ze spacją / myślnikiem, opcjonalny prefiks +48 / 0048 / 48.
+ * Zwraca 9 cyfr (klucz phone_norm) albo '' gdy nic sensownego nie znaleziono.
+ */
+function rez_extract_phone($text) {
+    $t = ' ' . (string)$text . ' ';
+    // Token telefonopodobny: cyfra…(cyfry/spacje/-/./()/+)…cyfra, min. ~9 znaków.
+    if (preg_match_all('/\+?\d[\d\s\-\.\(\)]{7,}\d/', $t, $mm)) {
+        foreach ($mm[0] as $cand) {
+            $d = preg_replace('/\D/', '', $cand);
+            if (strlen($d) === 12 && substr($d, 0, 4) === '0048') $d = substr($d, 4);
+            if (strlen($d) === 11 && substr($d, 0, 2) === '48')   $d = substr($d, 2);
+            // Odrzuć daty/godziny i inne zbitki spoza zakresu numeru telefonu.
+            if (strlen($d) >= 9 && strlen($d) <= 11) return substr($d, -9);
+        }
+    }
+    return '';
+}
+
+/** Ładnie formatuje 9 cyfr jako „600 700 800" (do phone_display). */
+function rez_phone_format($norm) {
+    $d = preg_replace('/\D/', '', (string)$norm);
+    return (strlen($d) === 9) ? substr($d, 0, 3) . ' ' . substr($d, 3, 3) . ' ' . substr($d, 6, 3) : $d;
+}
+
+/**
  * Zapewnia tabele bazy klientów (idempotentnie, raz na żądanie).
  * Dzięki temu panel działa bez ręcznego importu schema_admin.sql – o ile
  * użytkownik MySQL ma prawa DDL (na vh.pl właściciel bazy zwykle ma).

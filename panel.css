@@ -584,15 +584,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
    ============================================================= */
 .pnl-clients { flex: 1; display: grid; grid-template-columns: minmax(280px, 360px) 1fr; min-height: 0; }
 .pnl-clients-list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--pnl-border); }
-.pnl-clients-search { padding: 14px; border-bottom: 1px solid var(--pnl-border); }
+.pnl-clients-search { padding: 14px; border-bottom: 1px solid var(--pnl-border); display: flex; gap: 8px; align-items: center; }
 .pnl-clients-search input {
-    width: 100%;
+    flex: 1; min-width: 0;
     background: var(--pnl-bg);
     border: 1px solid var(--pnl-border-strong);
     border-radius: var(--pnl-radius-sm);
     padding: 10px 13px;
     color: var(--pnl-text);
 }
+.pnl-clients-new { white-space: nowrap; padding-inline: 14px; }
 .pnl-clients-search input:focus { outline: none; border-color: var(--pnl-red); box-shadow: 0 0 0 3px var(--pnl-red-tint); }
 .pnl-clients-results { flex: 1; overflow-y: auto; }
 .pnl-clients-empty { padding: 36px 20px; text-align: center; color: var(--pnl-text-faint); display: flex; flex-direction: column; gap: 14px; align-items: center; }
@@ -638,7 +639,41 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .pnl-veh { display: flex; align-items: center; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--pnl-border); }
 .pnl-veh-plate { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.05rem; letter-spacing: 0.04em; min-width: 96px; }
-.pnl-veh-name { color: var(--pnl-text-muted); }
+.pnl-veh-name { color: var(--pnl-text-muted); flex: 1; }
+.pnl-veh-tools { display: flex; gap: 4px; margin-left: auto; }
+.pnl-iconbtn--sm { width: 30px; height: 30px; font-size: 0.95rem; }
+.pnl-veh-ein {
+    background: var(--pnl-surface-2);
+    border: 1px solid var(--pnl-border-strong);
+    border-radius: var(--pnl-radius-sm);
+    padding: 6px 9px; color: var(--pnl-text); font-size: 0.9rem; min-width: 0;
+}
+.pnl-veh-ein:focus { outline: none; border-color: var(--pnl-red); box-shadow: 0 0 0 3px var(--pnl-red-tint); }
+.pnl-veh.is-editing .pnl-veh-ein:first-child { min-width: 96px; max-width: 120px; }
+.pnl-veh.is-editing .pnl-veh-ein:nth-child(2) { flex: 1; }
+
+/* Dodawanie pojazdu */
+.pnl-veh-add { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.pnl-veh-add input {
+    flex: 1; min-width: 0;
+    background: var(--pnl-bg);
+    border: 1px solid var(--pnl-border-strong);
+    border-radius: var(--pnl-radius-sm);
+    padding: 8px 11px; color: var(--pnl-text); font-size: 0.9rem;
+}
+.pnl-veh-add input:first-child { max-width: 120px; }
+.pnl-veh-add input:focus { outline: none; border-color: var(--pnl-red); box-shadow: 0 0 0 3px var(--pnl-red-tint); }
+.pnl-veh-add .pnl-btn { white-space: nowrap; }
+
+/* Akcje w nagłówku profilu + formularze edycji/tworzenia */
+.pnl-client-headactions { display: flex; gap: 8px; flex-shrink: 0; }
+.pnl-client-edit { width: 100%; }
+.pnl-edit-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.pnl-link { background: none; border: none; padding: 0; font: inherit; color: var(--pnl-red-bright); text-decoration: underline; cursor: pointer; }
+.pnl-save-hint--err { color: var(--pnl-red-bright); }
+
+/* Strefa usuwania profilu */
+.pnl-danger-zone { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--pnl-border); }
 
 .pnl-notes {
     width: 100%;
@@ -662,6 +697,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
     .pnl-cal-title { font-size: 1.1rem; order: 5; width: 100%; margin-left: 0; }
     .pnl-clients { grid-template-columns: 1fr; }
     .pnl-clients-list { border-right: none; border-bottom: 1px solid var(--pnl-border); max-height: 45vh; }
+    .pnl-client-head { flex-wrap: wrap; }
+    .pnl-client-headactions { width: 100%; }
+    .pnl-veh-add { flex-wrap: wrap; }
+    .pnl-veh-add input:first-child { max-width: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

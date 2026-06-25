@@ -67,8 +67,14 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - `meta.php` — konfiguracja usług/wariantów (do formularzy).
 - `events.php` — **GET** lista wydarzeń z Google (znormalizowane) + meta dni; dopasowuje do `rez_bookings` po `google_event_id`.
 - `event.php` — **POST/PATCH/DELETE** tworzenie/edycja/przesuwanie/usuwanie (Google + baza).
-- `clients.php`, `client.php` — baza klientów (lista/szukaj + profil + blokada nr tel).
-- `migrate_clients.php` — jednorazowy backfill profili z `rez_bookings` (po użyciu usunąć z serwera).
+- `clients.php` — **GET** lista/szukaj klientów; **POST** ręczne dodanie klienta (`{name,phone,email?,notes?,plate?,vehicle?}`; duplikat numeru → 409 z `existingId`).
+- `client.php` — **GET** profil (`{client, vehicles[id,plate,vehicle,last_seen], history}`); **PATCH** edycja
+  (`name/email/phone/notes/blocked` + pojazdy: `vehicle_add/vehicle_edit/vehicle_del`); **DELETE** usunięcie profilu
+  (rezerwacje zostają, `client_id→NULL`; pojazdy kaskadowo). Zmiana `phone` przelicza `phone_norm` i pilnuje unikalności.
+- `migrate_clients.php` — **import/backfill profili** (POST, idempotentny, stały — to backend przycisku
+  „Zaimportuj z rezerwacji"). Skanuje **wszystkie pola tekstowe** `rez_bookings` ORAZ **wydarzenia Google**
+  (tytuł/opis/lokalizacja) pod kątem numeru telefonu (`rez_extract_phone`), pomija eventy już powiązane po
+  `google_event_id` i blokady. NIE usuwać z serwera.
 
 ### Panel admina — frontend (root)
 - `panel.html` — szkielet; ładuje 4 skrypty + `panel.css`. **Cache-busting przez `?v=YYYYMMDDx`** — bumpuj po każdej zmianie panelu.
@@ -76,7 +82,8 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - `panel.css` — self-contained, prefix `pnl-`, tokeny marki (ciemny + czerwień). NIE w `styles.css`.
 - `panel-calendar.js` — widok Kalendarz: siatka 10-min, render eventów, szuflada szczegółów. Eksportuje `window.PanelCalendarInternals`.
 - `panel-calendar-edit.js` — tworzenie/edycja/przeciąganie/rozciąganie/usuwanie. `window.PanelCalendarEdit`.
-- `panel-clients.js` — widok Klienci.
+- `panel-clients.js` — widok Klienci: lista/szukaj + **ręczne dodawanie** (`+ Nowy`), profil, **edycja danych**
+  (inline w nagłówku), **zarządzanie pojazdami** (dodaj/edytuj/usuń), notatki, blokada nr, **usuwanie profilu** (strefa na dole).
 
 ---
 
@@ -88,8 +95,9 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - **`rez_clients`** — klucz `phone_norm` (ostatnie 9 cyfr) + `display, name, email, notes, blocked, blocked_reason, blocked_at`.
 - **`rez_client_vehicles`** — `client_id, plate, vehicle` (wiele aut na klienta).
 
-Profile klienta powstają z rezerwacji **online** (`rez_bookings`). Ręczne wpisy istniejące
-tylko w Google **nie** tworzą profili.
+Profile klienta powstają **automatycznie** tylko z rezerwacji **online** (`rez_bookings` przez `book.php`).
+Dodatkowo można je tworzyć **ręcznie** („+ Nowy" w panelu) oraz **importem** (`migrate_clients.php`), który skanuje
+pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_extract_phone` w `lib.php`).
 
 ---
 
@@ -138,7 +146,10 @@ tylko w Google **nie** tworzą profili.
   `UPDATE …SET start_dt=?` SAM naprawia wiersz. Skutek uboczny: historia w profilu klienta może
   pokazywać „Invalid Date" do czasu pierwszego ruszenia eventu na siatce.
 - **Brak PHP lokalnie** — nie lintuj przez CLI; czytaj kod.
-- **`migrate_clients.php`** — narzędzie jednorazowe; po backfillu skasować z serwera.
+- **Rozjechane dane rezerwacji**: w `rez_bookings` numer telefonu bywa w innym polu niż `cust_phone`
+  (legacy / kolumny przesunięte — patrz „osobowy"). Dlatego import (`migrate_clients.php`) i `rez_extract_phone`
+  szukają numeru we **wszystkich** polach człowieka. Heurystyka telefonu: 9 cyfr / grupy 3-3-3 / prefiks +48,
+  bierze ostatnie 9 cyfr. Może dawać sporadyczne fałszywe trafienia — profile da się poprawić/usunąć w panelu.
 
 ---
 
@@ -149,6 +160,19 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-06-25 (b)** — Import klientów przebudowany. `lib.php` += `rez_extract_phone()` (szuka telefonu w dowolnym
+  tekście: 9 cyfr / 3-3-3 / +48) i `rez_phone_format()`. `migrate_clients.php` skanuje teraz **wszystkie pola
+  człowieka** w `rez_bookings` (nie tylko `cust_phone` — dane bywają rozjechane) **oraz wydarzenia Google**
+  (`gcal_list_events`, zakres −2 lata…+6 mies., do 250 szt.; pomija eventy znane po `google_event_id` i blokady).
+  Zwraca `created/from_bookings/from_events/clients_total/google_error`; front pokazuje jawny wynik importu.
+  `migrate_clients.php` to teraz **stały** endpoint (nie kasować). `?v=20260625c`.
+- **2026-06-25** — Panel/Klienci: **pełne CRUD bazy klientów**. `clients.php` dostał **POST** (ręczne dodanie,
+  duplikat numeru → 409 `existingId`). `client.php` PATCH rozszerzony o `name/email/phone` (zmiana telefonu
+  przelicza `phone_norm` + guard unikalności) i operacje na pojazdach `vehicle_add/vehicle_edit/vehicle_del`;
+  doszedł **DELETE** (kasuje profil, rezerwacje zostają z `client_id=NULL`, pojazdy kaskadowo; `GET` zwraca teraz
+  `vehicles.id`). `panel.js` `api()` dokłada `err.data` (front czyta `existingId`). `panel-clients.js` przepisany:
+  `+ Nowy`, edycja danych inline w nagłówku, zarządzanie pojazdami, usuwanie profilu (strefa na dole). Bez nowych
+  endpointów (reuse → `.htaccess` bez zmian). Wersja zasobów: `?v=20260625a`. Wdrożone FTP.
 - **2026-06-24** — Panel/kalendarz: (a) edycja **bez kasowania dla wszystkich typów** wydarzeń
   (doszedł `inne` przez `openSimpleEdit` + gałąź 2 w `event.php` z polem `kind`); (b) **wyższa siatka**
   `PPM 1.6 → 2.6`; (c) **tworzenie przeciągnięciem od–do** na pustej kolumnie (`startCreateDrag`,

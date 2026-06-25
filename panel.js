@@ -34,6 +34,7 @@
                 if (!r.ok) {
                     var err = new Error(data.error || ('HTTP ' + r.status));
                     err.status = r.status;
+                    err.data = data; // pełna treść błędu (np. existingId przy duplikacie)
                     throw err;
                 }
                 return data;
