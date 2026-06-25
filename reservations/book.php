@@ -74,6 +74,11 @@ $end = (clone $start)->modify('+' . $subtype['duration'] . ' minutes');
 $startDb = $start->format('Y-m-d H:i:s');
 $endDb = $end->format('Y-m-d H:i:s');
 
+// Wymagany odstęp start-do-startu od innej rezerwacji tej samej usługi (klimatyzacja:
+// event 10 min, ale obsługa ~50 min). $matchRe = wzorzec tytułu eventu Google.
+$spacing = (int)($subtype['spacing'] ?? 0);
+$matchRe = (string)($subtype['match'] ?? '');
+
 /* ---------- 1b. Blokada numeru telefonu (czarna lista) ---------- */
 $phoneNorm = rez_phone_norm($phone);
 if (rez_phone_blocked(rez_db(), $phoneNorm)) {
@@ -93,6 +98,12 @@ try {
         $pdo->rollBack();
         rez_fail(409, 'Ten termin koliduje z innym. Wybierz inną godzinę.');
     }
+    // Odstęp między dwiema rezerwacjami tej samej usługi w bazie (szybki, race-safe
+    // guard online↔online). Klimy ręczne/starsze spoza bazy łapie krok 3 (eventy Google).
+    if ($spacing > 0 && rez_spacing_conflict($pdo, $serviceKey, $startDb, $spacing, true)) {
+        $pdo->rollBack();
+        rez_fail(409, 'W pobliżu jest już rezerwacja tej usługi. Wybierz termin oddalony o co najmniej ' . $spacing . ' min.');
+    }
     $stmt = $pdo->prepare(
         'INSERT INTO rez_bookings
          (resource, start_dt, end_dt, service, subtype, cust_name, cust_phone, cust_plate, cust_email, notes)
@@ -111,11 +122,26 @@ try {
 $ref = 'SSC-' . $start->format('ymd') . '-' . str_pad((string)$id, 3, '0', STR_PAD_LEFT);
 
 /* ---------- 3. Ponowna kontrola wolności w Google ---------- */
+// Event tej rezerwacji jeszcze nie istnieje (tworzony w kroku 4), więc listy/freeBusy
+// nie złapią jej samej. Spacing liczymy z EVENTÓW Google (po tytule) – łapie też
+// klimy ręczne/panelowe i starsze, których nie ma w rez_bookings (uzupełnia krok 2).
 try {
     $intervals = gcal_busy_intervals($calendarId, $dateISO);
     if (gcal_slot_busy($start->format(DateTime::RFC3339), $end->format(DateTime::RFC3339), $intervals)) {
         $pdo->prepare('DELETE FROM rez_bookings WHERE id=?')->execute([$id]);
         rez_fail(409, 'Ten termin jest już zajęty. Wybierz inną godzinę.');
+    }
+    if ($spacing > 0 && $matchRe !== '') {
+        $dayMin = (new DateTime($dateISO . ' 00:00:00', $tz))->format(DateTime::RFC3339);
+        $dayMax = (new DateTime($dateISO . ' 23:59:59', $tz))->format(DateTime::RFC3339);
+        $starts = rez_match_event_starts(gcal_list_events($calendarId, $dayMin, $dayMax), $matchRe);
+        $slotTs = $start->getTimestamp();
+        foreach ($starts as $ts) {
+            if (abs($ts - $slotTs) < $spacing * 60) {
+                $pdo->prepare('DELETE FROM rez_bookings WHERE id=?')->execute([$id]);
+                rez_fail(409, 'W pobliżu jest już rezerwacja tej usługi. Wybierz termin oddalony o co najmniej ' . $spacing . ' min.');
+            }
+        }
     }
 } catch (Throwable $e) {
     $pdo->prepare('DELETE FROM rez_bookings WHERE id=?')->execute([$id]);

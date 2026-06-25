@@ -126,22 +126,55 @@
             var total   = +r.clients_total || 0;
             var bkP     = +r.processed || 0;            // przejrzane rezerwacje
             var evP     = +r.events_processed || 0;     // przejrzane wydarzenia Google
-            search('');                                  // zawsze odśwież listę realnym stanem
-            var msg;
-            if (created > 0) {
-                msg = 'Zaimportowano ' + created + (created === 1 ? ' klienta' : ' klientów') + '.\nŁącznie w bazie: ' + total + '.';
-            } else if (total > 0) {
-                msg = 'Nie znaleziono nowych klientów do dodania.\nW bazie jest już ' + total + '.';
+            if (total > 0) {
+                search('');
+                window.alert(created > 0
+                    ? ('Zaimportowano ' + created + (created === 1 ? ' klienta' : ' klientów') + '.\nŁącznie w bazie: ' + total + '.')
+                    : ('Nie znaleziono nowych klientów do dodania.\nW bazie jest już ' + total + '.'));
             } else {
-                msg = 'Nie znaleziono numerów telefonu w ' + bkP + ' rezerwacjach' +
-                      (evP ? ' ani w ' + evP + ' wydarzeniach kalendarza' : '') + '.\n\n' +
-                      'Dodaj klienta ręcznie przyciskiem „+ Nowy".';
+                // Nic nie zapisano — pokaż diagnostykę (błąd zapisu + surowe dane).
+                showImportDiagnostics(r);
             }
-            if (r.google_error) msg += '\n\n(Kalendarz Google pominięty: ' + r.google_error + ')';
-            window.alert(msg);
         }).catch(function (err) {
             btn.disabled = false; btn.textContent = 'Spróbuj ponownie';
             window.alert((err && err.message) || 'Import nie powiódł się. Uruchom schema_admin.sql w phpMyAdmin.');
+        });
+    }
+
+    // Diagnostyka: gdy import nic nie zapisał, pokaż realny błąd zapisu, kolumny tabeli
+    // oraz próbkę surowych danych (co jest w rezerwacjach/Google i co wykrywa wzorzec).
+    function showImportDiagnostics(r) {
+        r = r || {};
+        var box = host.querySelector('#cl-results');
+        box.innerHTML = '<div class="pnl-cal-loading">Sprawdzam dane…</div>';
+        api('migrate_clients.php', { method: 'POST', json: { preview: 1 } }).then(function (d) {
+            var bk = d.bookings || [], ev = d.events || [];
+            var h = '<div class="pnl-import-diag">' +
+                '<p class="pnl-muted">Import nie zapisał klientów — diagnostyka poniżej. Zrób zrzut ekranu i wyślij.</p>';
+            if (r.db_error) h += '<div class="pnl-alert">Błąd zapisu do bazy: ' + esc(r.db_error) + '</div>';
+            h += '<div class="pnl-diag-row">repair=' + esc(r.repair || '—') + ' · id_extra=' + esc(r.id_extra || '—') + '</div>';
+            h += '<div class="pnl-diag-row">kolumny rez_clients: ' + esc((r.client_columns || []).join(', ') || '—') + '</div>';
+            h += '<div class="pnl-diag-row">processed=' + (+r.processed || 0) + ' · events=' + (+r.events_processed || 0) +
+                 ' · from_bookings=' + (+r.from_bookings || 0) + ' · from_events=' + (+r.from_events || 0) +
+                 ' · total=' + (+r.clients_total || 0) + '</div>';
+            h += '<h4 class="pnl-diag-h">Rezerwacje (próbka ' + bk.length + ')</h4>';
+            if (!bk.length) h += '<div class="pnl-diag-row">— brak —</div>';
+            bk.forEach(function (r) {
+                h += '<div class="pnl-diag-row">#' + esc(r.id) +
+                    ' • nazwa=[' + esc(r.name) + '] tel=[' + esc(r.phone) + '] rej=[' + esc(r.plate) + ']' +
+                    ' mail=[' + esc(r.email) + '] notatki=[' + esc(r.notes) + ']' +
+                    ' <b>→ ' + (r.detected ? esc(r.detected) : '✗') + '</b></div>';
+            });
+            h += '<h4 class="pnl-diag-h">Wydarzenia Google (próbka ' + ev.length + ')</h4>';
+            if (!ev.length) h += '<div class="pnl-diag-row">— brak (lub ' + esc(d.google_error || 'niedostępne') + ') —</div>';
+            ev.forEach(function (e) {
+                h += '<div class="pnl-diag-row">tytuł=[' + esc(e.summary) + '] opis=[' + esc(e.description) + ']' +
+                    ' lok=[' + esc(e.location) + '] <b>→ ' + (e.detected ? esc(e.detected) : '✗') + '</b></div>';
+            });
+            h += '</div>';
+            box.innerHTML = h;
+        }).catch(function (err) {
+            box.innerHTML = '<div class="pnl-clients-empty">' + esc((err && err.message) || 'Błąd diagnostyki.') + '</div>';
         });
     }
 

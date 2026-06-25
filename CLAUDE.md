@@ -45,16 +45,21 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 
 ### Rezerwacja publiczna
 - `rezerwacja.html` + `rezerwacja.js` — formularz rezerwacji (klient).
-- `reservations/availability.php` — wolne terminy (freeBusy z Google) dla formularza.
-- `reservations/book.php` — zapis rezerwacji: walidacja → blok-check numeru → INSERT `rez_bookings`
-  → INSERT eventu Google → upsert profilu klienta.
+- `reservations/availability.php` — wolne terminy (freeBusy z Google) dla formularza. Dla usług z polami
+  `spacing`+`match` (klimatyzacja) dodatkowo wygasza sloty w oknie ±`spacing` min wokół istniejących klim –
+  wykrywanych z **eventów Google** po tytule (`gcal_list_events` + `rez_match_event_starts`), nie z bazy.
+- `reservations/book.php` — zapis rezerwacji: walidacja → blok-check numeru → overlap-check → **spacing-check
+  tej samej usługi** (krok 2: `rez_spacing_conflict` na bazie, FOR UPDATE, guard online↔online; krok 3:
+  `rez_match_event_starts` na eventach Google – łapie klimy ręczne/starsze) → INSERT `rez_bookings` →
+  INSERT eventu Google → upsert profilu klienta.
 
 ### Wspólny backend (`reservations/`)
 - `lib.php` — rdzeń: `rez_config()`, `rez_db()` (PDO), `rez_json()`, `rez_fail()`,
   `rez_throttle()`, `rez_guard_origin()`, `rez_resolve()`, `rez_services()`,
   `REZ_HOURS` (godziny pracy wg dnia tygodnia), `rez_is_holiday()`,
   `rez_phone_norm()` (same cyfry, ostatnie 9), `rez_phone_blocked()`,
-  `rez_upsert_client()`, `rez_ensure_client_schema()`.
+  `rez_upsert_client()`, `rez_ensure_client_schema()`,
+  `rez_spacing_conflict()` (odstęp w bazie) / `rez_match_event_starts()` (starty klim z eventów Google po tytule).
 - `google.php` — Google Calendar API przez **konto usługowe (JWT)**, scope pełny R/W:
   `gcal_list_events()`, `gcal_insert_event()`, `gcal_update_event()`, `gcal_delete_event()`.
 - `config.php` (gitignored) — db, `calendar_id`, `timezone`, dane konta usługowego, `admin_pass_hash` (bcrypt).
@@ -146,10 +151,14 @@ pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_ext
   `UPDATE …SET start_dt=?` SAM naprawia wiersz. Skutek uboczny: historia w profilu klienta może
   pokazywać „Invalid Date" do czasu pierwszego ruszenia eventu na siatce.
 - **Brak PHP lokalnie** — nie lintuj przez CLI; czytaj kod.
-- **Rozjechane dane rezerwacji**: w `rez_bookings` numer telefonu bywa w innym polu niż `cust_phone`
-  (legacy / kolumny przesunięte — patrz „osobowy"). Dlatego import (`migrate_clients.php`) i `rez_extract_phone`
-  szukają numeru we **wszystkich** polach człowieka. Heurystyka telefonu: 9 cyfr / grupy 3-3-3 / prefiks +48,
-  bierze ostatnie 9 cyfr. Może dawać sporadyczne fałszywe trafienia — profile da się poprawić/usunąć w panelu.
+- **Rozjechane + ŹLE ZAKODOWANE dane rezerwacji**: w `rez_bookings` (legacy) numer telefonu bywa w innym polu niż
+  `cust_phone`, kolumny są poprzesuwane, a treść zawiera **mojibake / niepoprawny UTF-8** (np. `\x9B`, `??`,
+  e-mail w polu `tel`, nazwisko w `email`). Skutek: surowy `INSERT` do `rez_clients` leciał `SQLSTATE[22007] 1366
+  Incorrect string value … email` i **cały** wiersz padał (import dawał 0). Dlatego `migrate_clients.php`:
+  (a) `rez_extract_phone` szuka numeru we **wszystkich** polach (9 cyfr / 3-3-3 / +48, ostatnie 9);
+  (b) `mig_utf8()` naprawia bajty do poprawnego UTF-8 przed zapisem; (c) `email` zapisywany tylko gdy to
+  **prawdziwy** adres (`mig_extract_email` + `filter_var`); (d) nazwa odszumiana (`clean_name`). Heurystyka bywa
+  niedoskonała (śmieci w nazwie, sporadyczny zły numer) — profile da się poprawić/usunąć w panelu.
 
 ---
 
@@ -160,12 +169,25 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-06-25 (d)** — Rezerwacja: **odstęp między rezerwacjami tej samej usługi**. Klimatyzacja blokuje w grafiku
+  tylko 10 min (`duration`), ale realna obsługa trwa ~50 min, więc dwie klimy nie mogą stać 10 min po sobie. Subtyp
+  `klima` dostał `spacing => 50` (start-do-startu, w przód i wstecz) oraz `match => '/klima/i'` (wzorzec tytułu eventu).
+  **Detekcja istniejących klim idzie z eventów Google Calendar (źródło prawdy grafiku), nie z `rez_bookings`** — dzięki
+  temu łapie też rezerwacje ręczne/panelowe i starsze, których nie ma w bazie. `lib.php` += `rez_spacing_conflict()`
+  (windowed DB, opcjonalny `FOR UPDATE`) i `rez_match_event_starts($events,$pattern)` (filtr eventów po tytule, pomija
+  całodniowe). `availability.php` listuje eventy dnia (`gcal_list_events`) i wygasza sloty w oknie ±`spacing` (fail-open;
+  nie woła już bazy). `book.php`: krok 2 = szybki guard na bazie (race online↔online), krok 3 = sprawdzenie na eventach
+  Google (komplet) → 409. Front bez zmian (renderuje `busy` z serwera; ma już `displayDuration: 50`).
 - **2026-06-25 (b)** — Import klientów przebudowany. `lib.php` += `rez_extract_phone()` (szuka telefonu w dowolnym
   tekście: 9 cyfr / 3-3-3 / +48) i `rez_phone_format()`. `migrate_clients.php` skanuje teraz **wszystkie pola
   człowieka** w `rez_bookings` (nie tylko `cust_phone` — dane bywają rozjechane) **oraz wydarzenia Google**
   (`gcal_list_events`, zakres −2 lata…+6 mies., do 250 szt.; pomija eventy znane po `google_event_id` i blokady).
   Zwraca `created/from_bookings/from_events/clients_total/google_error`; front pokazuje jawny wynik importu.
   `migrate_clients.php` to teraz **stały** endpoint (nie kasować). `?v=20260625c`.
+- **2026-06-25 (c)** — Import: naprawa zapisu przy ŹLE ZAKODOWANYCH danych. Surowe `INSERT` padało na
+  `SQLSTATE[22007] 1366 Incorrect string value` (niepoprawny UTF-8 w `email`), więc `total=0` mimo wykrytych
+  numerów. Dodane: `mig_utf8()` (naprawa bajtów), `mig_extract_email()` (tylko prawdziwy e-mail), twardsze
+  `clean_name()`, oraz tryb **preview** + zwracanie `db_error`/`client_columns` do diagnostyki. `?v=20260625e`.
 - **2026-06-25** — Panel/Klienci: **pełne CRUD bazy klientów**. `clients.php` dostał **POST** (ręczne dodanie,
   duplikat numeru → 409 `existingId`). `client.php` PATCH rozszerzony o `name/email/phone` (zmiana telefonu
   przelicza `phone_norm` + guard unikalności) i operacje na pojazdach `vehicle_add/vehicle_edit/vehicle_del`;

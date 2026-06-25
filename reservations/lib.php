@@ -58,7 +58,12 @@ function rez_services() {
             'label' => 'Serwis klimatyzacji',
             'subtypes' => [
                 // Jeden wariant – bez wyboru czynnika (musi pasować do rezerwacja.js).
-                'klima' => ['label' => 'Serwis klimatyzacji', 'duration' => 10],
+                // duration = czas blokowany w grafiku/Google (podpięcie ≈ 10 min).
+                // spacing  = wymagany odstęp start-do-startu między DWIEMA klimatyzacjami
+                //            (realna obsługa trwa ~50 min, choć event w siatce ma 10).
+                // match    = wzorzec tytułu eventu Google (źródło prawdy) – łapie też
+                //            rezerwacje ręczne/panelowe i starsze, których nie ma w bazie.
+                'klima' => ['label' => 'Serwis klimatyzacji', 'duration' => 10, 'spacing' => 50, 'match' => '/klima/i'],
             ],
         ],
     ];
@@ -91,6 +96,47 @@ function rez_slots_for_day($dateISO, $duration) {
     for ($t = $open; $t + $duration <= $close; $t += $duration) {
         if ($t < $minStart) continue;
         $out[] = sprintf('%02d:%02d', intdiv($t, 60), $t % 60);
+    }
+    return $out;
+}
+
+/**
+ * Czy istnieje INNA rezerwacja tej SAMEJ usługi w odstępie < $spacingMin minut
+ * (start-do-startu, w przód i wstecz) od podanego startu. Wymusza większy realny
+ * odstęp niż 10-min slot w siatce — np. klimatyzacja: event blokuje 10 min, ale
+ * obsługa trwa ~50 min, więc dwie klimy nie mogą stać 10 min po sobie.
+ * $forUpdate=true zakłada otwartą transakcję (blokada zakresu przeciw wyścigowi).
+ * $excludeId pomija konkretny wiersz (np. przy edycji własnej rezerwacji).
+ */
+function rez_spacing_conflict($pdo, $serviceKey, $startDb, $spacingMin, $forUpdate = false, $excludeId = 0) {
+    if ($spacingMin <= 0) return false;
+    $start = new DateTime($startDb);
+    $from = (clone $start)->modify('-' . (int)$spacingMin . ' minutes')->format('Y-m-d H:i:s');
+    $to   = (clone $start)->modify('+' . (int)$spacingMin . ' minutes')->format('Y-m-d H:i:s');
+    $sql = 'SELECT id FROM rez_bookings WHERE service = ? AND start_dt > ? AND start_dt < ?';
+    $params = [$serviceKey, $from, $to];
+    if ($excludeId > 0) { $sql .= ' AND id <> ?'; $params[] = (int)$excludeId; }
+    $sql .= $forUpdate ? ' LIMIT 1 FOR UPDATE' : ' LIMIT 1';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (bool)$stmt->fetchColumn();
+}
+
+/**
+ * Z listy wydarzeń Google wyłuskuje starty (timestampy uniksowe) tych, których
+ * tytuł pasuje do $pattern (np. klimatyzacja). Google Calendar to źródło prawdy
+ * grafiku, więc łapie też wpisy ręczne/panelowe oraz starsze rezerwacje, których
+ * nie ma w rez_bookings. Pomija wydarzenia całodniowe (mają `date`, nie `dateTime`).
+ */
+function rez_match_event_starts($events, $pattern) {
+    $out = [];
+    foreach ((array)$events as $ev) {
+        $title = (string)($ev['summary'] ?? '');
+        if ($title === '' || !preg_match($pattern, $title)) continue;
+        $dt = $ev['start']['dateTime'] ?? '';
+        if ($dt === '') continue; // całodniowe / bez konkretnej godziny – pomiń
+        $ts = strtotime($dt);     // RFC3339 z offsetem → poprawny czas absolutny
+        if ($ts) $out[] = $ts;
     }
     return $out;
 }

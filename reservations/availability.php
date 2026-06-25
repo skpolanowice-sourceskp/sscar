@@ -44,13 +44,38 @@ try {
     rez_fail(502, 'Nie udało się pobrać dostępności z kalendarza.');
 }
 
+// Wymagany odstęp od innej rezerwacji tej samej usługi (np. klimatyzacja: realna
+// obsługa ~50 min mimo 10-min slotu). Wygaszamy też sloty w oknie ±spacing wokół
+// istniejących klim, nie tylko sam termin nakładający się w freeBusy. Źródłem są
+// EVENTY Google (po tytule), więc łapie też wpisy ręczne/panelowe i starsze.
+$spacing = (int)($subtype['spacing'] ?? 0);
+$matchRe = (string)($subtype['match'] ?? '');
+$gapSec = $spacing * 60;
+$sameStarts = [];
+if ($gapSec && $matchRe !== '') {
+    try {
+        $dayMin = (new DateTime($dateISO . ' 00:00:00', new DateTimeZone($tz)))->format(DateTime::RFC3339);
+        $dayMax = (new DateTime($dateISO . ' 23:59:59', new DateTimeZone($tz)))->format(DateTime::RFC3339);
+        $sameStarts = rez_match_event_starts(gcal_list_events($calendarId, $dayMin, $dayMax), $matchRe);
+    } catch (Throwable $e) {
+        $sameStarts = []; // fail-open – dostępność dalej działa (book.php i tak zweryfikuje)
+    }
+}
+
 $busy = [];
 foreach ($slots as $time) {
     $start = (new DateTime($dateISO . ' ' . $time, new DateTimeZone($tz)))->format(DateTime::RFC3339);
     $endMin = (int)substr($time, 0, 2) * 60 + (int)substr($time, 3, 2) + $subtype['duration'];
     $endStr = sprintf('%02d:%02d', intdiv($endMin, 60), $endMin % 60);
     $end = (new DateTime($dateISO . ' ' . $endStr, new DateTimeZone($tz)))->format(DateTime::RFC3339);
-    if (gcal_slot_busy($start, $end, $intervals)) $busy[] = $time;
+    $isBusy = gcal_slot_busy($start, $end, $intervals);
+    if (!$isBusy && $gapSec) {
+        $slotTs = strtotime($dateISO . ' ' . $time);
+        foreach ($sameStarts as $ts) {
+            if (abs($ts - $slotTs) < $gapSec) { $isBusy = true; break; }
+        }
+    }
+    if ($isBusy) $busy[] = $time;
 }
 
 rez_json(['busy' => $busy, 'slots' => $slots]);
