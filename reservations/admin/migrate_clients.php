@@ -72,55 +72,13 @@ if (!empty($in['preview'])) {
     rez_json(['preview' => true, 'bookings' => $bk, 'events' => $ev, 'google_error' => $evErr]);
 }
 
-/* ---------- Samonaprawa uszkodzonego indeksu rez_clients ----------
- * Objaw: INSERT trafia w „ducha" w indeksie unikalnym po skasowanych wierszach
- * (rowCount=2 / brak wiersza), więc nic się nie zapisuje. Bezpieczne TYLKO przy
- * pustej tabeli — przebudowa czyści indeksy. NIE dotyka rez_bookings ani Google. */
-$repair = null;
-try {
-    $cntNow = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
-    if ($cntNow === 0) {
-        // Czyste odtworzenie pustych tabel klientów (kasuje „duchy" z uszkodzonych indeksów).
-        // NIE dotyka rez_bookings (rezerwacje) ani Google.
-        $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
-        $pdo->exec('DROP TABLE IF EXISTS rez_client_vehicles');
-        $pdo->exec('DROP TABLE IF EXISTS rez_clients');
-        $pdo->exec(
-            'CREATE TABLE rez_clients (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                phone_norm VARCHAR(20) NOT NULL,
-                phone_display VARCHAR(40) NOT NULL,
-                name VARCHAR(120) DEFAULT NULL,
-                email VARCHAR(160) DEFAULT NULL,
-                notes TEXT DEFAULT NULL,
-                blocked TINYINT(1) NOT NULL DEFAULT 0,
-                blocked_reason VARCHAR(255) DEFAULT NULL,
-                blocked_at DATETIME DEFAULT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                UNIQUE KEY uniq_phone (phone_norm)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-        );
-        $pdo->exec(
-            'CREATE TABLE rez_client_vehicles (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                client_id INT NOT NULL,
-                plate VARCHAR(20) NOT NULL,
-                vehicle VARCHAR(80) DEFAULT NULL,
-                last_seen DATETIME DEFAULT NULL,
-                UNIQUE KEY uniq_client_plate (client_id, plate),
-                KEY idx_plate (plate),
-                CONSTRAINT fk_vehicle_client FOREIGN KEY (client_id) REFERENCES rez_clients(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
-        );
-        $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
-        $repair = 'recreated';
-    }
-} catch (Throwable $e) {
-    $repair = 'failed: ' . $e->getMessage();
-}
-
-$before = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
+// UWAGA: świadomie BEZ transakcji i BEZ przebudowy tabel.
+// Diagnostyka wykazała, że zapisy PERSYSTUJĄ (ponowny INSERT trafiał w istniejący
+// wiersz → ON DUPLICATE KEY UPDATE), więc autocommit per-wiersz jest bezpieczny i pewny.
+// Transakcja na tym hostingu potrafiła nie zatwierdzić zmian (proxy), a blok DROP/CREATE
+// był groźny (kasował tabelę, gdy odczyt COUNT zwracał 0). Oba usunięte.
+$before = 0;
+try { $before = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn(); } catch (Throwable $e) {}
 
 /* ---------- A) rez_bookings ---------- */
 try {
@@ -193,20 +151,27 @@ try {
     $evError = 'Google Calendar: ' . $e->getMessage(); // część A i tak się zapisała
 }
 
-$total = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
+$total = 0;
+try { $total = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn(); } catch (Throwable $e) {}
 
-$clientCols = [];
-$idExtra = null;
-try {
-    $clientCols = $pdo->query(
-        "SELECT COLUMN_NAME FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rez_clients' ORDER BY ORDINAL_POSITION"
-    )->fetchAll(PDO::FETCH_COLUMN);
-    $idExtra = $pdo->query(
-        "SELECT EXTRA FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rez_clients' AND COLUMN_NAME = 'id'"
-    )->fetchColumn();
-} catch (Throwable $e) { /* ignoruj */ }
+/* ---------- SAMOTEST: która METODA połączenia widzi zapisane wiersze? ----------
+ * phpMyAdmin (localhost, socket) widzi komplet, a aplikacja (PDO) widzi 0 → różnica
+ * jest w SPOSOBIE połączenia. Próbujemy trzech wariantów i patrzymy, który zwraca
+ * pełny COUNT. Ten wariant wpiszemy do config.php. */
+$diag = [];
+$c = rez_config()['db'];
+$dbn = $c['name']; $usr = $c['user']; $pwd = $c['pass'];
+
+$diag['v_localhost'] = mig_try_conn("mysql:host=localhost;dbname={$dbn};charset=utf8mb4", $usr, $pwd);
+$diag['v_127']       = mig_try_conn("mysql:host=127.0.0.1;dbname={$dbn};charset=utf8mb4", $usr, $pwd);
+
+// Ścieżka gniazda UNIX (tak łączy się phpMyAdmin) — odczytana z bieżącego połączenia.
+$sockPath = '';
+try { $sv = $pdo->query("SHOW VARIABLES LIKE 'socket'")->fetch(); $sockPath = (string)($sv['Value'] ?? ''); } catch (Throwable $e) {}
+$diag['socket_path'] = $sockPath !== '' ? $sockPath : '(brak)';
+if ($sockPath !== '') {
+    $diag['v_socket'] = mig_try_conn("mysql:unix_socket={$sockPath};dbname={$dbn};charset=utf8mb4", $usr, $pwd);
+}
 
 rez_json([
     'ok'              => true,
@@ -219,9 +184,7 @@ rez_json([
     'clients_total'   => $total,
     'google_error'    => $evError,
     'db_error'        => $dbError,            // diagnostyka: realny błąd zapisu klienta
-    'client_columns'  => $clientCols,         // diagnostyka: kolumny tabeli rez_clients
-    'id_extra'        => $idExtra,            // diagnostyka: czy id jest auto_increment
-    'repair'          => $repair,             // diagnostyka: czy przebudowano tabelę
+    'diag'            => $diag,               // diagnostyka: rozdział odczyt/zapis (samotest)
 ]);
 
 /**
@@ -237,23 +200,23 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
             'INSERT INTO rez_clients (phone_norm, phone_display, name, email)
              VALUES (?,?,?,?)
              ON DUPLICATE KEY UPDATE
+                id = LAST_INSERT_ID(id),
                 name = IF(name IS NULL OR LENGTH(name) = 0, VALUES(name), name),
                 email = IF((email IS NULL OR LENGTH(email) = 0) AND VALUES(email) IS NOT NULL, VALUES(email), email),
                 phone_display = VALUES(phone_display),
                 updated_at = CURRENT_TIMESTAMP'
         );
-        $ok = $stmt->execute([$norm, $disp, ($name !== '' ? $name : null), ($email !== '' ? $email : null)]);
-        $rc = $stmt->rowCount();
-
-        $sel = $pdo->prepare('SELECT id FROM rez_clients WHERE phone_norm=?');
-        $sel->execute([$norm]);
-        $cid = (int)$sel->fetchColumn();
-        if (!$cid) {
-            if ($dbError === null) {
-                $cnt = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
-                $dbError = 'INSERT ok=' . var_export($ok, true) . ' rowCount=' . $rc
-                    . ' lastId=' . $pdo->lastInsertId() . ' count=' . $cnt . ' (norm=' . $norm . ')';
-            }
+        $stmt->execute([$norm, $disp, ($name !== '' ? $name : null), ($email !== '' ? $email : null)]);
+        // id z LAST_INSERT_ID() — działa też przy update i NIE wymaga odczytu po zapisie
+        // (kluczowe, gdy hosting rozdziela odczyt/zapis na różne serwery).
+        $cid = (int)$pdo->lastInsertId();
+        if ($cid <= 0) {
+            $sel = $pdo->prepare('SELECT id FROM rez_clients WHERE phone_norm=?');
+            $sel->execute([$norm]);
+            $cid = (int)$sel->fetchColumn();
+        }
+        if ($cid <= 0) {
+            if ($dbError === null) $dbError = 'INSERT bez id (norm=' . $norm . ')';
             return null;
         }
 
@@ -271,6 +234,33 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
         if ($dbError === null) $dbError = $e->getMessage();
         return null;
     }
+}
+
+/** Próbuje połączyć się danym DSN i zwraca tożsamość serwera + COUNT(*) z rez_clients. */
+function mig_try_conn($dsn, $user, $pass) {
+    try {
+        $p = new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        $id = $p->query('SELECT @@hostname AS h, @@port AS port, DATABASE() AS db')->fetch();
+        $cnt = (int)$p->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
+        return ['host' => $id['h'] ?? '?', 'port' => $id['port'] ?? '?', 'db' => $id['db'] ?? '?', 'count' => $cnt];
+    } catch (Throwable $e) {
+        return ['err' => $e->getMessage()];
+    }
+}
+
+/** Świeże, osobne połączenie PDO (do samotestu odczyt-po-zapisie). */
+function mig_fresh_pdo() {
+    $c = rez_config()['db'];
+    $dsn = "mysql:host={$c['host']};dbname={$c['name']};charset={$c['charset']}";
+    return new PDO($dsn, $c['user'], $c['pass'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
 }
 
 /** Naprawia bajty do poprawnego UTF-8 i usuwa znaki sterujące / znak zastępczy. */

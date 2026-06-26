@@ -122,17 +122,19 @@
         btn.disabled = true; btn.textContent = 'Importuję…';
         api('migrate_clients.php', { method: 'POST', json: {} }).then(function (r) {
             r = r || {};
-            var created = +r.created || 0;
-            var total   = +r.clients_total || 0;
-            var bkP     = +r.processed || 0;            // przejrzane rezerwacje
-            var evP     = +r.events_processed || 0;     // przejrzane wydarzenia Google
-            if (total > 0) {
+            var imported = (+r.from_bookings || 0) + (+r.from_events || 0); // sukcesy po stronie zapisu
+            // Źródło prawdy = ŚWIEŻE połączenie (tak jak czyta panel). Jeśli ono widzi
+            // wiersze, import naprawdę zadziałał. Jeśli zapis był, a świeży odczyt = 0,
+            // to hosting rozdziela odczyt/zapis — pokaż to wprost.
+            var diag  = r.diag || {};
+            var fresh = (diag.fresh && typeof diag.fresh.count === 'number') ? diag.fresh.count : null;
+            var visible = (fresh !== null) ? fresh : (+r.clients_total || 0);
+            if (visible > 0) {
+                window.alert('Gotowe. Klientów w bazie: ' + visible + '.');
                 search('');
-                window.alert(created > 0
-                    ? ('Zaimportowano ' + created + (created === 1 ? ' klienta' : ' klientów') + '.\nŁącznie w bazie: ' + total + '.')
-                    : ('Nie znaleziono nowych klientów do dodania.\nW bazie jest już ' + total + '.'));
+                setTimeout(function () { search(''); }, 1500);
             } else {
-                // Nic nie zapisano — pokaż diagnostykę (błąd zapisu + surowe dane).
+                // Albo nic nie wykryto, albo (gorzej) zapis nie jest widoczny dla odczytu.
                 showImportDiagnostics(r);
             }
         }).catch(function (err) {
@@ -152,8 +154,17 @@
             var h = '<div class="pnl-import-diag">' +
                 '<p class="pnl-muted">Import nie zapisał klientów — diagnostyka poniżej. Zrób zrzut ekranu i wyślij.</p>';
             if (r.db_error) h += '<div class="pnl-alert">Błąd zapisu do bazy: ' + esc(r.db_error) + '</div>';
-            h += '<div class="pnl-diag-row">repair=' + esc(r.repair || '—') + ' · id_extra=' + esc(r.id_extra || '—') + '</div>';
-            h += '<div class="pnl-diag-row">kolumny rez_clients: ' + esc((r.client_columns || []).join(', ') || '—') + '</div>';
+            // Pełny zrzut samotestu (płaski key=value, łącznie z zagnieżdżonym conn).
+            var dg = r.diag || {};
+            var flat = [];
+            Object.keys(dg).forEach(function (k) {
+                var v = dg[k];
+                if (v && typeof v === 'object') {
+                    Object.keys(v).forEach(function (k2) { flat.push(k + '.' + k2 + '=' + v[k2]); });
+                } else { flat.push(k + '=' + v); }
+            });
+            h += '<div class="pnl-alert">SAMOTEST — wyślij ten zrzut:</div>';
+            flat.forEach(function (line) { h += '<div class="pnl-diag-row">' + esc(line) + '</div>'; });
             h += '<div class="pnl-diag-row">processed=' + (+r.processed || 0) + ' · events=' + (+r.events_processed || 0) +
                  ' · from_bookings=' + (+r.from_bookings || 0) + ' · from_events=' + (+r.from_events || 0) +
                  ' · total=' + (+r.clients_total || 0) + '</div>';
