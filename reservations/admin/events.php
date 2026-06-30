@@ -94,7 +94,12 @@ foreach ($items as $it) {
         $ev['email']        = $row['cust_email'];
         $ev['notes']        = $row['notes'];
         $ev['ref']          = $row['ref'];
-        $ev['title']        = ($sub ? $sub['label'] : $row['subtype']) . ' · ' . $row['cust_plate'];
+        // Marka/model: nie ma kolumny w rez_bookings — wyłuskaj z tytułu Google
+        // („… – PLATE (Marka Model)"). Źródło prawdy grafiku = kalendarz.
+        $ev['vehicle']      = ev_vehicle_from_title($it['summary'] ?? '');
+        $lbl                = $sub ? $sub['label'] : $row['subtype'];
+        $ev['title']        = ($row['cust_plate'] !== '' && $row['cust_plate'] !== null)
+            ? ($lbl . ' · ' . $row['cust_plate']) : $lbl;
     } else {
         $sum = mb_strtolower((string)($it['summary'] ?? ''));
         if (preg_match('/blok|urlop|przerw|niedost|zamkni|wolne/u', $sum)) $ev['type'] = 'blok';
@@ -125,3 +130,11 @@ while ($cur <= $last) {
 }
 
 rez_json(['events' => $events, 'days' => $days]);
+
+/** Wyłuskuje markę/model z tytułu rezerwacji Google („… – PLATE (Marka Model)") = ostatni nawias. */
+function ev_vehicle_from_title($summary) {
+    if (preg_match_all('/\(([^()]+)\)/u', (string)$summary, $m) && !empty($m[1])) {
+        return trim((string)end($m[1]));
+    }
+    return '';
+}

@@ -207,7 +207,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @keyframes pnl-spin { to { transform: rotate(360deg); } }
 
 /* ---------- Powłoka aplikacji ---------- */
-.pnl-app { min-height: 100vh; display: flex; flex-direction: column; }
+/* Wysokość = dokładnie ekran + overflow:hidden, żeby przewijał się TYLKO wewnętrzny
+   kontener widoku (.pnl-cal-scroll / .pnl-clients-results), a nie całe okno – inaczej
+   pojawiał się drugi, zewnętrzny pasek przewijania obok kalendarza. */
+.pnl-app { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
 
 .pnl-topbar {
     position: sticky;
@@ -477,7 +480,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .pnl-ev:hover { filter: brightness(1.18); box-shadow: 0 4px 14px -6px rgba(0,0,0,0.7); z-index: 5; }
 .pnl-ev-time { font-size: 0.68rem; font-weight: 700; color: var(--evc); line-height: 1.1; }
-.pnl-ev-title { font-size: 0.78rem; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; }
+.pnl-ev-title { font-size: 0.78rem; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pnl-ev-sub { font-size: 0.7rem; font-weight: 500; color: var(--pnl-text-muted); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .pnl-ev--tech  { --evc: var(--pnl-ev-tech); }
 .pnl-ev--buy   { --evc: var(--pnl-ev-buy); }
@@ -551,6 +555,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pnl-form textarea { resize: vertical; min-height: 42px; }
 .pnl-check { display: flex; align-items: center; gap: 9px; font-size: 0.92rem; color: var(--pnl-text-muted); cursor: pointer; }
 .pnl-check input { width: 17px; height: 17px; accent-color: var(--pnl-red); }
+.pnl-check-hint { margin: -4px 0 2px 26px; font-size: 0.8rem; line-height: 1.35; color: var(--pnl-text-faint); }
 .pnl-seg--full { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 14px; }
 .pnl-seg--full .pnl-seg-btn { text-align: center; }
 

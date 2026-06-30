@@ -51,7 +51,14 @@
     }
 
     /* ---------- Pola rezerwacji ---------- */
-    function bookingFieldsHtml(v) {
+    // opts.clientToggle (tylko przy tworzeniu) dorzuca pola jako opcjonalne + checkbox
+    // „Dodaj klienta do bazy" – admin może wbić sam termin / szybką blokadę bez danych klienta.
+    function bookingFieldsHtml(v, opts) {
+        var toggle = (opts && opts.clientToggle)
+            ? '<label class="pnl-check"><input type="checkbox" id="ce-addclient"' + (v.addClient === false ? '' : ' checked') + '> Dodaj klienta do bazy</label>' +
+              '<p class="pnl-check-hint">Dane klienta są opcjonalne. Odznacz, gdy to tylko szybka blokada slota — baza klientów zostanie czysta. Dopisanie do bazy wymaga telefonu.</p>'
+            : '';
+        var custHint = (opts && opts.clientToggle) ? ' (opcjonalnie)' : '';
         return '' +
             '<label class="pnl-field"><span class="pnl-label">Data</span><input type="date" id="ce-date" value="' + esc(v.date) + '"></label>' +
             '<label class="pnl-field"><span class="pnl-label">Usługa</span><select id="ce-service">' + serviceOptions(v.service) + '</select></label>' +
@@ -60,14 +67,15 @@
                 '<label class="pnl-field"><span class="pnl-label">Godzina</span><input type="time" id="ce-time" step="600" value="' + esc(v.time) + '"></label>' +
                 '<label class="pnl-field"><span class="pnl-label">Czas (min)</span><input type="number" id="ce-dur" min="5" step="5" value="' + esc(v.dur) + '"></label>' +
             '</div>' +
-            '<label class="pnl-field"><span class="pnl-label">Imię i nazwisko</span><input id="ce-name" value="' + esc(v.name) + '"></label>' +
+            '<label class="pnl-field"><span class="pnl-label">Imię i nazwisko' + custHint + '</span><input id="ce-name" value="' + esc(v.name) + '"></label>' +
             '<div class="pnl-form-row">' +
-                '<label class="pnl-field"><span class="pnl-label">Telefon</span><input id="ce-phone" value="' + esc(v.phone) + '"></label>' +
-                '<label class="pnl-field"><span class="pnl-label">Nr rej.</span><input id="ce-plate" value="' + esc(v.plate) + '"></label>' +
+                '<label class="pnl-field"><span class="pnl-label">Telefon' + custHint + '</span><input id="ce-phone" value="' + esc(v.phone) + '"></label>' +
+                '<label class="pnl-field"><span class="pnl-label">Nr rej.' + custHint + '</span><input id="ce-plate" value="' + esc(v.plate) + '"></label>' +
             '</div>' +
             '<label class="pnl-field"><span class="pnl-label">Pojazd</span><input id="ce-vehicle" value="' + esc(v.vehicle) + '"></label>' +
             '<label class="pnl-field"><span class="pnl-label">E-mail</span><input id="ce-email" value="' + esc(v.email) + '"></label>' +
-            '<label class="pnl-field"><span class="pnl-label">Uwagi</span><textarea id="ce-notes" rows="2">' + esc(v.notes) + '</textarea></label>';
+            '<label class="pnl-field"><span class="pnl-label">Uwagi</span><textarea id="ce-notes" rows="2">' + esc(v.notes) + '</textarea></label>' +
+            toggle;
     }
 
     function wireServiceSubtype(v) {
@@ -85,12 +93,14 @@
     }
 
     function readBooking() {
+        var addEl = document.getElementById('ce-addclient');
         return {
             date: val('ce-date'),
             time: val('ce-time'),
             dur: parseInt(val('ce-dur'), 10) || 0,
             service: val('ce-service'),
             subtype: val('ce-subtype'),
+            addClient: addEl ? addEl.checked : false,
             customer: {
                 name: val('ce-name'), phone: val('ce-phone'), plate: val('ce-plate'),
                 vehicle: val('ce-vehicle'), email: val('ce-email'), notes: val('ce-notes')
@@ -98,9 +108,18 @@
         };
     }
 
-    function validBooking(b, errEl) {
+    // opts.lenient (tworzenie) = dane klienta opcjonalne; telefon wymagany tylko gdy
+    // zaznaczono dopisanie do bazy (to klucz profilu). Bez opts = edycja, walidacja jak dawniej.
+    function validBooking(b, errEl, opts) {
         if (!b.date) { errEl.textContent = 'Podaj datę.'; return false; }
         if (!/^\d{2}:\d{2}$/.test(b.time)) { errEl.textContent = 'Podaj godzinę.'; return false; }
+        if (opts && opts.lenient) {
+            if (b.addClient && b.customer.phone.replace(/\D/g, '').length < 9) {
+                errEl.textContent = 'Aby dopisać klienta do bazy, podaj telefon (albo odznacz „Dodaj klienta do bazy").';
+                return false;
+            }
+            return true;
+        }
         if (b.customer.name.length < 2) { errEl.textContent = 'Podaj imię i nazwisko.'; return false; }
         if (b.customer.phone.replace(/\D/g, '').length < 9) { errEl.textContent = 'Podaj poprawny telefon.'; return false; }
         if (b.customer.plate.length < 2) { errEl.textContent = 'Podaj numer rejestracyjny.'; return false; }
@@ -117,7 +136,7 @@
             // przed domyślnym czasem pierwszego wariantu usługi.
             var seedDur = (seed && seed.durationMin) ? Math.max(5, seed.durationMin) : null;
             var v = { date: date, time: time, dur: seedDur || (firstSvc.subtypes[0] || {}).duration || 20,
-                service: firstSvc.key, subtype: (firstSvc.subtypes[0] || {}).key, name: '', phone: '', plate: '', vehicle: '', email: '', notes: '' };
+                service: firstSvc.key, subtype: (firstSvc.subtypes[0] || {}).key, name: '', phone: '', plate: '', vehicle: '', email: '', notes: '', addClient: true };
 
             var html =
                 '<div class="pnl-drawer-head"><span class="pnl-form-title">Nowy termin</span>' +
@@ -127,7 +146,7 @@
                     '<button type="button" class="pnl-seg-btn" data-kind="blok">Blokada</button>' +
                 '</div>' +
                 '<form class="pnl-form" id="ce-form" novalidate>' +
-                    '<div id="ce-sec-rez">' + bookingFieldsHtml(v) + '</div>' +
+                    '<div id="ce-sec-rez">' + bookingFieldsHtml(v, { clientToggle: true }) + '</div>' +
                     '<div id="ce-sec-blok" hidden>' +
                         '<label class="pnl-field"><span class="pnl-label">Opis</span><input id="ce-title" placeholder="np. urlop, przerwa techniczna"></label>' +
                         '<label class="pnl-check"><input type="checkbox" id="ce-allday"> Cały dzień</label>' +
@@ -169,9 +188,9 @@
                     if (!payload.date) { errEl.textContent = 'Podaj datę.'; return; }
                 } else {
                     var b = readBooking();
-                    if (!validBooking(b, errEl)) return;
+                    if (!validBooking(b, errEl, { lenient: true })) return;
                     payload = { kind: 'rezerwacja', date: b.date, time: b.time, durationMin: b.dur,
-                        service: b.service, subtype: b.subtype, customer: b.customer };
+                        service: b.service, subtype: b.subtype, addClient: b.addClient, customer: b.customer };
                 }
                 submit('POST', payload, document.getElementById('ce-save'), errEl);
             });
@@ -186,7 +205,7 @@
             var v = {
                 date: s ? s.date : todayISO(), time: s ? minToHHMM(s.min) : '08:00', dur: dur,
                 service: ev.service, subtype: lookupSubtypeKey(ev),
-                name: ev.name || '', phone: ev.phone || '', plate: ev.plate || '', vehicle: '', email: ev.email || '', notes: ev.notes || ''
+                name: ev.name || '', phone: ev.phone || '', plate: ev.plate || '', vehicle: ev.vehicle || '', email: ev.email || '', notes: ev.notes || ''
             };
             var html =
                 '<div class="pnl-drawer-head"><span class="pnl-form-title">Edytuj rezerwację</span>' +

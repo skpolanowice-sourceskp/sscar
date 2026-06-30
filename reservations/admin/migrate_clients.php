@@ -4,9 +4,13 @@
  * POST (zalogowany + CSRF). Idempotentny (upsert po znormalizowanym telefonie).
  *
  * Źródła (oba przeszukiwane pod kątem numeru telefonu — patrz rez_extract_phone):
- *   A) tabela rez_bookings — WSZYSTKIE pola tekstowe wiersza (dane bywają „rozjechane"),
+ *   A) tabela rez_bookings — WSZYSTKIE pola tekstowe wiersza (dane bywają „rozjechane"
+ *      i w złym kodowaniu — patrz mig_utf8),
  *   B) Google Calendar — opis/tytuł/lokalizacja wydarzeń (rezerwacje robione ręcznie w panelu).
  * Wydarzenia już powiązane z rez_bookings (po google_event_id) pomijamy w części B.
+ *
+ * Odczyt po zapisie działa TYLKO dzięki emulowanym prepared statements w rez_db()
+ * (proxy MySQL na vh.pl psuje protokół binarny) — patrz komentarz w lib.php / CLAUDE.md.
  */
 
 define('REZ_INTERNAL', 1);
@@ -22,68 +26,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') rez_fail(405, 'Metoda niedozw
 $pdo = rez_db();
 rez_ensure_client_schema($pdo);
 
-$in = json_decode((string)file_get_contents('php://input'), true);
-if (!is_array($in)) $in = [];
-
-/* ---------- Tryb podglądu: pokaż surowe dane, NIE importuj ---------- */
-if (!empty($in['preview'])) {
-    $bk = [];
-    try {
-        $rows = $pdo->query('SELECT id, cust_name, cust_phone, cust_plate, cust_email, notes FROM rez_bookings ORDER BY id DESC LIMIT 8')->fetchAll();
-        foreach ($rows as $r) {
-            $hay = implode(' | ', [$r['cust_name'], $r['cust_phone'], $r['cust_plate'], $r['cust_email'], $r['notes']]);
-            $bk[] = [
-                'id'       => (int)$r['id'],
-                'name'     => mb_substr(mig_utf8($r['cust_name']), 0, 40),
-                'phone'    => mb_substr(mig_utf8($r['cust_phone']), 0, 40),
-                'plate'    => mb_substr(mig_utf8($r['cust_plate']), 0, 40),
-                'email'    => mb_substr(mig_utf8($r['cust_email']), 0, 40),
-                'notes'    => mb_substr(mig_utf8($r['notes']), 0, 60),
-                'detected' => rez_extract_phone(mig_utf8($hay)),
-            ];
-        }
-    } catch (Throwable $e) { /* ignoruj */ }
-
-    $ev = [];
-    $evErr = null;
-    try {
-        $cfg = rez_config();
-        $cid = $cfg['calendar_id'] ?? '';
-        $kp  = $cfg['service_account_key'] ?? '';
-        if ($cid !== '' && is_file($kp)) {
-            $tz = new DateTimeZone($cfg['timezone'] ?? 'Europe/Warsaw');
-            $items = gcal_list_events($cid, (new DateTime('-2 years', $tz))->format(DateTime::RFC3339), (new DateTime('+6 months', $tz))->format(DateTime::RFC3339));
-            $n = 0;
-            foreach ($items as $e) {
-                if ($n++ >= 12) break;
-                $sum = (string)($e['summary'] ?? ''); $desc = (string)($e['description'] ?? ''); $loc = (string)($e['location'] ?? '');
-                $ev[] = [
-                    'summary'     => mb_substr($sum, 0, 70),
-                    'description' => mb_substr($desc, 0, 90),
-                    'location'    => mb_substr($loc, 0, 40),
-                    'detected'    => rez_extract_phone($sum . "\n" . $desc . "\n" . $loc),
-                ];
-            }
-        } else {
-            $evErr = 'brak konfiguracji kalendarza';
-        }
-    } catch (Throwable $e) { $evErr = $e->getMessage(); }
-
-    rez_json(['preview' => true, 'bookings' => $bk, 'events' => $ev, 'google_error' => $evErr]);
-}
-
-// UWAGA: świadomie BEZ transakcji i BEZ przebudowy tabel.
-// Diagnostyka wykazała, że zapisy PERSYSTUJĄ (ponowny INSERT trafiał w istniejący
-// wiersz → ON DUPLICATE KEY UPDATE), więc autocommit per-wiersz jest bezpieczny i pewny.
-// Transakcja na tym hostingu potrafiła nie zatwierdzić zmian (proxy), a blok DROP/CREATE
-// był groźny (kasował tabelę, gdy odczyt COUNT zwracał 0). Oba usunięte.
 $before = 0;
 try { $before = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn(); } catch (Throwable $e) {}
 
 /* ---------- A) rez_bookings ---------- */
 try {
     $rows = $pdo->query(
-        'SELECT id, resource, service, subtype, cust_name, cust_phone, cust_plate, cust_email, notes, ref, google_event_id
+        'SELECT id, cust_name, cust_phone, cust_plate, cust_email, notes, google_event_id
          FROM rez_bookings ORDER BY id ASC'
     )->fetchAll();
 } catch (Throwable $e) {
@@ -93,7 +42,7 @@ try {
 $bkProcessed = count($rows);
 $bkFound = 0;
 $linked = 0;
-$dbError = null;            // pierwszy realny błąd zapisu klienta (diagnostyka)
+$dbError = null;            // pierwszy realny błąd zapisu klienta (gdyby import padł)
 $knownEventIds = [];
 foreach ($rows as $r) {
     if (!empty($r['google_event_id'])) $knownEventIds[$r['google_event_id']] = true;
@@ -154,42 +103,23 @@ try {
 $total = 0;
 try { $total = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn(); } catch (Throwable $e) {}
 
-/* ---------- SAMOTEST: która METODA połączenia widzi zapisane wiersze? ----------
- * phpMyAdmin (localhost, socket) widzi komplet, a aplikacja (PDO) widzi 0 → różnica
- * jest w SPOSOBIE połączenia. Próbujemy trzech wariantów i patrzymy, który zwraca
- * pełny COUNT. Ten wariant wpiszemy do config.php. */
-$diag = [];
-$c = rez_config()['db'];
-$dbn = $c['name']; $usr = $c['user']; $pwd = $c['pass'];
-
-$diag['v_localhost'] = mig_try_conn("mysql:host=localhost;dbname={$dbn};charset=utf8mb4", $usr, $pwd);
-$diag['v_127']       = mig_try_conn("mysql:host=127.0.0.1;dbname={$dbn};charset=utf8mb4", $usr, $pwd);
-
-// Ścieżka gniazda UNIX (tak łączy się phpMyAdmin) — odczytana z bieżącego połączenia.
-$sockPath = '';
-try { $sv = $pdo->query("SHOW VARIABLES LIKE 'socket'")->fetch(); $sockPath = (string)($sv['Value'] ?? ''); } catch (Throwable $e) {}
-$diag['socket_path'] = $sockPath !== '' ? $sockPath : '(brak)';
-if ($sockPath !== '') {
-    $diag['v_socket'] = mig_try_conn("mysql:unix_socket={$sockPath};dbname={$dbn};charset=utf8mb4", $usr, $pwd);
-}
-
 rez_json([
     'ok'              => true,
-    'processed'       => $bkProcessed,        // (zgodność wstecz) ile rezerwacji przejrzano
-    'linked'          => $linked,             // (zgodność wstecz) ile rezerwacji powiązano
+    'processed'       => $bkProcessed,        // ile rezerwacji przejrzano
+    'linked'          => $linked,             // ile rezerwacji powiązano z profilem
     'events_processed'=> $evProcessed,
     'from_bookings'   => $bkFound,
     'from_events'     => $evFound,
     'created'         => max(0, $total - $before),
     'clients_total'   => $total,
     'google_error'    => $evError,
-    'db_error'        => $dbError,            // diagnostyka: realny błąd zapisu klienta
-    'diag'            => $diag,               // diagnostyka: rozdział odczyt/zapis (samotest)
+    'db_error'        => $dbError,            // null gdy OK; komunikat gdy zapis klienta padł
 ]);
 
 /**
- * Upsert klienta z PRZECHWYTYWANIEM błędu (do diagnostyki). Logika jak rez_upsert_client,
- * ale pierwszy błąd zapisu trafia do $dbError (przez referencję) zamiast zniknąć w catch.
+ * Upsert klienta (idempotentny po phone_norm). Zwraca client_id albo null.
+ * Pierwszy realny błąd zapisu trafia do $dbError (przez referencję) — żeby NIE zniknął w catch.
+ * `id = LAST_INSERT_ID(id)` sprawia, że lastInsertId() zwraca id także przy UPDATE (bez SELECT-a po zapisie).
  */
 function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
     if ($norm === '') return null;
@@ -207,8 +137,6 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
                 updated_at = CURRENT_TIMESTAMP'
         );
         $stmt->execute([$norm, $disp, ($name !== '' ? $name : null), ($email !== '' ? $email : null)]);
-        // id z LAST_INSERT_ID() — działa też przy update i NIE wymaga odczytu po zapisie
-        // (kluczowe, gdy hosting rozdziela odczyt/zapis na różne serwery).
         $cid = (int)$pdo->lastInsertId();
         if ($cid <= 0) {
             $sel = $pdo->prepare('SELECT id FROM rez_clients WHERE phone_norm=?');
@@ -234,33 +162,6 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
         if ($dbError === null) $dbError = $e->getMessage();
         return null;
     }
-}
-
-/** Próbuje połączyć się danym DSN i zwraca tożsamość serwera + COUNT(*) z rez_clients. */
-function mig_try_conn($dsn, $user, $pass) {
-    try {
-        $p = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-        $id = $p->query('SELECT @@hostname AS h, @@port AS port, DATABASE() AS db')->fetch();
-        $cnt = (int)$p->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn();
-        return ['host' => $id['h'] ?? '?', 'port' => $id['port'] ?? '?', 'db' => $id['db'] ?? '?', 'count' => $cnt];
-    } catch (Throwable $e) {
-        return ['err' => $e->getMessage()];
-    }
-}
-
-/** Świeże, osobne połączenie PDO (do samotestu odczyt-po-zapisie). */
-function mig_fresh_pdo() {
-    $c = rez_config()['db'];
-    $dsn = "mysql:host={$c['host']};dbname={$c['name']};charset={$c['charset']}";
-    return new PDO($dsn, $c['user'], $c['pass'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
 }
 
 /** Naprawia bajty do poprawnego UTF-8 i usuwa znaki sterujące / znak zastępczy. */

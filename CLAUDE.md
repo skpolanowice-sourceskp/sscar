@@ -31,6 +31,13 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - **Windows + PowerShell** lokalnie. Deploy przez **FTP** (dane w `.vscode/sftp.json`).
 - **Sekrety:** `reservations/config.php` jest **gitignored** (jest tylko na serwerze). Wzór: `config.sample.php`.
   Nigdy nie wpisuj hasła FTP/admina wprost w komendę — czytaj je ze `sftp.json` do zmiennej.
+- **⚠️ MySQL za proxy — PDO MUSI mieć `ATTR_EMULATE_PREPARES => true`** (patrz `rez_db()` w `lib.php`).
+  Hosting vh.pl trzyma MySQL za proxy, które **psuje pakiety wyników protokołu binarnego** (server-side
+  prepared statements). Przy `false` **każdy `SELECT` zwraca śmieci/0** (a `@@port` wraca jako „↑nazwa_bazy"),
+  mimo że **zapisy działają** (INSERT/UPDATE nie zwracają wyników). Objaw, który to demaskuje: dane są w bazie
+  (phpMyAdmin je widzi), ale aplikacja czyta 0. NIE diagnozuj tego jako „rozdział odczyt/zapis / replika" —
+  to protokół. Bezpieczeństwo emulacji: `charset=utf8mb4` w DSN → poprawne escapowanie (brak ryzyka iniekcji).
+  Konsekwencja: NIE binduj `LIMIT ?`/`PARAM_INT` (emulacja wysyła parametry jako stringi) — używaj literałów.
 
 ---
 
@@ -151,6 +158,14 @@ pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_ext
   `UPDATE …SET start_dt=?` SAM naprawia wiersz. Skutek uboczny: historia w profilu klienta może
   pokazywać „Invalid Date" do czasu pierwszego ruszenia eventu na siatce.
 - **Brak PHP lokalnie** — nie lintuj przez CLI; czytaj kod.
+- **⚠️ „Zapis działa, odczyt zwraca 0" = protokół PDO, NIE replika.** Najdroższy błąd w historii projektu:
+  panel zapisywał klientów (phpMyAdmin pokazywał komplet), ale każdy `SELECT` aplikacji zwracał 0. Goniliśmy
+  fałszywe tropy (transakcje, DROP/recreate tabeli, „read/write split", host w configu = `localhost` jak phpMyAdmin).
+  **Prawdziwa przyczyna:** `rez_db()` miało `PDO::ATTR_EMULATE_PREPARES => false`, a proxy MySQL na vh.pl psuje
+  pakiety wyników **protokołu binarnego**. Diagnostyczny strzał w dziesiątkę: `SELECT @@port` wracał jako
+  `↑nazwa_bazy` (przesunięte kolumny + bajt sterujący). Fix = **`EMULATE_PREPARES => true`** (protokół tekstowy).
+  Jak rozpoznać następnym razem: jeśli dane są w bazie, a PHP czyta 0/śmieci — **najpierw** sprawdź emulację
+  prepared statements, dopiero potem cokolwiek innego. (Pełny opis w sekcji 2.)
 - **Rozjechane + ŹLE ZAKODOWANE dane rezerwacji**: w `rez_bookings` (legacy) numer telefonu bywa w innym polu niż
   `cust_phone`, kolumny są poprzesuwane, a treść zawiera **mojibake / niepoprawny UTF-8** (np. `\x9B`, `??`,
   e-mail w polu `tel`, nazwisko w `email`). Skutek: surowy `INSERT` do `rez_clients` leciał `SQLSTATE[22007] 1366
@@ -169,6 +184,41 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-06-30 (c)** — Panel/kalendarz: (a) **termin admina bez danych klienta** — pola Imię/Telefon/Nr rej.
+  są przy tworzeniu **opcjonalne** (admin może wbić sam slot / szybką blokadę). Doszedł checkbox
+  **„Dodaj klienta do bazy"** (`ce-addclient`, domyślnie zaznaczony); odznaczenie = NIE tworzymy profilu
+  (slot nie zaśmieca bazy klientów). Walidacja: front `validBooking(...,{lenient:true})` w tworzeniu (telefon
+  wymagany **tylko** gdy checkbox zaznaczony — to klucz profilu); **edycja bez zmian** (strict). Backend
+  `event.php ev_create`: `$addClient` z payloadu (domyślnie true), `rez_upsert_client` woła się tylko gdy
+  `$addClient && ≥9 cyfr` telefonu; reszta walidacji zluzowana. `ev_booking_payload` nie skleja pustych pól
+  (tytuł Google: „… – NR (Marka)", w braku auta nazwisko, w braku obu sama usługa). `events.php`: tytuł kafelka
+  bez wiszącego „· " gdy brak nr rej. (b) **Usunięty podwójny pasek przewijania** — `.pnl-app` `min-height:100vh`
+  → `height:100dvh; overflow:hidden`, więc przewija się tylko wewnętrzny kontener widoku (`.pnl-cal-scroll`/
+  `.pnl-clients-results`), nie całe okno. `?v=20260630c`.
+- **2026-06-30 (b)** — Panel/kalendarz: (a) **domyślny widok = Dzień** (`st.view` `'week'→'day'`) — obsługa pracuje
+  „na dziś"; (b) **kafelek w siatce pokazuje marka/model + telefon** zamiast „wariant · nr rej." (`evBlockBody`
+  w `panel-calendar.js`: tytuł = `ev.vehicle||ev.plate`, podlinijka `.pnl-ev-sub` = `fmtPhone(ev.phone)` w formacie
+  XXX XXX XXX). Reszta szczegółów dalej po rozwinięciu w szufladzie. Tylko front (`panel-calendar.js` + `.pnl-ev-sub`
+  w `panel.css`), bez zmian backendu. `?v=20260630b`.
+- **2026-06-30** — Panel/kalendarz: **marka/model pojazdu w szczegółach rezerwacji** (jak w tytule Google
+  „PLATE (Marka Model)"). Marka/model NIE ma kolumny w `rez_bookings` — żyje w **tytule eventu Google**
+  i w `rez_client_vehicles`. `events.php` wyłuskuje ją z tytułu (`ev_vehicle_from_title` = ostatni nawias)
+  i zwraca jako `ev.vehicle`; szuflada (`panel-calendar.js`) pokazuje „PLATE (Marka Model)". **Przy okazji
+  naprawiony cichy bug:** formularz edycji rezerwacji w panelu miał zahardkodowane `vehicle:''` (bo `events.php`
+  nie podawał marki), więc każda edycja **kasowała markę/model z tytułu Google**; teraz prefill = `ev.vehicle`.
+  `event.php` (edycja) dokłada `rez_upsert_client` → profil klienta (telefon→auta) zostaje w sync także przy
+  edycji w panelu (wcześniej tylko przy tworzeniu). Bez zmian schematu. `?v=20260630a`.
+- **2026-06-26** — **Import klientów wreszcie czytelny w panelu + naprawa odczytu w CAŁEJ aplikacji.** Objaw:
+  import zapisywał profile (phpMyAdmin: komplet wierszy), ale lista „Klienci" świeciła pustką, a `clients_total`
+  z importu = 0. Po długiej diagnostyce (odrzucone błędne tropy: transakcje, DROP/recreate, „read/write split")
+  przyczyną okazał się **`PDO::ATTR_EMULATE_PREPARES => false` w `rez_db()`** — proxy MySQL na vh.pl psuje pakiety
+  wyników protokołu binarnego, więc każdy `SELECT` zwracał śmieci/0 (kanarek: `@@port = ↑nazwa_bazy`). Fix:
+  **`EMULATE_PREPARES => true`** w `lib.php` (jedna linia) — naprawia odczyt nie tylko importu, ale wszystkich
+  zapytań MySQL (lista klientów, `rez_spacing_conflict` w `book.php` itd.). `migrate_clients.php` posprzątane
+  z rusztowania diagnostycznego (usunięte: tryb `preview`, samotest `diag`, `mig_probe_conn`, `mig_fresh_pdo`) —
+  został czysty, idempotentny import (skan `rez_bookings` + Google Calendar → `rez_extract_phone`/`mig_utf8`).
+  `panel-clients.js` `runImport` = prosty komunikat wyniku. Nowy lokalny skill: `.claude/skills/sscar-baza-klientow/`.
+  `?v=20260626f`. Pułapka opisana w sekcjach 2 i 8 (czytaj NAJPIERW przy „zapis działa, odczyt 0").
 - **2026-06-25 (d)** — Rezerwacja: **odstęp między rezerwacjami tej samej usługi**. Klimatyzacja blokuje w grafiku
   tylko 10 min (`duration`), ale realna obsługa trwa ~50 min, więc dwie klimy nie mogą stać 10 min po sobie. Subtyp
   `klima` dostał `spacing => 50` (start-do-startu, w przód i wstecz) oraz `match => '/klima/i'` (wzorzec tytułu eventu).

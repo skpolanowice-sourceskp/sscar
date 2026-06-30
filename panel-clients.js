@@ -122,70 +122,21 @@
         btn.disabled = true; btn.textContent = 'Importuję…';
         api('migrate_clients.php', { method: 'POST', json: {} }).then(function (r) {
             r = r || {};
-            var imported = (+r.from_bookings || 0) + (+r.from_events || 0); // sukcesy po stronie zapisu
-            // Źródło prawdy = ŚWIEŻE połączenie (tak jak czyta panel). Jeśli ono widzi
-            // wiersze, import naprawdę zadziałał. Jeśli zapis był, a świeży odczyt = 0,
-            // to hosting rozdziela odczyt/zapis — pokaż to wprost.
-            var diag  = r.diag || {};
-            var fresh = (diag.fresh && typeof diag.fresh.count === 'number') ? diag.fresh.count : null;
-            var visible = (fresh !== null) ? fresh : (+r.clients_total || 0);
-            if (visible > 0) {
-                window.alert('Gotowe. Klientów w bazie: ' + visible + '.');
-                search('');
-                setTimeout(function () { search(''); }, 1500);
-            } else {
-                // Albo nic nie wykryto, albo (gorzej) zapis nie jest widoczny dla odczytu.
-                showImportDiagnostics(r);
+            var imported = (+r.from_bookings || 0) + (+r.from_events || 0);
+            var total = +r.clients_total || 0;
+            if (r.db_error && imported === 0 && total === 0) {
+                btn.disabled = false; btn.textContent = 'Spróbuj ponownie';
+                window.alert('Import nie zapisał klientów.\nBłąd bazy: ' + r.db_error);
+                return;
             }
+            window.alert('Import zakończony.\nDopasowano numery: ' + imported +
+                ' (rezerwacje: ' + (+r.from_bookings || 0) + ', kalendarz: ' + (+r.from_events || 0) + ').' +
+                '\nKlientów w bazie: ' + total + '.' +
+                (r.google_error ? '\n\nUwaga (kalendarz): ' + r.google_error : ''));
+            search('');
         }).catch(function (err) {
             btn.disabled = false; btn.textContent = 'Spróbuj ponownie';
             window.alert((err && err.message) || 'Import nie powiódł się. Uruchom schema_admin.sql w phpMyAdmin.');
-        });
-    }
-
-    // Diagnostyka: gdy import nic nie zapisał, pokaż realny błąd zapisu, kolumny tabeli
-    // oraz próbkę surowych danych (co jest w rezerwacjach/Google i co wykrywa wzorzec).
-    function showImportDiagnostics(r) {
-        r = r || {};
-        var box = host.querySelector('#cl-results');
-        box.innerHTML = '<div class="pnl-cal-loading">Sprawdzam dane…</div>';
-        api('migrate_clients.php', { method: 'POST', json: { preview: 1 } }).then(function (d) {
-            var bk = d.bookings || [], ev = d.events || [];
-            var h = '<div class="pnl-import-diag">' +
-                '<p class="pnl-muted">Import nie zapisał klientów — diagnostyka poniżej. Zrób zrzut ekranu i wyślij.</p>';
-            if (r.db_error) h += '<div class="pnl-alert">Błąd zapisu do bazy: ' + esc(r.db_error) + '</div>';
-            // Pełny zrzut samotestu (płaski key=value, łącznie z zagnieżdżonym conn).
-            var dg = r.diag || {};
-            var flat = [];
-            Object.keys(dg).forEach(function (k) {
-                var v = dg[k];
-                if (v && typeof v === 'object') {
-                    Object.keys(v).forEach(function (k2) { flat.push(k + '.' + k2 + '=' + v[k2]); });
-                } else { flat.push(k + '=' + v); }
-            });
-            h += '<div class="pnl-alert">SAMOTEST — wyślij ten zrzut:</div>';
-            flat.forEach(function (line) { h += '<div class="pnl-diag-row">' + esc(line) + '</div>'; });
-            h += '<div class="pnl-diag-row">processed=' + (+r.processed || 0) + ' · events=' + (+r.events_processed || 0) +
-                 ' · from_bookings=' + (+r.from_bookings || 0) + ' · from_events=' + (+r.from_events || 0) +
-                 ' · total=' + (+r.clients_total || 0) + '</div>';
-            h += '<h4 class="pnl-diag-h">Rezerwacje (próbka ' + bk.length + ')</h4>';
-            if (!bk.length) h += '<div class="pnl-diag-row">— brak —</div>';
-            bk.forEach(function (r) {
-                h += '<div class="pnl-diag-row">#' + esc(r.id) +
-                    ' • nazwa=[' + esc(r.name) + '] tel=[' + esc(r.phone) + '] rej=[' + esc(r.plate) + ']' +
-                    ' mail=[' + esc(r.email) + '] notatki=[' + esc(r.notes) + ']' +
-                    ' <b>→ ' + (r.detected ? esc(r.detected) : '✗') + '</b></div>';
-            });
-            h += '<h4 class="pnl-diag-h">Wydarzenia Google (próbka ' + ev.length + ')</h4>';
-            if (!ev.length) h += '<div class="pnl-diag-row">— brak (lub ' + esc(d.google_error || 'niedostępne') + ') —</div>';
-            ev.forEach(function (e) {
-                h += '<div class="pnl-diag-row">tytuł=[' + esc(e.summary) + '] opis=[' + esc(e.description) + ']' +
-                    ' lok=[' + esc(e.location) + '] <b>→ ' + (e.detected ? esc(e.detected) : '✗') + '</b></div>';
-            });
-            h += '</div>';
-            box.innerHTML = h;
-        }).catch(function (err) {
-            box.innerHTML = '<div class="pnl-clients-empty">' + esc((err && err.message) || 'Błąd diagnostyki.') + '</div>';
         });
     }
 

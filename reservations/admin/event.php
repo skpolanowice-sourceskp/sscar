@@ -89,9 +89,11 @@ function ev_create($in, $cfg, $tz, $calendarId) {
     $vehicle = trim((string)($cust['vehicle'] ?? ''));
     $email = trim((string)($cust['email'] ?? ''));
     $notes = trim((string)($cust['notes'] ?? ''));
-    if (mb_strlen($name) < 2) rez_fail(422, 'Podaj imię i nazwisko klienta.');
-    if (strlen(preg_replace('/\D/', '', $phone)) < 9) rez_fail(422, 'Podaj poprawny telefon.');
-    if (mb_strlen($plate) < 2) rez_fail(422, 'Podaj numer rejestracyjny.');
+    // Dane klienta są OPCJONALNE – admin może wstawić sam termin / szybką blokadę.
+    // Telefon wymagamy tylko, gdy zaznaczono dopisanie klienta do bazy (to klucz profilu).
+    $addClient = array_key_exists('addClient', $in) ? !empty($in['addClient']) : true;
+    $phoneDigits = preg_replace('/\D/', '', $phone);
+    if ($addClient && strlen($phoneDigits) < 9) rez_fail(422, 'Aby dopisać klienta do bazy, podaj telefon (lub wyłącz dodawanie do bazy).');
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) rez_fail(422, 'Niepoprawny e-mail.');
 
     $dur = (int)($in['durationMin'] ?? $subtype['duration']);
@@ -130,11 +132,14 @@ function ev_create($in, $cfg, $tz, $calendarId) {
     }
     $pdo->prepare('UPDATE rez_bookings SET google_event_id=?, ref=? WHERE id=?')->execute([$event['id'], $ref, $id]);
 
-    // Profil klienta (best-effort; bez blokady – panel może nadpisać czarną listę).
-    $clientId = rez_upsert_client($pdo, rez_phone_norm($phone), $phone, $name, $email, $plate, $vehicle);
-    if ($clientId) {
-        try { $pdo->prepare('UPDATE rez_bookings SET client_id=? WHERE id=?')->execute([$clientId, $id]); }
-        catch (Throwable $e) { /* przed migracją – pomiń */ }
+    // Profil klienta tylko, gdy zaznaczono „Dodaj klienta do bazy" i mamy telefon (klucz profilu).
+    // Bez tego szybkie blokady slota nie zaśmiecają bazy klientów (best-effort, bez czarnej listy).
+    if ($addClient && strlen($phoneDigits) >= 9) {
+        $clientId = rez_upsert_client($pdo, rez_phone_norm($phone), $phone, $name, $email, $plate, $vehicle);
+        if ($clientId) {
+            try { $pdo->prepare('UPDATE rez_bookings SET client_id=? WHERE id=?')->execute([$clientId, $id]); }
+            catch (Throwable $e) { /* przed migracją – pomiń */ }
+        }
     }
     rez_json(['ok' => true, 'id' => $event['id'], 'ref' => $ref]);
 }
@@ -237,6 +242,8 @@ function ev_update($in, $cfg, $tz, $calendarId) {
         try {
             gcal_update_event($calendarId, $id, ev_booking_payload($cfg, $service, $subtype, $curStart, $curEnd, $row['ref'], $name, $phone, $plate, $vehicle, $email, $notes));
         } catch (Throwable $e) { /* baza zaktualizowana – kalendarz dogoni przy kolejnym zapisie */ }
+        // Profil klienta w sync: telefon = klient, do niego przypięty pojazd (marka/model + nr rej.).
+        rez_upsert_client($pdo, rez_phone_norm($phone), $phone, $name, $email, $plate, $vehicle);
         $did = true;
     }
 
@@ -265,12 +272,16 @@ function ev_parse_dt($s, $tz) {
 function ev_booking_payload($cfg, $service, $subtype, $start, $end, $ref, $name, $phone, $plate, $vehicle, $email, $notes) {
     $titleDetail = ($subtype['label'] === $service['label'])
         ? $service['label'] : $service['label'] . ' – ' . $subtype['label'];
-    $summary = 'Rezerwacja: ' . $titleDetail . ' – ' . $plate . ($vehicle ? ' (' . $vehicle . ')' : '');
+    // Dane klienta bywają puste (termin/blokada wbita przez admina) – nie sklejaj pustych
+    // fragmentów. Tytuł: „… – NR (Marka)" gdy jest auto, inaczej nazwisko, inaczej sama usługa.
+    $vehLabel = $plate !== '' ? ($plate . ($vehicle ? ' (' . $vehicle . ')' : '')) : '';
+    $who = $vehLabel !== '' ? $vehLabel : $name;
+    $summary = 'Rezerwacja: ' . $titleDetail . ($who !== '' ? ' – ' . $who : '');
     $desc = "Rezerwacja (panel) ({$ref})\n"
         . "Usługa: {$service['label']} / {$subtype['label']}\n"
-        . 'Pojazd: ' . $plate . ($vehicle ? ", {$vehicle}" : '') . "\n"
-        . "Klient: {$name}\n"
-        . "Telefon: {$phone}\n"
+        . (($plate !== '' || $vehicle !== '') ? 'Pojazd: ' . ($plate !== '' ? $plate : '—') . ($vehicle ? ", {$vehicle}" : '') . "\n" : '')
+        . ($name  !== '' ? "Klient: {$name}\n" : '')
+        . ($phone !== '' ? "Telefon: {$phone}\n" : '')
         . ($email ? "E-mail: {$email}\n" : '')
         . ($notes ? "Uwagi: {$notes}\n" : '');
     return [

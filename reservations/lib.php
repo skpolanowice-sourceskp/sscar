@@ -200,7 +200,12 @@ function rez_db() {
             $pdo = new PDO($dsn, $c['user'], $c['pass'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
+                // MUSI być true (emulowane). Hosting vh.pl trzyma MySQL za proxy, które PSUJE
+                // pakiety wyników protokołu binarnego (server-side prepared statements):
+                // przy `false` każdy SELECT zwracał śmieci/0 (np. @@port = „↑nazwa_bazy"),
+                // mimo że zapisy działały. Emulowane prepared statements (protokół tekstowy)
+                // czytają poprawnie. Bezpieczne: charset=utf8mb4 w DSN → poprawne escapowanie.
+                PDO::ATTR_EMULATE_PREPARES => true,
             ]);
         } catch (Throwable $e) {
             rez_fail(500, 'Błąd połączenia z bazą danych.');

@@ -19,7 +19,7 @@
     var api = null;
     var host = null;
     var st = {
-        view: 'week',        // 'day' | 'week'
+        view: 'day',         // 'day' | 'week' – domyślnie pojedynczy dzień (obsługa pracuje „na dziś")
         anchor: null,        // Date (lokalny) – dzień bazowy
         loadToken: 0,
         events: [],
@@ -247,7 +247,7 @@
             html += '<button type="button" class="pnl-ev pnl-ev--' + evClass(e) + '" data-id="' + escAttr(e.id) + '" ' +
                 'style="top:' + top + 'px;height:' + hgt + 'px;left:calc(' + leftPct + '% + 2px);width:calc(' + widthPct + '% - 4px)">' +
                 '<span class="pnl-ev-time">' + t1 + '–' + t2 + '</span>' +
-                '<span class="pnl-ev-title">' + escHtml(evTitle(e)) + '</span>' +
+                evBlockBody(e) +
                 '</button>';
         });
         return html;
@@ -296,6 +296,24 @@
         if (e.type === 'rezerwacja') return e.title || (e.subtypeLabel + ' · ' + e.plate);
         return e.title || (e.type === 'blok' ? 'Blokada' : 'Wpis');
     }
+    // Treść kafelka w siatce: dla rezerwacji marka/model + telefon (najważniejsze „na rzut oka"),
+    // reszta po rozwinięciu w szufladzie. Pozostałe typy – surowy tytuł.
+    function evBlockBody(e) {
+        if (e.type === 'rezerwacja') {
+            var main = e.vehicle || e.plate || e.subtypeLabel || '';
+            var html = '<span class="pnl-ev-title">' + escHtml(main) + '</span>';
+            if (e.phone) html += '<span class="pnl-ev-sub">' + escHtml(fmtPhone(e.phone)) + '</span>';
+            return html;
+        }
+        return '<span class="pnl-ev-title">' + escHtml(evTitle(e)) + '</span>';
+    }
+    // Telefon „na ładnie": 9 cyfr → XXX XXX XXX; w innym wypadku surowo.
+    function fmtPhone(p) {
+        var d = ('' + (p == null ? '' : p)).replace(/\D+/g, '');
+        if (d.length === 9) return d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6);
+        if (d.length === 11 && d.slice(0, 2) === '48') { d = d.slice(2); return d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6); }
+        return ('' + p).trim();
+    }
     function minLabel(m) { return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
 
     /* ---------- Szuflada ---------- */
@@ -343,7 +361,7 @@
         if (ev.type === 'rezerwacja') {
             rows += row('Usługa', ev.serviceLabel);
             rows += row('Wariant', ev.subtypeLabel);
-            rows += row('Pojazd', (ev.plate || '') + (ev.vehicle ? ' · ' + ev.vehicle : ''));
+            rows += row('Pojazd', (ev.plate || '') + (ev.vehicle ? ' (' + ev.vehicle + ')' : ''));
             rows += row('Klient', ev.name);
             rows += row('Telefon', ev.phone);
             rows += row('E-mail', ev.email);
