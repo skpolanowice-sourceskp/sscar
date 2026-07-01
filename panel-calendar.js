@@ -23,7 +23,8 @@
         anchor: null,        // Date (lokalny) – dzień bazowy
         loadToken: 0,
         events: [],
-        days: []
+        days: [],
+        nowTimer: null       // interwał odświeżający linię „teraz" na żywo
     };
 
     /* ---------- Daty ---------- */
@@ -105,10 +106,42 @@
         document.removeEventListener('keydown', onEsc); // bez duplikatów przy ponownym montażu
         document.addEventListener('keydown', onEsc);
 
+        // Linia „teraz" idzie na żywo (bez przeładowania) – przesuwamy ją co 20 s.
+        if (st.nowTimer) clearInterval(st.nowTimer);
+        st.nowTimer = setInterval(tickNow, 20000);
+
         load();
     }
 
     function onEsc(e) { if (e.key === 'Escape') closeDrawer(); }
+
+    // Przesuwa (tworzy/usuwa) czerwoną linię bieżącej godziny bez przerysowania siatki.
+    // Wołane z interwału – dlatego kalendarz „tyka" na żywo, a nie dopiero po odświeżeniu.
+    function tickNow() {
+        if (!host) return;
+        var scroll = host.querySelector('#pnl-cal-scroll');
+        if (!scroll || !scroll.querySelector('.pnl-cal-daycol')) return;   // widok nie jest zamontowany
+        var b = bounds();
+        var now = new Date();
+        var iso = toISO(now);
+        var min = now.getHours() * 60 + now.getMinutes();
+        var inHours = (min >= b.open * 60 && min <= b.close * 60);
+        var top = (min - b.open * 60) * PPM;
+        Array.prototype.forEach.call(scroll.querySelectorAll('.pnl-cal-daycol'), function (col) {
+            var line = col.querySelector('.pnl-now');
+            if (col.dataset.date !== iso || !inHours) {
+                if (line) line.parentNode.removeChild(line);   // inny dzień / poza godzinami
+                return;
+            }
+            if (!line) {
+                line = document.createElement('div');
+                line.className = 'pnl-now';
+                line.innerHTML = '<span class="pnl-now-dot"></span>';
+                col.appendChild(line);
+            }
+            line.style.top = top + 'px';
+        });
+    }
 
     function syncToolbar() {
         Array.prototype.forEach.call(host.querySelectorAll('.pnl-seg-btn'), function (b) {
@@ -140,7 +173,7 @@
             if (token !== st.loadToken) return;
             st.events = data.events || [];
             st.days = data.days || [];
-            renderGrid();
+            renderGrid({ autoScroll: true });
         }).catch(function (err) {
             if (token !== st.loadToken) return;
             scroll.innerHTML = '<div class="pnl-cal-loading pnl-cal-error">' +
@@ -149,9 +182,72 @@
         });
     }
 
+    // Cichy refetch bez placeholdera „Wczytuję…" i bez skoku scrolla – do pogodzenia
+    // stanu optymistycznego z prawdą serwera, gdy zajdzie potrzeba (współdzieli loadToken,
+    // więc nawigacja w trakcie zawsze wygrywa).
+    function refresh() {
+        var dates = viewDates();
+        var from = dates[0], to = dates[dates.length - 1];
+        var token = ++st.loadToken;
+        api('events.php?from=' + from + '&to=' + to).then(function (data) {
+            if (token !== st.loadToken) return;
+            st.events = data.events || [];
+            st.days = data.days || [];
+            renderGrid({ keepScroll: true });
+        }).catch(function () { /* cichy – zostaje stan optymistyczny */ });
+    }
+
+    /* ---------- Lokalne mutacje magazynu (optymistyczny UI) ----------
+       Zmiany nanosimy najpierw na st.events i przerysowujemy siatkę BEZ sieci,
+       a zapis do backendu leci w tle. Dzięki temu przeciąganie / edycja / tworzenie
+       są natychmiastowe, a nie „przeładowują cały kalendarz". */
+    function eventIndex(id) {
+        for (var i = 0; i < st.events.length; i++) if (st.events[i].id === id) return i;
+        return -1;
+    }
+    // Nanosi patch na wydarzenie i przerysowuje; zwraca snapshot poprzednich wartości
+    // (tylko zmienianych pól) do ewentualnego wycofania po błędzie sieci.
+    function applyLocal(id, patch) {
+        var i = eventIndex(id);
+        if (i < 0) return null;
+        var prev = {}, k;
+        for (k in patch) if (patch.hasOwnProperty(k)) prev[k] = st.events[i][k];
+        for (k in patch) if (patch.hasOwnProperty(k)) st.events[i][k] = patch[k];
+        renderGrid({ keepScroll: true });
+        return prev;
+    }
+    function addLocal(ev) {
+        st.events.push(ev);
+        renderGrid({ keepScroll: true });
+    }
+    function removeLocal(id) {
+        var i = eventIndex(id);
+        if (i < 0) return null;
+        var ev = st.events.splice(i, 1)[0];
+        renderGrid({ keepScroll: true });
+        return ev;
+    }
+
+    /* ---------- Toast (błędy zapisu w tle) ---------- */
+    function toast(msg, type) {
+        var box = host || document.body;
+        var t = document.createElement('div');
+        t.className = 'pnl-toast' + (type === 'error' ? ' pnl-toast--error' : '');
+        t.setAttribute('role', 'status');
+        t.textContent = msg;
+        box.appendChild(t);
+        requestAnimationFrame(function () { t.classList.add('is-in'); });
+        setTimeout(function () {
+            t.classList.remove('is-in');
+            setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 220);
+        }, 3400);
+    }
+
     /* ---------- Render: siatka ---------- */
-    function renderGrid() {
+    function renderGrid(opts) {
+        opts = opts || {};
         var scroll = host.querySelector('#pnl-cal-scroll');
+        var prevScroll = scroll.scrollTop;   // zachowaj pozycję przy przerysowaniu lokalnym
         var dates = viewDates();
         var b = bounds();
         var totalMin = (b.close - b.open) * 60;
@@ -167,7 +263,7 @@
             var chips = st.events.filter(function (e) {
                 if (!e.allDay) return false; var p = parseLocal(e.start); return p && p.date === iso;
             }).map(function (e) {
-                return '<button type="button" class="pnl-ev-chip pnl-ev--' + evClass(e) + '" data-id="' + escAttr(e.id) + '">' + escHtml(evTitle(e)) + '</button>';
+                return '<button type="button" class="pnl-ev-chip pnl-ev--' + evClass(e) + (e._pending ? ' is-pending' : '') + '" data-id="' + escAttr(e.id) + '">' + escHtml(evTitle(e)) + '</button>';
             }).join('');
             head += '<div class="' + cls + '">' +
                 '<span class="pnl-cal-dow">' + DOW_SHORT[d.getDay()] + '</span>' +
@@ -210,11 +306,16 @@
         // Tworzenie w pustym obszarze dnia (klik lub przeciągnięcie od–do) obsługuje
         // moduł edycji w enhanceGrid – ma tam kontekst PPM i granic siatki.
 
-        // Auto-scroll do godziny otwarcia (lub „teraz")
-        var now = new Date();
-        var focusMin = (toISO(now) >= dates[0] && toISO(now) <= dates[dates.length - 1])
-            ? Math.max(0, now.getHours() * 60 + now.getMinutes() - b.open * 60 - 60) : 0;
-        scroll.scrollTop = focusMin * PPM;
+        // Auto-scroll do godziny otwarcia (lub „teraz") tylko przy świeżym wczytaniu widoku.
+        // Przy przerysowaniu lokalnym (przeciągnięcie/edycja/tworzenie) trzymamy pozycję.
+        if (opts.autoScroll) {
+            var now = new Date();
+            var focusMin = (toISO(now) >= dates[0] && toISO(now) <= dates[dates.length - 1])
+                ? Math.max(0, now.getHours() * 60 + now.getMinutes() - b.open * 60 - 60) : 0;
+            scroll.scrollTop = focusMin * PPM;
+        } else {
+            scroll.scrollTop = prevScroll;
+        }
 
         // Hak edycji (krok 3): przeciąganie / zmiana długości.
         if (window.PanelCalendarEdit && typeof window.PanelCalendarEdit.enhanceGrid === 'function') {
@@ -244,7 +345,7 @@
             var widthPct = 100 / lanes, leftPct = lane * widthPct;
             var e = it.ev;
             var t1 = minLabel(it.startMin), t2 = minLabel(it.endMin);
-            html += '<button type="button" class="pnl-ev pnl-ev--' + evClass(e) + '" data-id="' + escAttr(e.id) + '" ' +
+            html += '<button type="button" class="pnl-ev pnl-ev--' + evClass(e) + (e._pending ? ' is-pending' : '') + '" data-id="' + escAttr(e.id) + '" ' +
                 'style="top:' + top + 'px;height:' + hgt + 'px;left:calc(' + leftPct + '% + 2px);width:calc(' + widthPct + '% - 4px)">' +
                 '<span class="pnl-ev-time">' + t1 + '–' + t2 + '</span>' +
                 evBlockBody(e) +
@@ -391,7 +492,12 @@
 
     // Udostępnij wnętrzności dla modułu edycji (krok 3).
     window.PanelCalendarInternals = {
-        reload: function () { load(); },
+        reload: function () { load(); },       // pełne wczytanie (placeholder + auto-scroll) – nawigacja
+        refresh: refresh,                      // cichy refetch (bez flasha, trzyma scroll)
+        applyLocal: applyLocal,                // optymistyczna zmiana wydarzenia (zwraca snapshot do rollbacku)
+        addLocal: addLocal,                    // optymistyczne dodanie wydarzenia
+        removeLocal: removeLocal,              // optymistyczne usunięcie (zwraca wydarzenie do rollbacku)
+        toast: toast,
         getState: function () { return st; },
         parseLocal: parseLocal,
         openDrawerHtml: openDrawerHtml,

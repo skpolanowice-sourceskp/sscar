@@ -127,6 +127,16 @@ pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_ext
 - **`event.php` / `ev_update`** — trzy gałęzie: (1) `start`+`end` = przesunięcie/rozciągnięcie,
   (2) `title` (+`kind`) dla wpisów spoza bazy (`blok` dostaje prefiks „Blokada:", `inne` tytuł surowy),
   (3) `customer` = dane rezerwacji. Formularz edycji rezerwacji wysyła (1)+(3) razem.
+- **⚡ Optymistyczny UI (od 2026-07-01):** każda akcja (przeciągnięcie/rozciągnięcie/tworzenie/edycja/usuwanie)
+  nanosi zmianę **od razu na lokalny magazyn `st.events` i przerysowuje siatkę BEZ sieci** (`renderGrid` trzyma
+  scroll), a request do `event.php` leci **w tle**. Błąd → **rollback** (przywrócenie snapshotu) + `toast`. NIE
+  używamy już `reload()` (pełny refetch z placeholderem „Wczytuję…" + skok scrolla) po zapisie. API magazynu na
+  `window.PanelCalendarInternals`: `applyLocal(id,patch)→prev`, `addLocal(ev)`, `removeLocal(id)→ev`,
+  `refresh()` (cichy refetch bez flasha), `toast(msg,type)`; `renderGrid(opts)` z `autoScroll` (świeże wczytanie)
+  vs `keepScroll` (przerysowanie lokalne). Tworzenie: wpis dodawany jako **`_pending`** (klasa `is-pending`,
+  `pointer-events:none` – nieklikalny/nieprzeciągalny), po sukcesie POST podmieniamy tymczasowe `id`→realne z
+  odpowiedzi (`{id,ref}`) bez refetchu. `panel-calendar-edit.js`: `createInBackground`/`patchInBackground` +
+  optymistyczne kształty wydarzeń (`bookingEventShape`, `labelsFor`). Kontrakt backendu bez zmian.
 - **Strefa czasu:** kalendarz w czasie lokalnym stacji; front (`parseLocal`) czyta „ścianę zegara" z ISO, ignorując offset.
 
 ---
@@ -184,6 +194,51 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-01 (c)** — Rezerwacje/klienci: **auto z rezerwacji NIE trafiało do bazy klientów — naprawione + backfill.**
+  Objaw: rezerwacje z numerem rejestracyjnym miały `client_id = NULL`, a tabela `rez_client_vehicles` była PUSTA
+  (0 pojazdów przy 57 rezerwacjach), mimo że marka/model widniały w tytule eventu Google. Diagnoza (przez tymczasowy,
+  token-guarded endpoint na roocie + testy w transakcji z rollback): dokładna korelacja **jest nr rej. ⟺ `client_id`
+  NULL**. `rez_upsert_client` wstawia pojazd tylko gdy `plate !== ''`; ta gałąź rzucała wyjątkiem, a **jeden** `try`
+  wokół całości zwracał `null` → rezerwacja traciła powiązanie z klientem, a auto nigdy nie wpadało. Źródło
+  historycznych porażek: **era `EMULATE_PREPARES=false`** (przed 2026-06-26) — `SELECT id … WHERE phone_norm` zwracał
+  0, więc funkcja wychodziła `return null` PRZED wstawieniem pojazdu (`AUTO_INCREMENT` tabeli pojazdów = 1: żaden
+  INSERT pojazdu nigdy nie ruszył). Rezerwacje bez nr rej. (panel, szybki slot) pomijają tę gałąź, więc podpinały
+  klienta poprawnie. **Fix (`lib.php` `rez_upsert_client`):** (1) woła `rez_ensure_client_schema($pdo)` na starcie
+  (`book.php`/`event.php` nie robiły tego same — brak tabeli wywalał cały upsert); (2) wstawienie pojazdu w
+  **osobnym `try`** — błąd auta NIE zeruje już powiązania klienta. **Backfill (`migrate_clients.php`):** przycisk
+  „Zaimportuj z rezerwacji" tworzy teraz też pojazdy — `mig_upsert` dostał parametr `$vehicle`, część A przekazuje
+  `cust_plate` + markę/model z tytułu powiązanego eventu Google (mapa `google_event_id→model`, `mig_vehicle_from_title`),
+  odpowiedź zwraca `vehicles_total`. **UI (`panel-clients.js`):** przycisk „Zaimportuj z rezerwacji" był renderowany
+  TYLKO w pustym stanie listy (`renderList` gdy `rows.length===0`), więc przy istniejących klientach był nieosiągalny;
+  doszedł **trwały przycisk** w pasku widoku Klienci (`#cl-import-top`, pod wyszukiwarką) + komunikat importu pokazuje
+  teraz „Pojazdów w bazie". Wdrożone FTP (`reservations/lib.php`, `reservations/admin/migrate_clients.php`,
+  `panel-clients.js`, `panel.html` → `?v=20260701c`). **Po wdrożeniu: kliknąć „Zaimportuj z rezerwacji", by podpiąć
+  55 historycznych rezerwacji i ich auta.**
+- **2026-07-01 (b)** — Panel/kalendarz: **precyzyjny hitbox kratek przy przeciąganiu + linia „teraz" na żywo.**
+  (a) *Snapowanie do siatki było „o pół kratki obok".* Tworzenie (`startCreateDrag`) używało `Math.round(px/ppm/10)`
+  = zaokrąglenia do najbliższej **linii**, więc kliknięcie w dolną połowę pasma 10-min startowało termin **kratkę
+  niżej**. Teraz model „kratki": `slotAt` = `Math.floor(px/cell)` — termin zaczyna się DOKŁADNIE w kratce, w którą
+  celujesz, a przeciągnięcie zakreśla zamiatane kratki włącznie (koniec = spód ostatniej). Przeciąganie/rozciąganie
+  eventu (`startDrag`) liczone jest teraz **bezwzględnie** od górnej krawędzi kolumny + **offset chwytu** (`grabDy`)
+  i snapowane do najbliższej 10-min linii (`snapMin`); commit bierze zsnapowane minuty `curStart/curEnd` (usunięty
+  powrót przez `parseFloat(style)`→`/ppm` = koniec błędów float na `2.6`). Efekt uboczny: **stare wpisy z godziną
+  spoza siatki (legacy `start_dt`) same się prostują** przy pierwszym ruszeniu. (b) *Linia bieżącej godziny* rysowała
+  się tylko w `renderNow` podczas `renderGrid`, więc stała w miejscu do odświeżenia. Doszedł **`tickNow` na `setInterval`
+  co 20 s** (id w `st.nowTimer`, czyszczony przy re-mount): przesuwa/tworzy/usuwa `.pnl-now` w kolumnie „dziś" **bez
+  przerysowania siatki**. Deploy: `panel.html`, `panel-calendar.js`, `panel-calendar-edit.js`. `?v=20260701b`.
+- **2026-07-01** — Panel/kalendarz: **optymistyczny (natychmiastowy) UI zamiast przeładowania.** Wcześniej po
+  każdej akcji (przeciągnięcie/rozciągnięcie/tworzenie/edycja/usuwanie) leciał `reload()` = pełny refetch z
+  placeholderem „Wczytuję grafik…" + skok scrolla → „przeładowywał cały kalendarz". Teraz zmiana nanoszona jest
+  **od razu na `st.events` i siatka przerysowuje się bez sieci** (trzymając pozycję scrolla), a `event.php` leci
+  **w tle**; błąd → **rollback** + `toast`. `panel-calendar.js`: nowe API na `window.PanelCalendarInternals` —
+  `applyLocal(id,patch)→prev`, `addLocal(ev)`, `removeLocal(id)→ev`, `refresh()` (cichy refetch, bez flasha/skoku),
+  `toast(msg,type)`; `renderGrid(opts)` rozróżnia `autoScroll` (świeże wczytanie/nawigacja) od `keepScroll`
+  (przerysowanie lokalne). `panel-calendar-edit.js`: `submit()` usunięty, w zamian `createInBackground` /
+  `patchInBackground` + optymistyczne kształty (`bookingEventShape`, `labelsFor`, `tempId`); drag/resize, delete
+  i formularze idą tą samą ścieżką. Nowo tworzony wpis jest **`_pending`** (klasa `is-pending`,
+  `pointer-events:none`) do potwierdzenia POST, potem tymczasowe `id`→realne z odpowiedzi (`{id,ref}`) bez refetchu.
+  Doszedł lekki **toast** (`.pnl-toast`) na błędy zapisu w tle. **Kontrakt/kod backendu bez zmian** (deploy tylko
+  `panel-calendar.js`, `panel-calendar-edit.js`, `panel.css`, `panel.html`). `?v=20260701a`. (Sekcja 5 uzupełniona.)
 - **2026-06-30 (c)** — Panel/kalendarz: (a) **termin admina bez danych klienta** — pola Imię/Telefon/Nr rej.
   są przy tworzeniu **opcjonalne** (admin może wbić sam slot / szybką blokadę). Doszedł checkbox
   **„Dodaj klienta do bazy"** (`ce-addclient`, domyślnie zaznaczony); odznaczenie = NIE tworzymy profilu

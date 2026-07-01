@@ -39,6 +39,11 @@
                         '<input id="cl-q" type="search" autocomplete="off" placeholder="Szukaj: nazwisko, telefon, nr rej.">' +
                         '<button type="button" class="pnl-btn pnl-btn-primary pnl-clients-new" id="cl-new" title="Dodaj klienta">+ Nowy</button>' +
                     '</div>' +
+                    '<div class="pnl-clients-tools" style="padding:0 0 8px;">' +
+                        '<button type="button" class="pnl-btn pnl-btn-subtle" id="cl-import-top" style="width:100%;" ' +
+                        'title="Podepnij historyczne rezerwacje do profili i utwórz pojazdy (nr rej. + marka/model)">' +
+                        'Zaimportuj z rezerwacji</button>' +
+                    '</div>' +
                     '<div class="pnl-clients-results" id="cl-results"></div>' +
                 '</div>' +
                 '<div class="pnl-client-detail" id="cl-detail">' +
@@ -50,6 +55,8 @@
         var t;
         q.addEventListener('input', function () { clearTimeout(t); t = setTimeout(function () { search(q.value); }, 250); });
         host.querySelector('#cl-new').addEventListener('click', openCreateForm);
+        var impTop = host.querySelector('#cl-import-top');
+        if (impTop) impTop.addEventListener('click', runImport);
         search('', true); // pierwsze ładowanie: dozwolony auto-import historii
     }
 
@@ -132,6 +139,7 @@
             window.alert('Import zakończony.\nDopasowano numery: ' + imported +
                 ' (rezerwacje: ' + (+r.from_bookings || 0) + ', kalendarz: ' + (+r.from_events || 0) + ').' +
                 '\nKlientów w bazie: ' + total + '.' +
+                '\nPojazdów w bazie: ' + (+r.vehicles_total || 0) + '.' +
                 (r.google_error ? '\n\nUwaga (kalendarz): ' + r.google_error : ''));
             search('');
         }).catch(function (err) {

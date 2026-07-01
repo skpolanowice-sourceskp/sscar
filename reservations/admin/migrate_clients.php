@@ -39,6 +39,33 @@ try {
     rez_fail(500, 'Brak tabeli rez_bookings.');
 }
 
+/* Wydarzenia Google pobieramy RAZ z góry i wykorzystujemy dwojako:
+ *   (1) mapa google_event_id → marka/model z tytułu („… – NR (Marka Model)") — do BACKFILLU
+ *       pojazdów rezerwacji z bazy (część A), bo modelu nie ma w kolumnach rez_bookings,
+ *   (2) źródło części B (wydarzenia bez rezerwacji w bazie). */
+$items = [];
+$evError = null;
+$eventVehicle = [];   // google_event_id => marka/model
+try {
+    $cfg = rez_config();
+    $calendarId = $cfg['calendar_id'] ?? '';
+    $keyPath = $cfg['service_account_key'] ?? '';
+    $tz = new DateTimeZone($cfg['timezone'] ?? 'Europe/Warsaw');
+    // is_file: gcal_token() przy braku klucza robi rez_fail()→exit, co ubiłoby cały import.
+    if ($calendarId !== '' && is_file($keyPath)) {
+        $timeMin = (new DateTime('-2 years', $tz))->format(DateTime::RFC3339);
+        $timeMax = (new DateTime('+6 months', $tz))->format(DateTime::RFC3339);
+        $items = gcal_list_events($calendarId, $timeMin, $timeMax); // do 250 wydarzeń
+        foreach ($items as $ev) {
+            if (empty($ev['id'])) continue;
+            $veh = mig_vehicle_from_title((string)($ev['summary'] ?? ''));
+            if ($veh !== '') $eventVehicle[$ev['id']] = $veh;
+        }
+    }
+} catch (Throwable $e) {
+    $evError = 'Google Calendar: ' . $e->getMessage(); // część A i tak się zapisze (bez modeli)
+}
+
 $bkProcessed = count($rows);
 $bkFound = 0;
 $linked = 0;
@@ -57,7 +84,11 @@ foreach ($rows as $r) {
 
     $name  = clean_name(mig_utf8((string)$r['cust_name']));
     $email = mig_extract_email($hay);
-    $cid = mig_upsert($pdo, $norm, rez_phone_format($norm), $name, $email, '', $dbError);
+    // Backfill pojazdu: nr rej. z rezerwacji + marka/model z tytułu powiązanego eventu Google.
+    $plate = strtoupper(trim(mig_utf8((string)$r['cust_plate'])));
+    $veh   = (!empty($r['google_event_id']) && isset($eventVehicle[$r['google_event_id']]))
+        ? $eventVehicle[$r['google_event_id']] : '';
+    $cid = mig_upsert($pdo, $norm, rez_phone_format($norm), $name, $email, $plate, $veh, $dbError);
     if ($cid) {
         $bkFound++;
         try { $pdo->prepare('UPDATE rez_bookings SET client_id=? WHERE id=?')->execute([$cid, $r['id']]); $linked++; }
@@ -65,43 +96,30 @@ foreach ($rows as $r) {
     }
 }
 
-/* ---------- B) Google Calendar ---------- */
+/* ---------- B) Google Calendar (wydarzenia bez rezerwacji w bazie) ---------- */
 $evProcessed = 0;
 $evFound = 0;
-$evError = null;
-try {
-    $cfg = rez_config();
-    $calendarId = $cfg['calendar_id'] ?? '';
-    $keyPath = $cfg['service_account_key'] ?? '';
-    $tz = new DateTimeZone($cfg['timezone'] ?? 'Europe/Warsaw');
-    // is_file: gcal_token() przy braku klucza robi rez_fail()→exit, co ubiłoby cały import.
-    if ($calendarId !== '' && is_file($keyPath)) {
-        $timeMin = (new DateTime('-2 years', $tz))->format(DateTime::RFC3339);
-        $timeMax = (new DateTime('+6 months', $tz))->format(DateTime::RFC3339);
-        $items = gcal_list_events($calendarId, $timeMin, $timeMax); // do 250 wydarzeń
-        foreach ($items as $ev) {
-            $evProcessed++;
-            if (!empty($ev['id']) && isset($knownEventIds[$ev['id']])) continue; // już jest w bazie (część A)
-            $summary = (string)($ev['summary'] ?? '');
-            // Pomiń blokady/urlopy/przerwy – to nie klienci.
-            if (preg_match('/\b(blok|blokada|urlop|przerw|niedost|zamkni|wolne)\b/iu', $summary)) continue;
+foreach ($items as $ev) {
+    $evProcessed++;
+    if (!empty($ev['id']) && isset($knownEventIds[$ev['id']])) continue; // już jest w bazie (część A)
+    $summary = (string)($ev['summary'] ?? '');
+    // Pomiń blokady/urlopy/przerwy – to nie klienci.
+    if (preg_match('/\b(blok|blokada|urlop|przerw|niedost|zamkni|wolne)\b/iu', $summary)) continue;
 
-            $hay = mig_utf8($summary . "\n" . (string)($ev['description'] ?? '') . "\n" . (string)($ev['location'] ?? ''));
-            $norm = rez_extract_phone($hay);
-            if ($norm === '') continue;
+    $hay = mig_utf8($summary . "\n" . (string)($ev['description'] ?? '') . "\n" . (string)($ev['location'] ?? ''));
+    $norm = rez_extract_phone($hay);
+    if ($norm === '') continue;
 
-            $name = clean_name(mig_utf8($summary));
-            $email = mig_extract_email($hay);
-            $cid = mig_upsert($pdo, $norm, rez_phone_format($norm), $name, $email, '', $dbError);
-            if ($cid) $evFound++;
-        }
-    }
-} catch (Throwable $e) {
-    $evError = 'Google Calendar: ' . $e->getMessage(); // część A i tak się zapisała
+    $name = clean_name(mig_utf8($summary));
+    $email = mig_extract_email($hay);
+    $cid = mig_upsert($pdo, $norm, rez_phone_format($norm), $name, $email, '', '', $dbError);
+    if ($cid) $evFound++;
 }
 
 $total = 0;
 try { $total = (int)$pdo->query('SELECT COUNT(*) FROM rez_clients')->fetchColumn(); } catch (Throwable $e) {}
+$vehTotal = 0;
+try { $vehTotal = (int)$pdo->query('SELECT COUNT(*) FROM rez_client_vehicles')->fetchColumn(); } catch (Throwable $e) {}
 
 rez_json([
     'ok'              => true,
@@ -112,6 +130,7 @@ rez_json([
     'from_events'     => $evFound,
     'created'         => max(0, $total - $before),
     'clients_total'   => $total,
+    'vehicles_total'  => $vehTotal,           // ile pojazdów w bazie po imporcie (backfill nr rej. + model)
     'google_error'    => $evError,
     'db_error'        => $dbError,            // null gdy OK; komunikat gdy zapis klienta padł
 ]);
@@ -121,10 +140,11 @@ rez_json([
  * Pierwszy realny błąd zapisu trafia do $dbError (przez referencję) — żeby NIE zniknął w catch.
  * `id = LAST_INSERT_ID(id)` sprawia, że lastInsertId() zwraca id także przy UPDATE (bez SELECT-a po zapisie).
  */
-function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
+function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, $vehicle, &$dbError) {
     if ($norm === '') return null;
     // Ostatnia zapora: do bazy wyłącznie poprawny UTF-8 (źródłowe dane bywają w złym kodowaniu).
-    $disp = mig_utf8($disp); $name = mig_utf8($name); $email = mig_utf8($email); $plate = mig_utf8($plate);
+    $disp = mig_utf8($disp); $name = mig_utf8($name); $email = mig_utf8($email);
+    $plate = mig_utf8($plate); $vehicle = mig_utf8($vehicle);
     try {
         $stmt = $pdo->prepare(
             'INSERT INTO rez_clients (phone_norm, phone_display, name, email)
@@ -152,9 +172,11 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
             try {
                 $pdo->prepare(
                     'INSERT INTO rez_client_vehicles (client_id, plate, vehicle, last_seen)
-                     VALUES (?,?,NULL,NOW())
-                     ON DUPLICATE KEY UPDATE last_seen=NOW()'
-                )->execute([$cid, $plate]);
+                     VALUES (?,?,?,NOW())
+                     ON DUPLICATE KEY UPDATE
+                        vehicle = IF(VALUES(vehicle) IS NOT NULL AND LENGTH(VALUES(vehicle)) > 0, VALUES(vehicle), vehicle),
+                        last_seen = NOW()'
+                )->execute([$cid, $plate, ($vehicle !== '' ? $vehicle : null)]);
             } catch (Throwable $e) { if ($dbError === null) $dbError = 'pojazd: ' . $e->getMessage(); }
         }
         return $cid;
@@ -162,6 +184,14 @@ function mig_upsert($pdo, $norm, $disp, $name, $email, $plate, &$dbError) {
         if ($dbError === null) $dbError = $e->getMessage();
         return null;
     }
+}
+
+/** Marka/model z tytułu rezerwacji Google („… – PLATE (Marka Model)") = ostatni nawias. */
+function mig_vehicle_from_title($summary) {
+    if (preg_match_all('/\(([^()]+)\)/u', (string)$summary, $m) && !empty($m[1])) {
+        return trim(mig_utf8((string)end($m[1])));
+    }
+    return '';
 }
 
 /** Naprawia bajty do poprawnego UTF-8 i usuwa znaki sterujące / znak zastępczy. */

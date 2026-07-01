@@ -320,6 +320,10 @@ function rez_phone_blocked($pdo, $phoneNorm) {
  */
 function rez_upsert_client($pdo, $phoneNorm, $phoneDisplay, $name, $email, $plate, $vehicle) {
     if ($phoneNorm === '') return null;
+    // book.php / event.php NIE wołają rez_ensure_client_schema — gwarantujemy tu, że tabele
+    // profili istnieją (idempotentne, statycznie cache'owane w obrębie żądania). Bez tego brak
+    // tabeli rez_client_vehicles wywalał wyjątkiem CAŁY upsert i rezerwacja zostawała bez client_id.
+    rez_ensure_client_schema($pdo);
     try {
         $pdo->prepare(
             'INSERT INTO rez_clients (phone_norm, phone_display, name, email)
@@ -336,14 +340,19 @@ function rez_upsert_client($pdo, $phoneNorm, $phoneDisplay, $name, $email, $plat
         $clientId = (int)$sel->fetchColumn();
         if (!$clientId) return null;
 
+        // Pojazd zapisujemy best-effort w OSOBNYM try: ewentualny błąd zapisu auta NIE MOŻE
+        // zerować powiązania klienta z rezerwacją (wcześniej wyjątek tutaj zwracał null, więc
+        // rezerwacja z nr rej. traciła client_id, a auto nigdy nie trafiało do bazy).
         if ($plate !== '') {
-            $pdo->prepare(
-                'INSERT INTO rez_client_vehicles (client_id, plate, vehicle, last_seen)
-                 VALUES (?,?,?,NOW())
-                 ON DUPLICATE KEY UPDATE
-                    vehicle = IF(VALUES(vehicle) IS NOT NULL AND LENGTH(VALUES(vehicle)) > 0, VALUES(vehicle), vehicle),
-                    last_seen = NOW()'
-            )->execute([$clientId, $plate, ($vehicle ?: null)]);
+            try {
+                $pdo->prepare(
+                    'INSERT INTO rez_client_vehicles (client_id, plate, vehicle, last_seen)
+                     VALUES (?,?,?,NOW())
+                     ON DUPLICATE KEY UPDATE
+                        vehicle = IF(VALUES(vehicle) IS NOT NULL AND LENGTH(VALUES(vehicle)) > 0, VALUES(vehicle), vehicle),
+                        last_seen = NOW()'
+                )->execute([$clientId, $plate, ($vehicle ?: null)]);
+            } catch (Throwable $e) { /* auto się nie zapisało, ale profil i powiązanie zostają */ }
         }
         return $clientId;
     } catch (Throwable $e) {

@@ -31,6 +31,57 @@
         return api('meta.php').then(function (m) { meta = m; return m; });
     }
 
+    /* ---------- Optymistyczny UI ----------
+       Wszystkie zapisy (tworzenie/edycja/przesuwanie/usuwanie) nanosimy natychmiast
+       na lokalny magazyn kalendarza i przerysowujemy siatkę bez sieci; request do
+       backendu leci w tle. Błąd → wycofanie zmiany (rollback) + toast. */
+    function tempId() { return 'tmp-' + Date.now() + '-' + Math.floor(Math.random() * 1e6); }
+
+    // Etykiety usługi/wariantu z meta (render kafelka i szuflady ich potrzebuje).
+    function labelsFor(serviceKey, subtypeKey) {
+        var s = findService(serviceKey);
+        var out = { serviceLabel: s ? s.label : serviceKey, subtypeLabel: subtypeKey };
+        if (s) for (var i = 0; i < s.subtypes.length; i++) if (s.subtypes[i].key === subtypeKey) { out.subtypeLabel = s.subtypes[i].label; break; }
+        return out;
+    }
+
+    // Optymistyczne wydarzenie „rezerwacja" z danych formularza (kształt jak z events.php).
+    function bookingEventShape(id, b, startISO, endISO) {
+        var lab = labelsFor(b.service, b.subtype);
+        return {
+            id: id, type: 'rezerwacja', source: 'db', allDay: false,
+            start: startISO, end: endISO,
+            service: b.service, serviceLabel: lab.serviceLabel, subtypeLabel: lab.subtypeLabel,
+            plate: b.customer.plate, vehicle: b.customer.vehicle, phone: b.customer.phone,
+            name: b.customer.name, email: b.customer.email, notes: b.customer.notes,
+            title: lab.subtypeLabel + (b.customer.plate ? ' · ' + b.customer.plate : '')
+        };
+    }
+
+    // Tworzenie: dodaj wpis lokalnie (pending), zapisz w tle, po sukcesie podmień
+    // tymczasowe id na realne z serwera (bez refetchu), po błędzie usuń + toast.
+    function createInBackground(payload, optEv) {
+        I().closeDrawer();
+        optEv._pending = true;
+        I().addLocal(optEv);
+        api('event.php', { method: 'POST', json: payload }).then(function (res) {
+            I().applyLocal(optEv.id, { id: (res && res.id) || optEv.id, ref: (res && res.ref) || optEv.ref, _pending: false });
+        }).catch(function (err) {
+            I().removeLocal(optEv.id);
+            I().toast((err && err.message) || 'Nie udało się zapisać terminu.', 'error');
+        });
+    }
+
+    // Edycja/przesunięcie: nanieś patch lokalnie, zapisz w tle, po błędzie wycofaj + toast.
+    function patchInBackground(id, patch, payload) {
+        I().closeDrawer();
+        var prev = I().applyLocal(id, patch);
+        api('event.php', { method: 'PATCH', json: payload }).catch(function (err) {
+            if (prev) I().applyLocal(id, prev);
+            I().toast((err && err.message) || 'Nie udało się zapisać zmian.', 'error');
+        });
+    }
+
     function findService(key) {
         var list = (meta && meta.services) || [];
         for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
@@ -181,18 +232,32 @@
                 e.preventDefault();
                 var errEl = document.getElementById('ce-error');
                 errEl.textContent = '';
-                var payload;
                 if (kind === 'blok') {
-                    payload = { kind: 'blok', date: val('ce-date'), title: val('ce-title'),
-                        allDay: allday.checked, time: val('ce-btime'), durationMin: parseInt(val('ce-bdur'), 10) || 60 };
-                    if (!payload.date) { errEl.textContent = 'Podaj datę.'; return; }
+                    var bdate = val('ce-date'), btitle = val('ce-title');
+                    var ballday = allday.checked, btime = val('ce-btime');
+                    var bdur = parseInt(val('ce-bdur'), 10) || 60;
+                    if (!bdate) { errEl.textContent = 'Podaj datę.'; return; }
+                    if (!ballday && !/^\d{2}:\d{2}$/.test(btime)) { errEl.textContent = 'Podaj godzinę.'; return; }
+                    var payload = { kind: 'blok', date: bdate, title: btitle, allDay: ballday, time: btime, durationMin: bdur };
+                    var optTitle = 'Blokada: ' + (btitle || 'Blokada');
+                    var optBlok;
+                    if (ballday) {
+                        optBlok = { id: tempId(), type: 'blok', allDay: true, start: bdate + 'T00:00:00', end: bdate + 'T00:00:00', title: optTitle };
+                    } else {
+                        var bm = hhmmToMin(btime);
+                        optBlok = { id: tempId(), type: 'blok', allDay: false,
+                            start: bdate + 'T' + minToHHMM(bm), end: bdate + 'T' + minToHHMM(bm + bdur), title: optTitle };
+                    }
+                    createInBackground(payload, optBlok);
                 } else {
                     var b = readBooking();
                     if (!validBooking(b, errEl, { lenient: true })) return;
-                    payload = { kind: 'rezerwacja', date: b.date, time: b.time, durationMin: b.dur,
+                    var startISO = b.date + 'T' + b.time;
+                    var endISO = b.date + 'T' + minToHHMM(hhmmToMin(b.time) + b.dur);
+                    var payload2 = { kind: 'rezerwacja', date: b.date, time: b.time, durationMin: b.dur,
                         service: b.service, subtype: b.subtype, addClient: b.addClient, customer: b.customer };
+                    createInBackground(payload2, bookingEventShape(tempId(), b, startISO, endISO));
                 }
-                submit('POST', payload, document.getElementById('ce-save'), errEl);
             });
         }).catch(function () { alert('Nie udało się wczytać konfiguracji usług.'); });
     }
@@ -224,11 +289,17 @@
                 var errEl = document.getElementById('ce-error'); errEl.textContent = '';
                 var b = readBooking();
                 if (!validBooking(b, errEl)) return;
-                var endMin = hhmmToMin(b.time) + b.dur;
-                var payload = { id: ev.id,
-                    start: b.date + 'T' + b.time, end: b.date + 'T' + minToHHMM(endMin),
+                var startISO = b.date + 'T' + b.time;
+                var endISO = b.date + 'T' + minToHHMM(hhmmToMin(b.time) + b.dur);
+                var payload = { id: ev.id, start: startISO, end: endISO,
                     service: b.service, subtype: b.subtype, customer: b.customer };
-                submit('PATCH', payload, document.getElementById('ce-save'), errEl);
+                var shape = bookingEventShape(ev.id, b, startISO, endISO);
+                // Patch tylko pól wpływających na render (bez id/type/source).
+                var patch = { start: startISO, end: endISO,
+                    service: shape.service, serviceLabel: shape.serviceLabel, subtypeLabel: shape.subtypeLabel,
+                    plate: shape.plate, vehicle: shape.vehicle, phone: shape.phone,
+                    name: shape.name, email: shape.email, notes: shape.notes, title: shape.title };
+                patchInBackground(ev.id, patch, payload);
             });
         });
     }
@@ -272,28 +343,18 @@
         document.getElementById('ce-form').addEventListener('submit', function (e) {
             e.preventDefault();
             var errEl = document.getElementById('ce-error'); errEl.textContent = '';
-            var payload = { id: ev.id, kind: isBlok ? 'blok' : 'inne', title: val('ce-title') };
+            var newTitle = val('ce-title');
+            var payload = { id: ev.id, kind: isBlok ? 'blok' : 'inne', title: newTitle };
+            // Optymistyczny tytuł jak po stronie serwera (blok dostaje prefiks „Blokada:").
+            var patch = { title: isBlok ? ('Blokada: ' + (newTitle || 'Blokada')) : (newTitle || '(bez tytułu)') };
             if (!ev.allDay) {
                 var date = val('ce-date'), time = val('ce-time'), d = parseInt(val('ce-dur'), 10) || 60;
                 if (!date || !/^\d{2}:\d{2}$/.test(time)) { errEl.textContent = 'Podaj datę i godzinę.'; return; }
                 payload.start = date + 'T' + time;
                 payload.end = date + 'T' + minToHHMM(hhmmToMin(time) + d);
+                patch.start = payload.start; patch.end = payload.end;
             }
-            submit('PATCH', payload, document.getElementById('ce-save'), errEl);
-        });
-    }
-
-    /* ---------- Wysyłka ---------- */
-    function submit(method, payload, btn, errEl) {
-        btn.disabled = true;
-        var label = btn.textContent;
-        btn.innerHTML = '<span class="pnl-spin" aria-hidden="true"></span>Zapisuję…';
-        api('event.php', { method: method, json: payload }).then(function () {
-            I().closeDrawer();
-            I().reload();
-        }).catch(function (err) {
-            btn.disabled = false; btn.textContent = label;
-            errEl.textContent = (err && err.message) ? err.message : 'Nie udało się zapisać.';
+            patchInBackground(ev.id, patch, payload);
         });
     }
 
@@ -316,9 +377,13 @@
                 ? 'Anulować rezerwację ' + (ev.plate || '') + '? Tej operacji nie można cofnąć.'
                 : 'Usunąć ten wpis z kalendarza?';
             if (!window.confirm(msg)) return;
-            api('event.php', { method: 'DELETE', json: { id: ev.id } }).then(function () {
-                ctx.close(); ctx.reload();
-            }).catch(function (err) { window.alert((err && err.message) || 'Nie udało się usunąć.'); });
+            // Optymistycznie: zamknij szufladę i zdejmij wpis od razu, kasuj w tle.
+            ctx.close();
+            var removed = I().removeLocal(ev.id);
+            api('event.php', { method: 'DELETE', json: { id: ev.id } }).catch(function (err) {
+                if (removed) I().addLocal(removed);   // wróć wpis, jeśli backend odmówił
+                I().toast((err && err.message) || 'Nie udało się usunąć.', 'error');
+            });
         });
     }
 
@@ -327,7 +392,7 @@
         gridCtx = ctx;
         Array.prototype.forEach.call(scroll.querySelectorAll('.pnl-ev'), function (node) {
             var ev = (ctx.events || []).filter(function (x) { return x.id === node.dataset.id; })[0];
-            if (!ev || ev.allDay) return;
+            if (!ev || ev.allDay || ev._pending) return;   // wpisy w trakcie zapisu nieedytowalne
             // uchwyt zmiany długości
             var handle = document.createElement('div');
             handle.className = 'pnl-ev-resize';
@@ -347,36 +412,40 @@
     }
 
     // Rysowanie nowego terminu przeciągnięciem na pustej kolumnie dnia.
+    // Model „kratki": kursor wskazuje konkretną 10-min kratkę (FLOOR, nie zaokrąglenie
+    // do najbliższej linii) – dzięki temu klik/przeciągnięcie zaczyna się DOKŁADNIE w tej
+    // kratce, w którą celujesz, a nie w sąsiedniej (naprawa „trafia w kratkę niżej/wyżej").
     function startCreateDrag(e, col) {
         var ppm = gridCtx.ppm;
+        var cell = 10 * ppm;                         // px na jedną 10-min kratkę
         var openMin = gridCtx.open * 60, closeMin = gridCtx.close * 60;
         var rect = col.getBoundingClientRect();
-        function minAt(clientY) {
-            var m = openMin + Math.round(((clientY - rect.top) / ppm) / 10) * 10;
-            return Math.max(openMin, Math.min(closeMin, m));
+        var maxSlot = Math.round((closeMin - openMin) / 10) - 1;   // ostatnia pełna kratka
+        function slotAt(clientY) {
+            var s = Math.floor((clientY - rect.top) / cell);
+            return Math.max(0, Math.min(maxSlot, s));
         }
-        var anchor = minAt(e.clientY);
-        if (anchor >= closeMin) anchor = closeMin - 10;
-        var curEnd = anchor + 10, moved = false;
+        var anchorSlot = slotAt(e.clientY);
+        var curSlot = anchorSlot, moved = false;
 
         var ghost = document.createElement('div');
         ghost.className = 'pnl-cal-ghost';
         col.appendChild(ghost);
 
         function paint() {
-            var a = Math.min(anchor, curEnd), b = Math.max(anchor, curEnd);
-            if (b - a < 10) b = a + 10;
-            ghost.style.top = ((a - openMin) * ppm) + 'px';
-            ghost.style.height = ((b - a) * ppm) + 'px';
-            ghost.textContent = minToHHMM(a) + '–' + minToHHMM(b);
+            var a = Math.min(anchorSlot, curSlot), b = Math.max(anchorSlot, curSlot);
+            var aMin = openMin + a * 10, bMin = openMin + (b + 1) * 10;   // koniec = spód ostatniej kratki
+            ghost.style.top = ((aMin - openMin) * ppm) + 'px';
+            ghost.style.height = ((bMin - aMin) * ppm) + 'px';
+            ghost.textContent = minToHHMM(aMin) + '–' + minToHHMM(bMin);
         }
         paint();
         col.setPointerCapture(e.pointerId);
 
         function onMove(me) {
-            var m = minAt(me.clientY);
-            if (Math.abs(m - anchor) >= 10) moved = true;
-            curEnd = m;
+            var sNow = slotAt(me.clientY);
+            if (sNow !== anchorSlot) moved = true;
+            curSlot = sNow;
             paint();
         }
         function onUp() {
@@ -384,9 +453,10 @@
             col.removeEventListener('pointermove', onMove);
             col.removeEventListener('pointerup', onUp);
             if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
-            var a = Math.min(anchor, curEnd), b = Math.max(anchor, curEnd), dur = b - a;
-            if (moved && dur >= 10) openCreate({ date: col.dataset.date, min: a, durationMin: dur });
-            else openCreate({ date: col.dataset.date, min: a });
+            var a = Math.min(anchorSlot, curSlot), b = Math.max(anchorSlot, curSlot);
+            var aMin = openMin + a * 10, dur = (b - a + 1) * 10;
+            if (moved) openCreate({ date: col.dataset.date, min: aMin, durationMin: dur });
+            else openCreate({ date: col.dataset.date, min: aMin });
         }
         col.addEventListener('pointermove', onMove);
         col.addEventListener('pointerup', onUp);
@@ -395,28 +465,41 @@
     function startDrag(e, node, ev, mode) {
         if (e.button !== undefined && e.button !== 0) return;
         var ppm = gridCtx.ppm;
+        var cell = 10 * ppm;                          // px na jedną 10-min kratkę
         var s = I().parseLocal(ev.start), en = I().parseLocal(ev.end);
         if (!s || !en) return;
         var startMin = s.min, endMin = en.min, dur = endMin - startMin;
         var date = s.date;
         var openMin = gridCtx.open * 60, closeMin = gridCtx.close * 60;
         var startY = e.clientY;
+        var grabDy = e.clientY - node.getBoundingClientRect().top;   // gdzie w bloku chwycono
+        var col = node.closest('.pnl-cal-daycol');
         var origTop = parseFloat(node.style.top) || 0;
-        var origH = parseFloat(node.style.height) || (dur * ppm);
+        var colTop = col ? col.getBoundingClientRect().top : (e.clientY - grabDy - origTop);
+        var curStart = startMin, curEnd = endMin;
         var moved = false;
         node.setPointerCapture(e.pointerId);
         node.classList.add('is-dragging');
 
+        // Pozycja BEZWZGLĘDNA (px w kolumnie) → minuty, zaokrąglona do najbliższej 10-min
+        // linii siatki. Dzięki temu krawędź ląduje dokładnie na kratce (a nie „obok"), a stare
+        // wpisy z godziną spoza siatki przy pierwszym ruszeniu same się prostują.
+        function snapMin(px) { return openMin + Math.round(px / cell) * 10; }
+
         function onMove(me) {
-            var dy = me.clientY - startY;
-            if (!moved && Math.abs(dy) < 4) return;
+            if (!moved && Math.abs(me.clientY - startY) < 4) return;
             moved = true;
-            var stepMin = Math.round((dy / ppm) / 10) * 10;
             if (mode === 'move') {
-                var ns = Math.max(openMin, Math.min(closeMin - dur, startMin + stepMin));
+                // Górna krawędź bloku = kursor minus offset chwytu (zachowuje uchwyt).
+                var ns = snapMin((me.clientY - grabDy) - colTop);
+                ns = Math.max(openMin, Math.min(closeMin - dur, ns));
+                curStart = ns; curEnd = ns + dur;
                 node.style.top = ((ns - openMin) * ppm) + 'px';
             } else {
-                var ne = Math.max(startMin + 10, Math.min(closeMin, endMin + stepMin));
+                // Dolna krawędź = pozycja kursora w kolumnie.
+                var ne = snapMin(me.clientY - colTop);
+                ne = Math.max(startMin + 10, Math.min(closeMin, ne));
+                curEnd = ne;
                 node.style.height = ((ne - startMin) * ppm) + 'px';
             }
         }
@@ -432,17 +515,16 @@
             document.addEventListener('click', suppress, true);
             setTimeout(function () { document.removeEventListener('click', suppress, true); }, 350);
 
-            var newTop = parseFloat(node.style.top) || 0;
-            var newH = parseFloat(node.style.height) || origH;
-            var ns2 = openMin + Math.round(newTop / ppm);
-            var newStart = (mode === 'move') ? ns2 : startMin;
-            var newEnd = (mode === 'move') ? (newStart + dur) : (startMin + Math.round(newH / ppm));
-            var payload = { id: ev.id, start: date + 'T' + minToHHMM(newStart), end: date + 'T' + minToHHMM(newEnd) };
-            api('event.php', { method: 'PATCH', json: payload })
-                .then(function () { I().reload(); })
+            // curStart/curEnd to już zsnapowane minuty (bez powrotu przez piksele = bez błędu float).
+            var newStartISO = date + 'T' + minToHHMM(curStart);
+            var newEndISO = date + 'T' + minToHHMM(curEnd);
+            // Optymistycznie: przerysuj z danych (kafelek ląduje dokładnie tam, gdzie upuszczono,
+            // etykieta godzin się odświeża), a PATCH leci w tle. Błąd → wycofaj + toast.
+            var prev = I().applyLocal(ev.id, { start: newStartISO, end: newEndISO });
+            api('event.php', { method: 'PATCH', json: { id: ev.id, start: newStartISO, end: newEndISO } })
                 .catch(function (err) {
-                    window.alert((err && err.message) || 'Nie udało się przenieść terminu.');
-                    I().reload();
+                    if (prev) I().applyLocal(ev.id, prev);
+                    I().toast((err && err.message) || 'Nie udało się przenieść terminu.', 'error');
                 });
         }
 
