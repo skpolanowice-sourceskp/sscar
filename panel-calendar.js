@@ -345,10 +345,10 @@
             var widthPct = 100 / lanes, leftPct = lane * widthPct;
             var e = it.ev;
             var t1 = minLabel(it.startMin), t2 = minLabel(it.endMin);
-            html += '<button type="button" class="pnl-ev pnl-ev--' + evClass(e) + (e._pending ? ' is-pending' : '') + '" data-id="' + escAttr(e.id) + '" ' +
+            var tier = hgt < 34 ? ' is-xs' : '';   // ≈10 min (motocykl/klima) → kompaktowy, jednoliniowy kafelek
+            html += '<button type="button" class="pnl-ev pnl-ev--' + evClass(e) + tier + (e._pending ? ' is-pending' : '') + '" data-id="' + escAttr(e.id) + '" ' +
                 'style="top:' + top + 'px;height:' + hgt + 'px;left:calc(' + leftPct + '% + 2px);width:calc(' + widthPct + '% - 4px)">' +
-                '<span class="pnl-ev-time">' + t1 + '–' + t2 + '</span>' +
-                evBlockBody(e) +
+                evBody(e, t1, t2, tier) +
                 '</button>';
         });
         return html;
@@ -397,16 +397,31 @@
         if (e.type === 'rezerwacja') return e.title || (e.subtypeLabel + ' · ' + e.plate);
         return e.title || (e.type === 'blok' ? 'Blokada' : 'Wpis');
     }
-    // Treść kafelka w siatce: dla rezerwacji marka/model + telefon (najważniejsze „na rzut oka"),
-    // reszta po rozwinięciu w szufladzie. Pozostałe typy – surowy tytuł.
-    function evBlockBody(e) {
-        if (e.type === 'rezerwacja') {
-            var main = e.vehicle || e.plate || e.subtypeLabel || '';
-            var html = '<span class="pnl-ev-title">' + escHtml(main) + '</span>';
-            if (e.phone) html += '<span class="pnl-ev-sub">' + escHtml(fmtPhone(e.phone)) + '</span>';
-            return html;
+    // Treść kafelka w siatce. Wysokość decyduje o gęstości informacji:
+    //  • bardzo krótkie terminy (≈10 min – motocykl, klima) → jedna linia poziomo
+    //    (godzina startu + auto/nr rej. + telefon) — inaczej nic by się nie zmieściło;
+    //  • wyższe kafelki → pionowa lista priorytetowa (marka/model, telefon, nr rej.,
+    //    wariant usługi, nazwisko); nadmiar przycina overflow, więc im wyższy blok,
+    //    tym więcej widać „na rzut oka".
+    function evLine(cls, txt) { return '<span class="' + cls + '">' + escHtml(txt) + '</span>'; }
+
+    function evBody(e, t1, t2, tier) {
+        if (tier === ' is-xs') {
+            var m = (e.type === 'rezerwacja') ? (e.vehicle || e.plate || e.subtypeLabel || '') : evTitle(e);
+            var s = '<span class="pnl-ev-time">' + t1 + '</span>';
+            if (m) s += '<span class="pnl-ev-main">' + escHtml(m) + '</span>';
+            if (e.type === 'rezerwacja' && e.phone) s += '<span class="pnl-ev-phone">' + escHtml(fmtPhone(e.phone)) + '</span>';
+            return s;
         }
-        return '<span class="pnl-ev-title">' + escHtml(evTitle(e)) + '</span>';
+        var html = '<span class="pnl-ev-time">' + t1 + '–' + t2 + '</span>';
+        if (e.type !== 'rezerwacja') return html + evLine('pnl-ev-title', evTitle(e));
+        var idMain = e.vehicle || e.plate || e.subtypeLabel || '';
+        if (idMain) html += evLine('pnl-ev-title', idMain);
+        if (e.phone) html += evLine('pnl-ev-sub', fmtPhone(e.phone));
+        if (e.plate && e.vehicle) html += evLine('pnl-ev-meta', e.plate);              // marka jest tytułem → dołóż nr rej.
+        if (e.subtypeLabel && (e.vehicle || e.plate)) html += evLine('pnl-ev-meta', e.subtypeLabel);
+        if (e.name) html += evLine('pnl-ev-meta', e.name);
+        return html;
     }
     // Telefon „na ładnie": 9 cyfr → XXX XXX XXX; w innym wypadku surowo.
     function fmtPhone(p) {

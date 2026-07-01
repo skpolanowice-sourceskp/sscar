@@ -194,6 +194,30 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-01 (f)** — Panel/kalendarz: **fix jednoliniowego kafelka (is-xs) — telefon uciekał na prawy skraj.**
+  Motocykl/klima (10 min) pokazywał tylko markę, bo `.pnl-ev-main` miał `flex:1 1 auto` → rozpychał się na całą
+  szerokość szerokiej kolumny „dzień" i spychał `.pnl-ev-phone` na sam prawy skraj (przy otwartej szufladzie —
+  pod nią, stąd wrażenie „nic się nie wyświetla"). Fix: `is-xs` = `justify-content:flex-start`, `main` = `flex:0 1 auto`
+  → godzina + auto + telefon zbite do lewej, jedno obok drugiego. Tylko CSS (`panel.css`). Deploy → `?v=20260701f`.
+- **2026-07-01 (e)** — Panel/kalendarz: **kafelek zawija treść w prawo, gdy nie mieści się na wysokość.** Przy
+  krótkich (ale nie is-xs) terminach, np. 20 min = 52 px, pionowa lista linii nadal ucinała się u dołu. Zamiast
+  ciąć — `.pnl-ev` dostało `flex-wrap:wrap; align-content:flex-start; column-gap:14px`, więc nadmiarowe linie
+  **zawijają się do kolejnej kolumny w prawo** (kolumna dnia jest szeroka → jest miejsce). Linie mają `max-width:190px`
+  (kolumny nie rozjeżdżają się na długim nazwisku), a `is-xs` wymusza `flex-wrap:nowrap` (zostaje jednoliniowe).
+  Wyższe kafelki bez zmian (wszystko mieści się w jednej kolumnie). Tylko CSS (`panel.css`). Deploy: `panel.css`,
+  `panel.html` → `?v=20260701e`.
+- **2026-07-01 (d)** — Panel/kalendarz: **kafelek pokazuje więcej informacji + czytelne krótkie terminy.** Objaw:
+  10-minutowe terminy (motocykl/klima = 26 px przy `PPM 2.6`) nie mieściły 3 pionowych linii, więc kafelek pokazywał
+  samą godzinę (reszta ucinana przez `overflow:hidden`); a wyższe kafelki marnowały miejsce, pokazując tylko
+  marka/model + telefon. Fix (front, `panel-calendar.js` – `evBody` zastąpił `evBlockBody`): render zależny od
+  **wysokości** kafelka. `renderDayEvents` liczy `tier = hgt < 34 ? ' is-xs' : ''`. (a) **is-xs** (≈10 min –
+  motocykl/klima): **jedna linia poziomo** (`flex-direction:row`) = godzina startu + auto/nr rej. (`.pnl-ev-main`,
+  kurczy się z `min-width:0` + ellipsis) + telefon (`.pnl-ev-phone`). (b) **Wyższe kafelki:** pionowa **lista
+  priorytetowa** — marka/model (`.pnl-ev-title`) → telefon (`.pnl-ev-sub`) → nr rej. (`.pnl-ev-meta`, tylko gdy
+  marka jest tytułem) → wariant usługi → nazwisko; nadmiar przycina `overflow`, więc im wyższy blok, tym więcej
+  widać (godzinny slot pokazuje komplet). Tylko front: `panel-calendar.js` + nowe klasy CSS w `panel.css`
+  (`.pnl-ev-meta`, `.pnl-ev.is-xs …`). Bez zmian backendu. Deploy FTP: `panel-calendar.js`, `panel.css`,
+  `panel.html` → `?v=20260701d`.
 - **2026-07-01 (c)** — Rezerwacje/klienci: **auto z rezerwacji NIE trafiało do bazy klientów — naprawione + backfill.**
   Objaw: rezerwacje z numerem rejestracyjnym miały `client_id = NULL`, a tabela `rez_client_vehicles` była PUSTA
   (0 pojazdów przy 57 rezerwacjach), mimo że marka/model widniały w tytule eventu Google. Diagnoza (przez tymczasowy,

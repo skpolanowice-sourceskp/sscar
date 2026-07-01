@@ -468,7 +468,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    /* Gdy linie nie mieszczą się na wysokość kafelka, zawijają się w kolejną
+       kolumnę w prawo (dzień ma szeroką kolumnę), zamiast być ucinane u dołu. */
+    flex-wrap: wrap;
+    align-content: flex-start;
+    row-gap: 1px;
+    column-gap: 14px;
     padding: 3px 6px;
     text-align: left;
     border: 1px solid color-mix(in oklch, var(--evc) 55%, transparent);
@@ -480,8 +485,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .pnl-ev:hover { filter: brightness(1.18); box-shadow: 0 4px 14px -6px rgba(0,0,0,0.7); z-index: 5; }
 .pnl-ev-time { font-size: 0.68rem; font-weight: 700; color: var(--evc); line-height: 1.1; }
-.pnl-ev-title { font-size: 0.78rem; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pnl-ev-sub { font-size: 0.7rem; font-weight: 500; color: var(--pnl-text-muted); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pnl-ev-title { font-size: 0.78rem; font-weight: 600; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
+.pnl-ev-sub { font-size: 0.7rem; font-weight: 500; color: var(--pnl-text-muted); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
+.pnl-ev-meta { font-size: 0.66rem; font-weight: 500; color: var(--pnl-text-faint); line-height: 1.12; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
+
+/* Bardzo krótki termin (≈10 min – motocykl / klima): jedna linia poziomo, wszystko zbite do LEWEJ
+   (bez tego marka rozpychała się na całą szerokość kolumny, a telefon uciekał na prawy skraj / pod szufladę). */
+.pnl-ev.is-xs { flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; align-items: center; gap: 7px; padding: 1px 7px; }
+.pnl-ev.is-xs .pnl-ev-time { flex: 0 0 auto; font-size: 0.66rem; }
+.pnl-ev.is-xs .pnl-ev-main { flex: 0 1 auto; min-width: 0; max-width: none; font-size: 0.72rem; font-weight: 600; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pnl-ev.is-xs .pnl-ev-phone { flex: 0 0 auto; font-size: 0.66rem; font-weight: 500; color: var(--pnl-text-muted); font-variant-numeric: tabular-nums; }
 
 .pnl-ev--tech  { --evc: var(--pnl-ev-tech); }
 .pnl-ev--buy   { --evc: var(--pnl-ev-buy); }
