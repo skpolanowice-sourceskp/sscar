@@ -13,10 +13,30 @@ if (!defined('REZ_INTERNAL')) { http_response_code(403); exit('Forbidden'); }
 /** Startuje sesję panelu z bezpiecznymi parametrami cookie (raz na żądanie). */
 function admin_session_start() {
     if (session_status() === PHP_SESSION_ACTIVE) return;
+
+    // Sesja trwa 30 dni – panel używany tylko na firmowych komputerach.
+    $ttl = 30 * 24 * 3600;
+
+    // Prywatny katalog sesji odizolowany od globalnego GC shared hostingu
+    // (inne aplikacje na vh.pl mogłyby wyczyścić nasze pliki sesji przy domyślnym /tmp).
+    $sessDir = __DIR__ . DIRECTORY_SEPARATOR . '.sessions';
+    if (!is_dir($sessDir)) {
+        @mkdir($sessDir, 0700, true);
+        // Zablokuj dostęp HTTP do katalogu – PHP i tak czyta przez FS.
+        @file_put_contents(
+            $sessDir . DIRECTORY_SEPARATOR . '.htaccess',
+            "Require all denied\n\n<IfModule !mod_authz_core.c>\nOrder deny,allow\nDeny from all\n</IfModule>\n"
+        );
+    }
+    session_save_path($sessDir);
+    ini_set('session.gc_maxlifetime', (string)$ttl);
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '100');
+
     $https = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
         || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
     session_set_cookie_params([
-        'lifetime' => 0,
+        'lifetime' => $ttl,
         'path'     => '/',
         'secure'   => $https,
         'httponly' => true,

@@ -194,6 +194,15 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-02** — Panel/kalendarz: **live-update bez F5 (polling).** Nowe rezerwacje online / zmiany w Google
+  Calendar pojawiają się same: `panel-calendar.js` odpala `autoRefresh` na `setInterval` co **30 s** (id w
+  `st.pollTimer`) + natychmiast po powrocie do karty (`visibilitychange`). Używa istniejącego `refresh()` (cichy
+  refetch, `keepScroll`, bez flasha). Guardy pominięcia cyklu: karta w tle (`document.hidden`), siatka nie
+  zamontowana (inny widok), trwa przeciąganie (`.is-dragging`/`.pnl-cal-ghost` w DOM), wpis `_pending`, albo
+  **trwa zapis w tle** — nowy licznik `st.saving` + `saveBegin()/saveEnd()` na `PanelCalendarInternals`, wołane
+  wokół POST/PATCH/DELETE w `panel-calendar-edit.js` (inaczej refetch mógłby cofnąć optymistyczną zmianę sprzed
+  potwierdzenia serwera). Bez zmian backendu. Deploy: `panel-calendar.js`, `panel-calendar-edit.js`, `panel.html`
+  → `?v=20260701g`.
 - **2026-07-01 (f)** — Panel/kalendarz: **fix jednoliniowego kafelka (is-xs) — telefon uciekał na prawy skraj.**
   Motocykl/klima (10 min) pokazywał tylko markę, bo `.pnl-ev-main` miał `flex:1 1 auto` → rozpychał się na całą
   szerokość szerokiej kolumny „dzień" i spychał `.pnl-ev-phone` na sam prawy skraj (przy otwartej szufladzie —

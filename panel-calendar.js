@@ -24,7 +24,9 @@
         loadToken: 0,
         events: [],
         days: [],
-        nowTimer: null       // interwał odświeżający linię „teraz" na żywo
+        nowTimer: null,      // interwał odświeżający linię „teraz" na żywo
+        pollTimer: null,     // interwał cichego dociągania zmian z serwera (live-update)
+        saving: 0            // liczba trwających zapisów w tle (PATCH/POST/DELETE) – wstrzymują polling
     };
 
     /* ---------- Daty ---------- */
@@ -110,10 +112,32 @@
         if (st.nowTimer) clearInterval(st.nowTimer);
         st.nowTimer = setInterval(tickNow, 20000);
 
+        // Live-update: co 30 s cichy refetch (bez flasha/skoku scrolla), żeby nowe
+        // rezerwacje online / zmiany w Google Calendar pojawiały się same, bez F5.
+        if (st.pollTimer) clearInterval(st.pollTimer);
+        st.pollTimer = setInterval(autoRefresh, 30000);
+        document.removeEventListener('visibilitychange', onVisibility);
+        document.addEventListener('visibilitychange', onVisibility);
+
         load();
     }
 
     function onEsc(e) { if (e.key === 'Escape') closeDrawer(); }
+
+    // Cichy refetch z serwera, tylko gdy to bezpieczne: karta widoczna, siatka
+    // zamontowana, nikt niczego nie przeciąga i nie wisi niedokończony zapis
+    // (inaczej refetch mógłby „zgubić" wpis optymistyczny sprzed potwierdzenia).
+    function autoRefresh() {
+        if (document.hidden || !host || st.saving > 0) return;
+        var scroll = host.querySelector('#pnl-cal-scroll');
+        if (!scroll || !scroll.querySelector('.pnl-cal-daycol')) return;   // inny widok / nie zamontowany
+        if (scroll.querySelector('.is-dragging') || scroll.querySelector('.pnl-cal-ghost')) return;
+        for (var i = 0; i < st.events.length; i++) if (st.events[i]._pending) return;
+        refresh();
+    }
+
+    // Powrót do karty (np. z telefonu/innego okna) = od razu dociągnij świeży grafik.
+    function onVisibility() { if (!document.hidden) autoRefresh(); }
 
     // Przesuwa (tworzy/usuwa) czerwoną linię bieżącej godziny bez przerysowania siatki.
     // Wołane z interwału – dlatego kalendarz „tyka" na żywo, a nie dopiero po odświeżeniu.
@@ -513,6 +537,8 @@
         addLocal: addLocal,                    // optymistyczne dodanie wydarzenia
         removeLocal: removeLocal,              // optymistyczne usunięcie (zwraca wydarzenie do rollbacku)
         toast: toast,
+        saveBegin: function () { st.saving++; },                       // zapis w tle startuje – wstrzymaj polling
+        saveEnd: function () { if (st.saving > 0) st.saving--; },      // zapis w tle skończony
         getState: function () { return st; },
         parseLocal: parseLocal,
         openDrawerHtml: openDrawerHtml,

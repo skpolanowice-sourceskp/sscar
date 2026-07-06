@@ -64,22 +64,24 @@
         I().closeDrawer();
         optEv._pending = true;
         I().addLocal(optEv);
+        I().saveBegin();
         api('event.php', { method: 'POST', json: payload }).then(function (res) {
             I().applyLocal(optEv.id, { id: (res && res.id) || optEv.id, ref: (res && res.ref) || optEv.ref, _pending: false });
         }).catch(function (err) {
             I().removeLocal(optEv.id);
             I().toast((err && err.message) || 'Nie udało się zapisać terminu.', 'error');
-        });
+        }).then(function () { I().saveEnd(); });
     }
 
     // Edycja/przesunięcie: nanieś patch lokalnie, zapisz w tle, po błędzie wycofaj + toast.
     function patchInBackground(id, patch, payload) {
         I().closeDrawer();
         var prev = I().applyLocal(id, patch);
+        I().saveBegin();
         api('event.php', { method: 'PATCH', json: payload }).catch(function (err) {
             if (prev) I().applyLocal(id, prev);
             I().toast((err && err.message) || 'Nie udało się zapisać zmian.', 'error');
-        });
+        }).then(function () { I().saveEnd(); });
     }
 
     function findService(key) {
@@ -288,7 +290,7 @@
                 e.preventDefault();
                 var errEl = document.getElementById('ce-error'); errEl.textContent = '';
                 var b = readBooking();
-                if (!validBooking(b, errEl)) return;
+                if (!validBooking(b, errEl, { lenient: true })) return;
                 var startISO = b.date + 'T' + b.time;
                 var endISO = b.date + 'T' + minToHHMM(hhmmToMin(b.time) + b.dur);
                 var payload = { id: ev.id, start: startISO, end: endISO,
@@ -380,10 +382,11 @@
             // Optymistycznie: zamknij szufladę i zdejmij wpis od razu, kasuj w tle.
             ctx.close();
             var removed = I().removeLocal(ev.id);
+            I().saveBegin();
             api('event.php', { method: 'DELETE', json: { id: ev.id } }).catch(function (err) {
                 if (removed) I().addLocal(removed);   // wróć wpis, jeśli backend odmówił
                 I().toast((err && err.message) || 'Nie udało się usunąć.', 'error');
-            });
+            }).then(function () { I().saveEnd(); });
         });
     }
 

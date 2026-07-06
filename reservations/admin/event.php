@@ -213,18 +213,21 @@ function ev_update($in, $cfg, $tz, $calendarId) {
     // 3) Dane rezerwacji (klient / usługa).
     if ($row && is_array($in['customer'] ?? null)) {
         $cust = $in['customer'];
-        $name  = trim((string)($cust['name']  ?? $row['cust_name']));
-        $phone = trim((string)($cust['phone'] ?? $row['cust_phone']));
-        $plate = strtoupper(trim((string)($cust['plate'] ?? $row['cust_plate'])));
-        $email = trim((string)($cust['email'] ?? (string)$row['cust_email']));
-        $notes = trim((string)($cust['notes'] ?? (string)$row['notes']));
+        // Operator ?? nie wyłapuje pustego stringa – front zawsze wysyła wszystkie pola
+        // (nawet puste), więc fallback musi działać też dla ''. Zachowujemy istniejące
+        // dane z bazy gdy formularz prześle pusty string – chroni to przed przypadkowym
+        // nadpisaniem uzupełnionych pól przez niezmodyfikowany formularz.
+        $pick = function($new, $old) { $v = trim((string)$new); return $v !== '' ? $v : trim((string)$old); };
+        $name  = $pick($cust['name']  ?? '', $row['cust_name']  ?? '');
+        $phone = $pick($cust['phone'] ?? '', $row['cust_phone'] ?? '');
+        $plate = strtoupper($pick($cust['plate'] ?? '', $row['cust_plate'] ?? ''));
+        $email = $pick($cust['email'] ?? '', $row['cust_email'] ?? '');
+        $notes = $pick($cust['notes'] ?? '', $row['notes']      ?? '');
         $vehicle = trim((string)($cust['vehicle'] ?? ''));
         $serviceKey = (string)($in['service'] ?? $row['service']);
         $subtypeKey = (string)($in['subtype'] ?? $row['subtype']);
         $resolved = rez_resolve($serviceKey, $subtypeKey);
         if (!$resolved) rez_fail(422, 'Nieprawidłowa usługa.');
-        list($service, $subtype) = $resolved;
-        if (mb_strlen($name) < 2) rez_fail(422, 'Podaj imię i nazwisko klienta.');
 
         // Czas do odświeżenia wpisu w Google. Zwykle ustawiła go już gałąź 1
         // (formularz edycji wysyła start+end); z bazy bierzemy tylko awaryjnie.
