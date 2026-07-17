@@ -194,6 +194,14 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-17** — Panel/Klienci: **inteligentna wyszukiwarka**. `clients.php` (GET) tokenizuje zapytanie
+  (do 6 tokenów, AND między tokenami) i każdy token dopasowuje OR-em do: `name`, `phone_display`,
+  `phone_norm` (same cyfry tokena), `email`, `notes` oraz pojazdów (`plate` uppercased, `vehicle`) —
+  np. „golf jan" znajdzie Jana z Golfem. SELECT zwraca dodatkowo `notes` i `vehicles` (GROUP_CONCAT
+  marek/modeli). Front (`panel-clients.js`): nowy placeholder, marka/model w linii meta wiersza, a gdy
+  trafienie padło w notatce — jej fragment (~90 znaków) pod wierszem. Parametry nadal wyłącznie jako
+  stringi przez `execute()`, `LIMIT 100` literałem (pułapka EMULATE_PREPARES). Wdrożone FTP
+  (`reservations/admin/clients.php`, `panel-clients.js`, `panel.html`). `?v=20260717a`.
 - **2026-07-02** — Panel/kalendarz: **live-update bez F5 (polling).** Nowe rezerwacje online / zmiany w Google
   Calendar pojawiają się same: `panel-calendar.js` odpala `autoRefresh` na `setInterval` co **30 s** (id w
   `st.pollTimer`) + natychmiast po powrocie do karty (`visibilitychange`). Używa istniejącego `refresh()` (cichy

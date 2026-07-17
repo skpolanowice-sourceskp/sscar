@@ -36,7 +36,7 @@
             '<div class="pnl-clients">' +
                 '<div class="pnl-clients-list">' +
                     '<div class="pnl-clients-search">' +
-                        '<input id="cl-q" type="search" autocomplete="off" placeholder="Szukaj: nazwisko, telefon, nr rej.">' +
+                        '<input id="cl-q" type="search" autocomplete="off" placeholder="Szukaj: nazwisko, telefon, nr rej., auto, notatki…">' +
                         '<button type="button" class="pnl-btn pnl-btn-primary pnl-clients-new" id="cl-new" title="Dodaj klienta">+ Nowy</button>' +
                     '</div>' +
                     '<div class="pnl-clients-tools" style="padding:0 0 8px;">' +
@@ -106,13 +106,26 @@
             return;
         }
         box.innerHTML = rows.map(function (c) {
+            // Fragment notatki pokazujemy tylko, gdy to notatka „złapała" zapytanie.
+            var note = c.notes || '', noteMatch = false;
+            if (note && lastQ) {
+                var noteLower = note.toLowerCase();
+                var toks = lastQ.trim().split(/\s+/);
+                for (var i = 0; i < toks.length; i++) {
+                    if (toks[i] && noteLower.indexOf(toks[i].toLowerCase()) !== -1) { noteMatch = true; break; }
+                }
+            }
+            var noteHtml = noteMatch
+                ? '<span class="pnl-client-meta" style="opacity:.72;">Notatka: ' + esc(note.length > 90 ? note.slice(0, 87) + '…' : note) + '</span>'
+                : '';
             return '<button type="button" class="pnl-client-row' + (+c.blocked ? ' is-blocked' : '') +
                     (current && +current.id === +c.id ? ' is-active' : '') + '" data-id="' + c.id + '">' +
                 '<span class="pnl-client-row-top">' +
                     '<span class="pnl-client-name">' + esc(c.name || '(bez nazwiska)') + '</span>' +
                     (+c.blocked ? '<span class="pnl-badge-block">blokada</span>' : '<span class="pnl-client-visits">' + (+c.visits || 0) + '×</span>') +
                 '</span>' +
-                '<span class="pnl-client-meta">' + esc(c.phone_display) + (c.plates ? ' · ' + esc(c.plates) : '') + '</span>' +
+                '<span class="pnl-client-meta">' + esc(c.phone_display) + (c.plates ? ' · ' + esc(c.plates) : '') +
+                    (c.vehicles ? ' · ' + esc(c.vehicles) : '') + '</span>' + noteHtml +
             '</button>';
         }).join('');
         Array.prototype.forEach.call(box.querySelectorAll('.pnl-client-row'), function (b) {

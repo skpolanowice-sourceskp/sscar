@@ -21,25 +21,38 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 if ($method === 'GET') {
     $q = trim((string)($_GET['q'] ?? ''));
 
-    $cols = 'c.id, c.phone_display, c.name, c.blocked,
+    $cols = 'c.id, c.phone_display, c.name, c.blocked, c.notes,
         (SELECT COUNT(*) FROM rez_bookings b WHERE b.client_id = c.id) AS visits,
-        (SELECT GROUP_CONCAT(DISTINCT v.plate SEPARATOR ", ") FROM rez_client_vehicles v WHERE v.client_id = c.id) AS plates';
+        (SELECT GROUP_CONCAT(DISTINCT v.plate SEPARATOR ", ") FROM rez_client_vehicles v WHERE v.client_id = c.id) AS plates,
+        (SELECT GROUP_CONCAT(DISTINCT v.vehicle SEPARATOR ", ") FROM rez_client_vehicles v WHERE v.client_id = c.id AND v.vehicle IS NOT NULL AND v.vehicle <> "") AS vehicles';
 
     try {
         if ($q === '') {
             $stmt = $pdo->prepare("SELECT $cols FROM rez_clients c ORDER BY c.updated_at DESC LIMIT 100");
             $stmt->execute();
         } else {
-            $like = '%' . $q . '%';
-            $digits = preg_replace('/\D/', '', $q);
+            // Inteligentne wyszukiwanie: każdy token (AND) musi pasować do któregokolwiek
+            // pola profilu (OR): nazwa, telefon, e-mail, notatki, nr rej., marka/model.
+            $tokens = array_slice(preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY), 0, 6);
+            $where  = [];
+            $params = [];
+            foreach ($tokens as $token) {
+                $like = '%' . $token . '%';
+                $cond = '(c.name LIKE ? OR c.phone_display LIKE ? OR c.email LIKE ? OR c.notes LIKE ?';
+                array_push($params, $like, $like, $like, $like);
+                $digits = preg_replace('/\D/', '', $token);
+                if ($digits !== '') {
+                    $cond .= ' OR c.phone_norm LIKE ?';
+                    $params[] = '%' . $digits . '%';
+                }
+                $cond .= ' OR EXISTS (SELECT 1 FROM rez_client_vehicles v WHERE v.client_id = c.id
+                          AND (v.plate LIKE ? OR v.vehicle LIKE ?)))';
+                array_push($params, strtoupper($like), $like);
+                $where[] = $cond;
+            }
             $sql = "SELECT $cols FROM rez_clients c
-                    WHERE c.name LIKE ? OR c.phone_display LIKE ? "
-                    . ($digits !== '' ? 'OR c.phone_norm LIKE ? ' : '')
-                    . "OR EXISTS (SELECT 1 FROM rez_client_vehicles v WHERE v.client_id = c.id AND v.plate LIKE ?)
+                    WHERE " . implode(' AND ', $where) . "
                     ORDER BY c.blocked DESC, c.name ASC LIMIT 100";
-            $params = [$like, $like];
-            if ($digits !== '') $params[] = '%' . $digits . '%';
-            $params[] = strtoupper($like);
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
         }
