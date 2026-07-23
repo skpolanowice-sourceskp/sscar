@@ -23,8 +23,8 @@ function rez_config() {
 // Godziny pracy: dzień tygodnia (0=niedz..6=sob) => [otwarcie, zamknięcie] | null
 const REZ_HOURS = [
     0 => null,
-    1 => [7, 18],
-    2 => [7, 18],
+    1 => [7, 20],
+    2 => [7, 20],
     3 => [7, 20],
     4 => [7, 20],
     5 => [7, 20],

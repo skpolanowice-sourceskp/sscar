@@ -27,8 +27,8 @@
     // [otwarcie, zamknięcie] w pełnych godzinach. null = nieczynne.
     var HOURS = {
         0: null,      // niedziela
-        1: [7, 18],   // poniedziałek
-        2: [7, 18],   // wtorek
+        1: [7, 20],   // poniedziałek
+        2: [7, 20],   // wtorek
         3: [7, 20],   // środa
         4: [7, 20],   // czwartek
         5: [7, 20],   // piątek
