@@ -55,7 +55,7 @@
                 { key: 'motocykl',    label: 'Motocykl',          meta: '',                          duration: 10, price: '94 zł' },
                 { key: 'powypadkowe', label: 'Powypadkowe',       meta: 'łącznie z okresowym',       duration: 30, price: '292 zł' },
                 { key: 'pierwszarej', label: 'Pierwsza rejestracja w kraju', meta: 'pojazd do pierwszej rejestracji w PL', duration: 30, price: '240 zł' },
-                { key: 'dodatkowe',   label: 'Przegląd dodatkowy', meta: 'poprawkowe / uzupełniające / po zatrzymaniu dowodu', duration: 10, price: '' }
+                { key: 'dodatkowe',   label: 'Przegląd dodatkowy', meta: 'samo taxi bez okresowego, poprawkowe/uzupełniające, po zatrzymaniu dowodu', duration: 10, price: '' }
             ]
         },
         przedzakupem: {
@@ -354,15 +354,15 @@
         wrap.hidden = false;
         el('rez-subtypes-label').textContent = SERVICES[state.service].label;
         var items = SERVICES[state.service].subtypes.map(function (s) {
-            var metaParts = [];
-            if (s.meta) metaParts.push(s.meta);
-            metaParts.push(displayMinutes(s) + ' min');
-            if (s.price) metaParts.push(s.price);
+            var main = '<span class="rez-opt-name">' + s.label + '</span>';
+            if (s.meta) main += '<span class="rez-opt-desc">' + s.meta + '</span>';
+            var figs = '<span class="rez-opt-time">' + displayMinutes(s) + ' min</span>';
+            if (s.price) figs += '<span class="rez-opt-price">' + s.price + '</span>';
             return {
                 key: s.key,
-                className: 'rez-chip',
-                html: '<span class="rez-chip-name">' + s.label + '</span>'
-                    + '<span class="rez-chip-meta">' + metaParts.join(' · ') + '</span>'
+                className: 'rez-opt',
+                html: '<span class="rez-opt-main">' + main + '</span>'
+                    + '<span class="rez-opt-figs">' + figs + '</span>'
             };
         });
         buildRadioGroup(el('rez-subtypes'), items, function () { return state.subtype; }, selectSubtype);
