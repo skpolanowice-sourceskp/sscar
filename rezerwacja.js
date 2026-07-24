@@ -50,10 +50,12 @@
             subtypes: [
                 { key: 'osobowy',     label: 'Osobowy',           meta: 'do 3.5t',                   duration: 20, price: '149 zł' },
                 { key: 'gaz',         label: 'Osobowy z LPG/CNG', meta: '+ badanie instalacji gazu', duration: 30, price: '245 zł' },
-                { key: 'taxi',        label: 'Taxi',              meta: 'osobowe + badanie taxi',    duration: 20, price: '213 zł' },
+                { key: 'taxi',        label: 'Okresowe Taxi (bez LPG)', meta: 'osobowe + badanie taxi', duration: 20, price: '213 zł' },
+                { key: 'taxigaz',     label: 'Okresowe Taxi + LPG', meta: 'taxi + badanie instalacji gazu', duration: 30, price: '309 zł' },
                 { key: 'motocykl',    label: 'Motocykl',          meta: '',                          duration: 10, price: '94 zł' },
                 { key: 'powypadkowe', label: 'Powypadkowe',       meta: 'łącznie z okresowym',       duration: 30, price: '292 zł' },
-                { key: 'pierwszarej', label: 'Pierwsza rejestracja w kraju', meta: 'pojazd do pierwszej rejestracji w PL', duration: 30, price: '240 zł' }
+                { key: 'pierwszarej', label: 'Pierwsza rejestracja w kraju', meta: 'pojazd do pierwszej rejestracji w PL', duration: 30, price: '240 zł' },
+                { key: 'dodatkowe',   label: 'Przegląd dodatkowy', meta: 'poprawkowe / uzupełniające / po zatrzymaniu dowodu', duration: 10, price: '' }
             ]
         },
         przedzakupem: {
@@ -355,7 +357,7 @@
             var metaParts = [];
             if (s.meta) metaParts.push(s.meta);
             metaParts.push(displayMinutes(s) + ' min');
-            metaParts.push(s.price);
+            if (s.price) metaParts.push(s.price);
             return {
                 key: s.key,
                 className: 'rez-chip',

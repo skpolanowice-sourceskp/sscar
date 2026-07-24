@@ -41,10 +41,14 @@ function rez_services() {
             'subtypes' => [
                 'osobowy'     => ['label' => 'Osobowy',           'duration' => 20],
                 'gaz'         => ['label' => 'Osobowy z LPG/CNG', 'duration' => 30],
-                'taxi'        => ['label' => 'Taxi',              'duration' => 20],
+                'taxi'        => ['label' => 'Okresowe Taxi (bez LPG)', 'duration' => 20],
+                'taxigaz'     => ['label' => 'Okresowe Taxi + LPG',     'duration' => 30],
                 'motocykl'    => ['label' => 'Motocykl',          'duration' => 10],
                 'powypadkowe' => ['label' => 'Powypadkowe',       'duration' => 30],
                 'pierwszarej' => ['label' => 'Pierwsza rejestracja w kraju', 'duration' => 30],
+                // Przegląd dodatkowy (10 min): samo taxi, poprawkowe/uzupełniające,
+                // lub po zatrzymaniu dowodu za usterki przez policję.
+                'dodatkowe'   => ['label' => 'Przegląd dodatkowy', 'duration' => 10],
             ],
         ],
         'przedzakupem' => [
