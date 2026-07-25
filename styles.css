@@ -1060,6 +1060,11 @@ footer a:hover { color: var(--primary-red); }
 
     h2 { font-size: 1.75rem; margin-bottom: 1.5rem; }
 
+    /* h2 traci tu margin-bottom 4rem -> 1.5rem, więc ujemny margin-top podtytułu
+       (-2.5rem, ustawiony pod desktop) wciągał go na czerwoną kreskę h2::after.
+       Zerujemy go — odstęp daje samo margin-bottom nagłówka. */
+    .section-subtitle { margin-top: 0; }
+
     .page-hero { padding-top: 110px; }
     .page-hero h1 { font-size: 2rem; }
 
