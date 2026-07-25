@@ -288,12 +288,224 @@
             margin-right: 0.4rem;
         }
 
+        /* ===== Dekodery producentów (linki zewnętrzne) ===== */
+        .dec-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .dec-note {
+            border-left: 3px solid var(--primary-red);
+            background: oklch(18% 0.004 30);
+            padding: 1.15rem 1.5rem;
+            margin-bottom: 3rem;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: oklch(82% 0.005 30);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .dec-note strong { color: var(--text-main); }
+
+        .dec-subhead {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 3.5rem 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dec-subhead::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .dec-subhead:first-child { margin-top: 0; }
+
+        .dec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            /* same colour as the cards, so a half-empty last row stays invisible */
+            background: var(--surface-1);
+            overflow: hidden;
+        }
+
+        .dec-grid.is-lead { grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); }
+
+        /* single card: never let auto-fit open an empty second track */
+        .dec-grid.is-single { grid-template-columns: 1fr; }
+
+        .dec-card {
+            background: var(--surface-1);
+            padding: 1.9rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.25s;
+            /* separators via shadow: no layout cost, clipped away on the outer edges */
+            box-shadow: 1px 0 0 var(--border-subtle), 0 1px 0 var(--border-subtle);
+        }
+
+        .dec-card:hover { background: var(--surface-2); }
+
+        .dec-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .dec-brand {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.15;
+        }
+
+        .dec-badge {
+            flex-shrink: 0;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.63rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 4px 9px;
+            border-radius: 3px;
+            white-space: nowrap;
+            border: 1px solid;
+        }
+
+        .dec-badge.is-day {
+            background: oklch(48.5% 0.222 25.8 / 0.16);
+            border-color: oklch(48.5% 0.222 25.8 / 0.55);
+            color: oklch(72% 0.16 25.8);
+        }
+
+        .dec-badge.is-month {
+            background: oklch(60% 0.11 75 / 0.12);
+            border-color: oklch(60% 0.11 75 / 0.4);
+            color: oklch(78% 0.1 75);
+        }
+
+        .dec-badge.is-year {
+            background: transparent;
+            border-color: var(--border-subtle);
+            color: var(--text-muted);
+        }
+
+        .dec-what {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.65;
+            margin: 0 0 1.25rem;
+        }
+
+        .dec-what strong { color: oklch(85% 0.005 30); font-weight: 600; }
+
+        .dec-links {
+            list-style: none;
+            padding: 0;
+            margin: auto 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: var(--border-subtle);
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .dec-links li { margin: 0; }
+
+        .dec-links a {
+            display: flex;
+            align-items: baseline;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            padding: 0.7rem 0.1rem 0.7rem 0;
+            background: var(--surface-1);
+            color: var(--text-main);
+            text-decoration: none;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            transition: color 0.2s, padding-left 0.2s;
+        }
+
+        .dec-card:hover .dec-links a { background: var(--surface-2); }
+
+        .dec-links a::before {
+            content: '\2192';
+            color: var(--primary-red);
+            font-weight: 700;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .dec-links a:hover,
+        .dec-links a:focus-visible {
+            color: var(--primary-red);
+            padding-left: 0.35rem;
+        }
+
+        .dec-links a:focus-visible { outline: 2px solid var(--primary-red); outline-offset: 2px; }
+
+        .dec-hint {
+            font-family: 'Barlow', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 400;
+            letter-spacing: 0;
+            color: var(--text-muted);
+        }
+
+        .dec-tip {
+            margin: 1.1rem 0 0;
+            padding-top: 0.9rem;
+            border-top: 1px dashed var(--border-subtle);
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: oklch(58% 0.005 30);
+        }
+
+        .dec-tip strong { color: oklch(75% 0.005 30); font-weight: 600; }
+
+        .dec-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.5rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .dec-legend > span { display: inline-flex; align-items: center; gap: 0.5rem; }
+
         @media (max-width: 768px) {
             .tool-grid { grid-template-columns: 1fr; max-width: 100%; }
             .tool-panel { padding: 2rem 1.5rem; }
             .tool-panel h2.tool-title { font-size: 1.4rem; }
             .result-value { font-size: 0.95rem; }
             .result-value.accent { font-size: 1.05rem; }
+
+            .dec-grid,
+            .dec-grid.is-lead { grid-template-columns: 1fr; }
+            .dec-card { padding: 1.6rem 1.35rem; }
+            .dec-card-head { flex-direction: column; gap: 0.55rem; }
+            .dec-badge { align-self: flex-start; }
+            .dec-legend { justify-content: flex-start; }
         }
     </style>
 </head>
@@ -422,8 +634,200 @@
     </div>
 </section>
 
+<!-- External / manufacturer decoders -->
+<section class="animate-on-scroll" id="dekodery-marek" style="background:oklch(15% 0.005 30 / 0.5);">
+    <h2>Dekodery producentów</h2>
+    <p class="section-subtitle">Nasze narzędzia czytają to, co zakodowano w samym numerze. Gdy to za mało, sięgnij do baz fabrycznych — poniższe serwisy są bezpłatne i nie wymagają zakładania konta.</p>
+
+    <div class="dec-wrap">
+
+        <div class="dec-note">
+            <strong>Rok modelowy to nie data produkcji.</strong> Dziesiąty znak VIN koduje rok modelowy, a nie dzień zjazdu z taśmy — auto oznaczone jako „2026" potrafi opuścić fabrykę jesienią 2025 roku. Po pewną datę produkcji zawsze sięgaj do katalogu producenta albo do tabliczki i naklejek na nadwoziu.
+        </div>
+
+        <h3 class="dec-subhead">Zacznij tutaj — katalogi fabryczne</h3>
+        <div class="dec-grid is-lead">
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">PartSouq</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Wyszukiwarka katalogów części kilkudziesięciu producentów. Po wpisaniu VIN pokazuje kartę pojazdu prosto z bazy fabrycznej — z polem <strong>Production Date</strong>, kodem lakieru, kodem silnika, kodem tapicerki i rynkiem przeznaczenia. Najskuteczniejszy dla marek japońskich i koreańskich, ale zna też większość europejskich.</p>
+                <ul class="dec-links">
+                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">Toyota, Lexus, Nissan, Honda, Mazda, Subaru, Suzuki, Mitsubishi, Hyundai, Kia, Mercedes, BMW, VW, Audi, Renault, Ford, Volvo, Porsche</span></a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">7zap</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Blisko 60 katalogów OEM — od Abartha po Volvo. W wyniku znajdziesz m.in. <strong>datę produkcji</strong>, kod nadwozia, kod rodziny modelu, serię i linię montażową. Dobre uzupełnienie, gdy PartSouq nie rozpozna pojazdu — każda marka ma tu własny dekoder.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap.com <span class="dec-hint">uniwersalny dekoder VIN</span></a></li>
+                </ul>
+            </article>
+
+        </div>
+
+        <h3 class="dec-subhead">Dekodery markowe</h3>
+        <div class="dec-grid">
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">BMW · MINI · Rolls-Royce · Alpina</h4>
+                    <span class="dec-badge is-day">Dokładny dzień</span>
+                </div>
+                <p class="dec-what">Najlepiej udokumentowane marki na rynku. Oba serwisy podają <strong>dokładną datę zjazdu z taśmy</strong>, komplet opcji fabrycznych, kod lakieru i tapicerki. Działają również dla motocykli BMW.</p>
+                <ul class="dec-links">
+                    <li><a href="https://bimmer.work/" target="_blank" rel="noopener noreferrer">bimmer.work <span class="dec-hint">+ zdjęcia konfiguracji i widok 360°</span></a></li>
+                    <li><a href="https://www.mdecoder.com/" target="_blank" rel="noopener noreferrer">mdecoder.com <span class="dec-hint">„///M Decoder" — pełna lista wyposażenia</span></a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Mercedes-Benz · Smart</h4>
+                    <span class="dec-badge is-day">Dokładny dzień</span>
+                </div>
+                <p class="dec-what">Odczytuje fabryczną kartę pojazdu (datacard) z <strong>datą produkcji w formacie RRRR-MM-DD</strong> oraz kodami wyposażenia. Obejmuje osobowe, AMG i dostawcze Sprintery czy Vito.</p>
+                <ul class="dec-links">
+                    <li><a href="https://www.mbdecoder.com/" target="_blank" rel="noopener noreferrer">mbdecoder.com <span class="dec-hint">datacard i kody opcji</span></a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Toyota · Lexus · Scion</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Przyjmuje VIN albo <strong>numer nadwozia (frame no.)</strong> — nieocenione przy autach sprowadzonych z Japonii, które nie mają 17-znakowego VIN-u. Zwraca okres produkcji, kod koloru, kod silnika i rynek przeznaczenia.</p>
+                <ul class="dec-links">
+                    <li><a href="https://www.toyodiy.com/parts/" target="_blank" rel="noopener noreferrer">toyodiy.com <span class="dec-hint">VIN lub numer nadwozia</span></a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Volkswagen · Audi · Škoda · Seat · Cupra</h4>
+                    <span class="dec-badge is-year">Rok modelowy</span>
+                </div>
+                <p class="dec-what">Uczciwie: <strong>VIN grupy VAG nie koduje daty produkcji</strong> i żaden darmowy serwis jej stamtąd nie wyczyta. Online ustalisz rok modelowy, silnik, fabrykę i kody wyposażenia PR.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/catalog/cars/volkswagen/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Volkswagen</a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/audi/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Audi</a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/skoda/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Škoda</a></li>
+                    <li><a href="https://vaginfo.com/vw-vin-decoder/" target="_blank" rel="noopener noreferrer">vaginfo.com <span class="dec-hint">wyposażenie fabryczne i kody PR</span></a></li>
+                </ul>
+                <p class="dec-tip"><strong>Gdzie jest data:</strong> na naklejce z kodami PR (Fahrzeugdatenträger) — we wnęce koła zapasowego w bagażniku, a często też w książce serwisowej.</p>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Ford</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Firmowy serwis ETIS, który przez lata podawał datę zjazdu z taśmy, <strong>został wyłączony</strong> i jest dziś dostępny wyłącznie odpłatnie dla warsztatów. Zostaje katalog części i odczyt z samego numeru.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/catalog/cars/ford/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Ford</a></li>
+                </ul>
+                <p class="dec-tip"><strong>Masz to wyżej.</strong> Ford europejski koduje rok i miesiąc produkcji na 11. i 12. znaku VIN — nasz dekoder czyta to automatycznie.</p>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Renault · Dacia</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">VIN Renault nie zawiera roku w standardzie ISO, więc uniwersalne dekodery zwykle milczą. Katalog fabryczny rozpozna wersję, silnik i okres produkcji po numerze seryjnym.</p>
+                <ul class="dec-links">
+                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">katalog Renault i Dacia</span></a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/dacia/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Dacia</a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Volvo</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Volvo trzyma się standardu ISO, więc rok modelowy odczytasz od ręki. Katalog fabryczny doprecyzuje wariant nadwozia, silnik i zakład montażu.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/catalog/cars/volvo/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Volvo</a></li>
+                </ul>
+                <p class="dec-tip"><strong>Masz to wyżej.</strong> Nasz dekoder rozpoznaje serię, rok i fabrykę Volvo (Torslanda, Gandawa, Born, Charleston) z samego VIN-u.</p>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Hyundai · Kia</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Auta z Nošovic, Žiliny, Izmitu i Korei. Katalogi fabryczne podają datę produkcji, wersję rynkową i kod wyposażenia — przydatne, gdy trzeba rozróżnić bliźniacze generacje.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/catalog/cars/hyundai/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Hyundai</a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/kia/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Kia</a></li>
+                </ul>
+                <p class="dec-tip"><strong>Masz to wyżej.</strong> Nasz dekoder ma rozbudowaną bazę modeli i generacji Hyundaia — rozpoznaje je z 4. znaku VIN.</p>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Nissan · Infiniti · Mazda · Honda · Subaru · Suzuki · Mitsubishi</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Dla marek japońskich katalogi fabryczne sprawdzają się najlepiej — podają <strong>datę produkcji</strong>, kod lakieru i pełną specyfikację rynkową. Obsługują też numery nadwozia aut z importu z Japonii.</p>
+                <ul class="dec-links">
+                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">najlepszy wybór dla tych marek</span></a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/nissan/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Nissan</a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/mazda/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Mazda</a></li>
+                </ul>
+            </article>
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Fiat · Alfa Romeo · Lancia · Abarth</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Włoskie VIN-y również pomijają rok w standardzie ISO, przez co uniwersalne dekodery często nie podają nic. Katalog OEM rozpozna model i wersję po numerze seryjnym.</p>
+                <ul class="dec-links">
+                    <li><a href="https://7zap.com/en/catalog/cars/fiat/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Fiat i Abarth</a></li>
+                    <li><a href="https://7zap.com/en/catalog/cars/alfa-romeo/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Alfa Romeo</a></li>
+                </ul>
+                <p class="dec-tip"><strong>Uwaga:</strong> Fiaty i Toyoty dostawcze z grupy Stellantis (Ducato, Proace) mają naklejkę DAM — sprawdź je naszym dekoderem DAM/ORGA.</p>
+            </article>
+
+        </div>
+
+        <h3 class="dec-subhead">Rejestry i źródła urzędowe</h3>
+        <div class="dec-grid is-single">
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Historia Pojazdu — CEPiK</h4>
+                    <span class="dec-badge is-year">Rok produkcji</span>
+                </div>
+                <p class="dec-what">Oficjalny, bezpłatny rejestr Ministerstwa Cyfryzacji. Podaj VIN, numer rejestracyjny i datę pierwszej rejestracji, a otrzymasz <strong>rok produkcji, odczyty przebiegu z kolejnych badań technicznych</strong>, dane techniczne i liczbę właścicieli. Działa tylko dla pojazdów zarejestrowanych w Polsce.</p>
+                <ul class="dec-links">
+                    <li><a href="https://historiapojazdu.gov.pl/" target="_blank" rel="noopener noreferrer">historiapojazdu.gov.pl <span class="dec-hint">dane z rejestru państwowego</span></a></li>
+                </ul>
+            </article>
+
+        </div>
+
+        <div class="dec-legend">
+            <span><span class="dec-badge is-day">Dokładny dzień</span> data co do dnia</span>
+            <span><span class="dec-badge is-month">Miesiąc i rok</span> okres produkcji</span>
+            <span><span class="dec-badge is-year">Rok</span> sam rok, bez daty dziennej</span>
+        </div>
+
+    </div>
+</section>
+
 <!-- Where to find -->
-<section class="animate-on-scroll" style="background:oklch(15% 0.005 30 / 0.5);">
+<section class="animate-on-scroll">
     <h2>Gdzie szukać numerów</h2>
     <p class="section-subtitle">Każdy producent umieszcza VIN w kilku miejscach — dla pewności porównuj minimum dwa.</p>
     <div class="feature-grid">

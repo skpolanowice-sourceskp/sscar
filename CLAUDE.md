@@ -194,6 +194,27 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-25** — `dekoder.html`: nowa sekcja **„Dekodery producentów"** (`#dekodery-marek`) — kurowana lista
+  bezpłatnych dekoderów zewnętrznych na wypadek, gdy nasz uniwersalny dekoder nic nie pokaże. **13 kart** w trzech
+  grupach: katalogi fabryczne (PartSouq, 7zap), dekodery markowe (BMW, Mercedes, Toyota, VAG, Ford, Renault,
+  Volvo, Hyundai/Kia, japońskie, włoskie) i rejestr urzędowy (historiapojazdu.gov.pl).
+  Każda karta ma **badge precyzji** daty produkcji: `is-day` (co do dnia) / `is-month` / `is-year`.
+  Style inline w `<style>` strony, prefiks `dec-` (NIE w `styles.css` → brak bumpu `?v=`).
+  **Świadomie NIE linkujemy** zewnętrznych kalkulatorów ORGA/DAM (bartebben, mittns) ani NHTSA vPIC —
+  to dublowałoby nasze własne narzędzia: dekoder DAM/ORGA na tej stronie oraz dekoder uniwersalny, który
+  odpytuje API vPIC (`api/vehicles/decodevinvalues`). Przy rozbudowie sekcji sprawdź najpierw, czy nasz
+  dekoder już tego nie robi.
+  **Uwaga na siatkę:** `.dec-grid` NIE używa trika `gap:1px` + tło (jak `.tool-grid`) — przy nieparzystej liczbie
+  kart pusta komórka ostatniego rzędu świeciłaby kolorem obramowania. Zamiast tego tło = `--surface-1`,
+  a separatory to `box-shadow` na `.dec-card` (bez wpływu na layout, przycinane przez `overflow:hidden`).
+  Grupa z jedną kartą dostaje `.dec-grid.is-single` (`1fr`) — inaczej `auto-fit` otworzyłby pustą drugą kolumnę
+  z separatorem przez środek.
+  **Wszystkie linki zweryfikowane 2026-07-25** (HTTP 200). Ustalenia, które warto pamiętać przy aktualizacji:
+  Ford **ETIS nie istnieje** (domena martwa, funkcje płatne dla warsztatów) — nie linkować;
+  7zap **blokuje całą gałąź `/renault/`** (403, `/dacia/` działa) — dla Renault linkujemy PartSouq;
+  `toyodiy.com` i `partsouq.com` stoją za Cloudflare (403 dla curl-a, w przeglądarce OK — nie uznawać za martwe);
+  **VIN grupy VAG nie koduje daty produkcji** — dokładna data jest tylko na naklejce PR (Fahrzeugdatenträger),
+  więc karta VAG uczciwie to komunikuje zamiast obiecywać datę.
 - **2026-07-17** — Panel/Klienci: **inteligentna wyszukiwarka**. `clients.php` (GET) tokenizuje zapytanie
   (do 6 tokenów, AND między tokenami) i każdy token dopasowuje OR-em do: `name`, `phone_display`,
   `phone_norm` (same cyfry tokena), `email`, `notes` oraz pojazdów (`plate` uppercased, `vehicle`) —
