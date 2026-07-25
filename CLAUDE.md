@@ -194,27 +194,31 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
-- **2026-07-25** — `dekoder.html`: nowa sekcja **„Dekodery producentów"** (`#dekodery-marek`) — kurowana lista
-  bezpłatnych dekoderów zewnętrznych na wypadek, gdy nasz uniwersalny dekoder nic nie pokaże. **13 kart** w trzech
-  grupach: katalogi fabryczne (PartSouq, 7zap), dekodery markowe (BMW, Mercedes, Toyota, VAG, Ford, Renault,
-  Volvo, Hyundai/Kia, japońskie, włoskie) i rejestr urzędowy (historiapojazdu.gov.pl).
-  Każda karta ma **badge precyzji** daty produkcji: `is-day` (co do dnia) / `is-month` / `is-year`.
-  Style inline w `<style>` strony, prefiks `dec-` (NIE w `styles.css` → brak bumpu `?v=`).
-  **Świadomie NIE linkujemy** zewnętrznych kalkulatorów ORGA/DAM (bartebben, mittns) ani NHTSA vPIC —
-  to dublowałoby nasze własne narzędzia: dekoder DAM/ORGA na tej stronie oraz dekoder uniwersalny, który
-  odpytuje API vPIC (`api/vehicles/decodevinvalues`). Przy rozbudowie sekcji sprawdź najpierw, czy nasz
-  dekoder już tego nie robi.
-  **Uwaga na siatkę:** `.dec-grid` NIE używa trika `gap:1px` + tło (jak `.tool-grid`) — przy nieparzystej liczbie
-  kart pusta komórka ostatniego rzędu świeciłaby kolorem obramowania. Zamiast tego tło = `--surface-1`,
-  a separatory to `box-shadow` na `.dec-card` (bez wpływu na layout, przycinane przez `overflow:hidden`).
-  Grupa z jedną kartą dostaje `.dec-grid.is-single` (`1fr`) — inaczej `auto-fit` otworzyłby pustą drugą kolumnę
-  z separatorem przez środek.
-  **Wszystkie linki zweryfikowane 2026-07-25** (HTTP 200). Ustalenia, które warto pamiętać przy aktualizacji:
-  Ford **ETIS nie istnieje** (domena martwa, funkcje płatne dla warsztatów) — nie linkować;
-  7zap **blokuje całą gałąź `/renault/`** (403, `/dacia/` działa) — dla Renault linkujemy PartSouq;
-  `toyodiy.com` i `partsouq.com` stoją za Cloudflare (403 dla curl-a, w przeglądarce OK — nie uznawać za martwe);
-  **VIN grupy VAG nie koduje daty produkcji** — dokładna data jest tylko na naklejce PR (Fahrzeugdatenträger),
-  więc karta VAG uczciwie to komunikuje zamiast obiecywać datę.
+- **2026-07-25** — `dekoder.html`: nowa sekcja **„Gdzie sprawdzić datę produkcji"** (`#dekodery-marek`).
+  Zamysł: co zrobić, gdy nasz dekoder nic nie pokaże. Style inline w `<style>`, prefiks `dec-` (NIE w
+  `styles.css` → brak bumpu `?v=`).
+  **⚠️ NAJWAŻNIEJSZE USTALENIE — większość „dekoderów VIN" podaje ROK MODELOWY, nie datę produkcji.**
+  Zweryfikowane realnymi VIN-ami w przeglądarce (nie ufać opisom marketingowym ani nazwom pól w JSON-ie!):
+  • **7zap** (`/catalog/cars/<marka>/vin-decoder/`) zwraca tylko `Brand, Series, Generation, Model, Year`.
+    Dla `YV1RS61T942345678` → `Year: 2004` i nic więcej. **Usunięty ze strony** — dubluje nasz dekoder.
+    (Pole „Production date", które widać w schemacie JS strony, należy do katalogu części za logowaniem,
+    a NIE do tego dekodera — na tym się przejechaliśmy.)
+  • **PartSouq** dla marek **japońskich/koreańskich** zwraca realne pole `Production Date` (rok-miesiąc):
+    `JTDKB20U693524325` → `Production Date: 2009-01`, osobno `Year: 2009` (rok modelowy) i
+    `Production: 2003-08 » 2005-11` (okres produkcji modelu). **Trzy różne daty — nie mylić.**
+  • **PartSouq dla marek europejskich NIE działa** — dla Volvo zwraca listę niejednoznacznych wariantów
+    z `Manufactured: 2004`. Dlatego karta „marki europejskie" mówi wprost, że w sieci daty nie ma,
+    i kieruje na tabliczkę znamionową / naklejkę PR / daty na szybach.
+  • **bimmer.work, mdecoder.com, mbdecoder.com — NIEZWERYFIKOWANE** (reCAPTCHA + okno zgody na dane;
+    nie przechodzimy captchy ani nie klikamy zgód za użytkownika). Zostały na stronie z adnotacją o captchy.
+    Jeśli kiedyś okaże się, że też dają tylko rok — zdjąć badge `is-day`.
+  **Świadomie NIE linkujemy** kalkulatorów ORGA/DAM ani NHTSA vPIC — dubluje to nasz dekoder DAM/ORGA
+  oraz dekoder uniwersalny, który odpytuje API vPIC (`api/vehicles/decodevinvalues`).
+  **Pułapki CSS:** `.dec-grid` NIE używa trika `gap:1px` + tło (jak `.tool-grid`) — pusta komórka ostatniego
+  rzędu świeciłaby kolorem obramowania; tło = `--surface-1`, separatory to `box-shadow` na `.dec-card`
+  (przycinane przez `overflow:hidden`). Grupa z jedną kartą → `.dec-grid.is-single` (`1fr`), inaczej
+  `auto-fit` otwiera pustą drugą kolumnę. Wiersz nieklikalny w `.dec-links` musi mieć klasę `.dec-fact`
+  (własne tło), inaczej prześwituje kolor separatora.
 - **2026-07-17** — Panel/Klienci: **inteligentna wyszukiwarka**. `clients.php` (GET) tokenizuje zapytanie
   (do 6 tokenów, AND między tokenami) i każdy token dopasowuje OR-em do: `name`, `phone_display`,
   `phone_norm` (same cyfry tokena), `email`, `notes` oraz pojazdów (`plate` uppercased, `vehicle`) —

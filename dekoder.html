@@ -462,6 +462,30 @@
 
         .dec-links a:focus-visible { outline: 2px solid var(--primary-red); outline-offset: 2px; }
 
+        /* non-clickable row inside .dec-links — must paint its own background,
+           otherwise the list's separator colour shows through as a solid block */
+        .dec-links .dec-fact {
+            display: flex;
+            align-items: baseline;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            padding: 0.7rem 0.1rem 0.7rem 0;
+            background: var(--surface-1);
+            color: var(--text-main);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .dec-card:hover .dec-links .dec-fact { background: var(--surface-2); }
+
+        .dec-links .dec-fact::before {
+            content: '\25AA';
+            color: var(--primary-red);
+            display: inline-block;
+        }
+
         .dec-hint {
             font-family: 'Barlow', sans-serif;
             font-size: 0.78rem;
@@ -636,55 +660,42 @@
 
 <!-- External / manufacturer decoders -->
 <section class="animate-on-scroll" id="dekodery-marek" style="background:oklch(15% 0.005 30 / 0.5);">
-    <h2>Dekodery producentów</h2>
-    <p class="section-subtitle">Nasze narzędzia czytają to, co zakodowano w samym numerze. Gdy to za mało, sięgnij do baz fabrycznych — poniższe serwisy są bezpłatne i nie wymagają zakładania konta.</p>
+    <h2>Gdzie sprawdzić datę produkcji</h2>
+    <p class="section-subtitle">Sprawdziliśmy popularne dekodery VIN po kolei. Większość z nich pokazuje wyłącznie <strong style="color:var(--text-main);">rok modelowy</strong> — czyli dokładnie to, co nasze narzędzie wyżej. Poniżej zostały tylko te, które dają realnie więcej.</p>
 
     <div class="dec-wrap">
 
         <div class="dec-note">
-            <strong>Rok modelowy to nie data produkcji.</strong> Dziesiąty znak VIN koduje rok modelowy, a nie dzień zjazdu z taśmy — auto oznaczone jako „2026" potrafi opuścić fabrykę jesienią 2025 roku. Po pewną datę produkcji zawsze sięgaj do katalogu producenta albo do tabliczki i naklejek na nadwoziu.
+            <strong>Rok modelowy to nie data produkcji.</strong> Dziesiąty znak VIN koduje rok modelowy, a nie dzień zjazdu z taśmy — auto oznaczone jako „2026" potrafi opuścić fabrykę jesienią 2025 roku. Serwisy, które reklamują się jako „VIN decoder", w ogromnej większości zwracają właśnie ten rok modelowy i nie wiedzą nic o rzeczywistej dacie montażu. Prawdziwą datę zna tylko producent — albo samo auto.
         </div>
 
-        <h3 class="dec-subhead">Zacznij tutaj — katalogi fabryczne</h3>
-        <div class="dec-grid is-lead">
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">PartSouq</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Wyszukiwarka katalogów części kilkudziesięciu producentów. Po wpisaniu VIN pokazuje kartę pojazdu prosto z bazy fabrycznej — z polem <strong>Production Date</strong>, kodem lakieru, kodem silnika, kodem tapicerki i rynkiem przeznaczenia. Najskuteczniejszy dla marek japońskich i koreańskich, ale zna też większość europejskich.</p>
-                <ul class="dec-links">
-                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">Toyota, Lexus, Nissan, Honda, Mazda, Subaru, Suzuki, Mitsubishi, Hyundai, Kia, Mercedes, BMW, VW, Audi, Renault, Ford, Volvo, Porsche</span></a></li>
-                </ul>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">7zap</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Blisko 60 katalogów OEM — od Abartha po Volvo. W wyniku znajdziesz m.in. <strong>datę produkcji</strong>, kod nadwozia, kod rodziny modelu, serię i linię montażową. Dobre uzupełnienie, gdy PartSouq nie rozpozna pojazdu — każda marka ma tu własny dekoder.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap.com <span class="dec-hint">uniwersalny dekoder VIN</span></a></li>
-                </ul>
-            </article>
-
-        </div>
-
-        <h3 class="dec-subhead">Dekodery markowe</h3>
+        <h3 class="dec-subhead">Tu naprawdę znajdziesz datę produkcji</h3>
         <div class="dec-grid">
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">Marki japońskie i koreańskie</h4>
+                    <span class="dec-badge is-month">Miesiąc i rok</span>
+                </div>
+                <p class="dec-what">Toyota, Lexus, Nissan, Infiniti, Honda, Mazda, Subaru, Suzuki, Mitsubishi, Hyundai, Kia. Katalogi tych producentów prowadzą ewidencję <strong>konkretnego egzemplarza</strong>, więc PartSouq zwraca osobne pole <strong>Production Date</strong> (rok i miesiąc montażu) obok kodu lakieru, kodu silnika i rynku przeznaczenia.</p>
+                <ul class="dec-links">
+                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">wpisz VIN — sprawdzone, działa</span></a></li>
+                    <li><a href="https://www.toyodiy.com/parts/" target="_blank" rel="noopener noreferrer">toyodiy.com <span class="dec-hint">Toyota/Lexus po numerze nadwozia — auta z Japonii bez VIN-u</span></a></li>
+                </ul>
+                <p class="dec-tip"><strong>Nie myl trzech dat.</strong> W wyniku zobaczysz „Year" (rok modelowy), „Production" (okres produkcji całego modelu) i „Production Date" — tylko to ostatnie dotyczy Twojego auta.</p>
+            </article>
 
             <article class="dec-card">
                 <div class="dec-card-head">
                     <h4 class="dec-brand">BMW · MINI · Rolls-Royce · Alpina</h4>
                     <span class="dec-badge is-day">Dokładny dzień</span>
                 </div>
-                <p class="dec-what">Najlepiej udokumentowane marki na rynku. Oba serwisy podają <strong>dokładną datę zjazdu z taśmy</strong>, komplet opcji fabrycznych, kod lakieru i tapicerki. Działają również dla motocykli BMW.</p>
+                <p class="dec-what">BMW jako jedyny producent masowo udostępnia <strong>datę zjazdu z taśmy co do dnia</strong> razem z kompletem opcji fabrycznych, kodem lakieru i tapicerki. Oba serwisy obsługują też motocykle BMW.</p>
                 <ul class="dec-links">
                     <li><a href="https://bimmer.work/" target="_blank" rel="noopener noreferrer">bimmer.work <span class="dec-hint">+ zdjęcia konfiguracji i widok 360°</span></a></li>
                     <li><a href="https://www.mdecoder.com/" target="_blank" rel="noopener noreferrer">mdecoder.com <span class="dec-hint">„///M Decoder" — pełna lista wyposażenia</span></a></li>
                 </ul>
+                <p class="dec-tip">Obie strony wymagają przejścia captchy i zgody na cookies, zanim pokażą wynik.</p>
             </article>
 
             <article class="dec-card">
@@ -692,124 +703,38 @@
                     <h4 class="dec-brand">Mercedes-Benz · Smart</h4>
                     <span class="dec-badge is-day">Dokładny dzień</span>
                 </div>
-                <p class="dec-what">Odczytuje fabryczną kartę pojazdu (datacard) z <strong>datą produkcji w formacie RRRR-MM-DD</strong> oraz kodami wyposażenia. Obejmuje osobowe, AMG i dostawcze Sprintery czy Vito.</p>
+                <p class="dec-what">Odczytuje fabryczną kartę pojazdu (datacard). Serwis podaje <strong>datę produkcji w formacie RRRR-MM-DD</strong> wraz z kodami wyposażenia — obejmuje osobowe, AMG oraz dostawcze Sprintery i Vito.</p>
                 <ul class="dec-links">
                     <li><a href="https://www.mbdecoder.com/" target="_blank" rel="noopener noreferrer">mbdecoder.com <span class="dec-hint">datacard i kody opcji</span></a></li>
                 </ul>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Toyota · Lexus · Scion</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Przyjmuje VIN albo <strong>numer nadwozia (frame no.)</strong> — nieocenione przy autach sprowadzonych z Japonii, które nie mają 17-znakowego VIN-u. Zwraca okres produkcji, kod koloru, kod silnika i rynek przeznaczenia.</p>
-                <ul class="dec-links">
-                    <li><a href="https://www.toyodiy.com/parts/" target="_blank" rel="noopener noreferrer">toyodiy.com <span class="dec-hint">VIN lub numer nadwozia</span></a></li>
-                </ul>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Volkswagen · Audi · Škoda · Seat · Cupra</h4>
-                    <span class="dec-badge is-year">Rok modelowy</span>
-                </div>
-                <p class="dec-what">Uczciwie: <strong>VIN grupy VAG nie koduje daty produkcji</strong> i żaden darmowy serwis jej stamtąd nie wyczyta. Online ustalisz rok modelowy, silnik, fabrykę i kody wyposażenia PR.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/catalog/cars/volkswagen/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Volkswagen</a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/audi/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Audi</a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/skoda/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Škoda</a></li>
-                    <li><a href="https://vaginfo.com/vw-vin-decoder/" target="_blank" rel="noopener noreferrer">vaginfo.com <span class="dec-hint">wyposażenie fabryczne i kody PR</span></a></li>
-                </ul>
-                <p class="dec-tip"><strong>Gdzie jest data:</strong> na naklejce z kodami PR (Fahrzeugdatenträger) — we wnęce koła zapasowego w bagażniku, a często też w książce serwisowej.</p>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Ford</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Firmowy serwis ETIS, który przez lata podawał datę zjazdu z taśmy, <strong>został wyłączony</strong> i jest dziś dostępny wyłącznie odpłatnie dla warsztatów. Zostaje katalog części i odczyt z samego numeru.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/catalog/cars/ford/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Ford</a></li>
-                </ul>
-                <p class="dec-tip"><strong>Masz to wyżej.</strong> Ford europejski koduje rok i miesiąc produkcji na 11. i 12. znaku VIN — nasz dekoder czyta to automatycznie.</p>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Renault · Dacia</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">VIN Renault nie zawiera roku w standardzie ISO, więc uniwersalne dekodery zwykle milczą. Katalog fabryczny rozpozna wersję, silnik i okres produkcji po numerze seryjnym.</p>
-                <ul class="dec-links">
-                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">katalog Renault i Dacia</span></a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/dacia/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Dacia</a></li>
-                </ul>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Volvo</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Volvo trzyma się standardu ISO, więc rok modelowy odczytasz od ręki. Katalog fabryczny doprecyzuje wariant nadwozia, silnik i zakład montażu.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/catalog/cars/volvo/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Volvo</a></li>
-                </ul>
-                <p class="dec-tip"><strong>Masz to wyżej.</strong> Nasz dekoder rozpoznaje serię, rok i fabrykę Volvo (Torslanda, Gandawa, Born, Charleston) z samego VIN-u.</p>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Hyundai · Kia</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Auta z Nošovic, Žiliny, Izmitu i Korei. Katalogi fabryczne podają datę produkcji, wersję rynkową i kod wyposażenia — przydatne, gdy trzeba rozróżnić bliźniacze generacje.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/catalog/cars/hyundai/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Hyundai</a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/kia/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Kia</a></li>
-                </ul>
-                <p class="dec-tip"><strong>Masz to wyżej.</strong> Nasz dekoder ma rozbudowaną bazę modeli i generacji Hyundaia — rozpoznaje je z 4. znaku VIN.</p>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Nissan · Infiniti · Mazda · Honda · Subaru · Suzuki · Mitsubishi</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Dla marek japońskich katalogi fabryczne sprawdzają się najlepiej — podają <strong>datę produkcji</strong>, kod lakieru i pełną specyfikację rynkową. Obsługują też numery nadwozia aut z importu z Japonii.</p>
-                <ul class="dec-links">
-                    <li><a href="https://partsouq.com/en/search/vin" target="_blank" rel="noopener noreferrer">partsouq.com <span class="dec-hint">najlepszy wybór dla tych marek</span></a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/nissan/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Nissan</a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/mazda/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Mazda</a></li>
-                </ul>
-            </article>
-
-            <article class="dec-card">
-                <div class="dec-card-head">
-                    <h4 class="dec-brand">Fiat · Alfa Romeo · Lancia · Abarth</h4>
-                    <span class="dec-badge is-month">Miesiąc i rok</span>
-                </div>
-                <p class="dec-what">Włoskie VIN-y również pomijają rok w standardzie ISO, przez co uniwersalne dekodery często nie podają nic. Katalog OEM rozpozna model i wersję po numerze seryjnym.</p>
-                <ul class="dec-links">
-                    <li><a href="https://7zap.com/en/catalog/cars/fiat/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Fiat i Abarth</a></li>
-                    <li><a href="https://7zap.com/en/catalog/cars/alfa-romeo/vin-decoder/" target="_blank" rel="noopener noreferrer">7zap — Alfa Romeo</a></li>
-                </ul>
-                <p class="dec-tip"><strong>Uwaga:</strong> Fiaty i Toyoty dostawcze z grupy Stellantis (Ducato, Proace) mają naklejkę DAM — sprawdź je naszym dekoderem DAM/ORGA.</p>
+                <p class="dec-tip">Jak wyżej — strona prosi o zgodę na cookies przed pokazaniem wyniku.</p>
             </article>
 
         </div>
 
-        <h3 class="dec-subhead">Rejestry i źródła urzędowe</h3>
-        <div class="dec-grid is-single">
+        <h3 class="dec-subhead">Marki europejskie — w sieci daty nie znajdziesz</h3>
+        <div class="dec-grid is-lead">
+
+            <article class="dec-card">
+                <div class="dec-card-head">
+                    <h4 class="dec-brand">VW · Audi · Škoda · Seat · Cupra · Volvo · Renault · Dacia · Ford · Fiat · Alfa Romeo</h4>
+                    <span class="dec-badge is-year">Tylko rok modelowy</span>
+                </div>
+                <p class="dec-what">Uczciwie: <strong>żaden bezpłatny serwis nie poda daty produkcji tych aut.</strong> Sprawdziliśmy — katalogi części identyfikują je po modelu i wariancie, a nie po konkretnym egzemplarzu, więc zwracają wyłącznie rok modelowy. Dokładnie to samo daje nasz dekoder wyżej, więc nie ma po co szukać dalej w internecie. Datę odczytasz z samego auta:</p>
+                <ul class="dec-links">
+                    <li><span class="dec-fact">Tabliczka znamionowa <span class="dec-hint">komora silnika lub słupek drzwi — część marek bije tam miesiąc i rok</span></span></li>
+                    <li><span class="dec-fact">Naklejka z kodami PR <span class="dec-hint">grupa VAG: wnęka koła zapasowego lub książka serwisowa</span></span></li>
+                    <li><span class="dec-fact">Data na szybach i pasach <span class="dec-hint">kropki przy logo producenta szyby — wskazują kwartał, dobre przybliżenie</span></span></li>
+                </ul>
+                <p class="dec-tip"><strong>Podpowiedź diagnosty:</strong> jeśli wszystkie szyby mają zbliżoną datę, a jedna odstaje o rok — auto najpewniej miało wymianę po stłuczce. Przy zakupie sprawdzamy to u nas rutynowo.</p>
+            </article>
 
             <article class="dec-card">
                 <div class="dec-card-head">
                     <h4 class="dec-brand">Historia Pojazdu — CEPiK</h4>
                     <span class="dec-badge is-year">Rok produkcji</span>
                 </div>
-                <p class="dec-what">Oficjalny, bezpłatny rejestr Ministerstwa Cyfryzacji. Podaj VIN, numer rejestracyjny i datę pierwszej rejestracji, a otrzymasz <strong>rok produkcji, odczyty przebiegu z kolejnych badań technicznych</strong>, dane techniczne i liczbę właścicieli. Działa tylko dla pojazdów zarejestrowanych w Polsce.</p>
+                <p class="dec-what">Oficjalny, bezpłatny rejestr Ministerstwa Cyfryzacji — i jedyne źródło, które poda <strong>rok produkcji zamiast roku modelowego</strong>. Podaj VIN, numer rejestracyjny i datę pierwszej rejestracji, a otrzymasz też <strong>odczyty przebiegu z kolejnych badań technicznych</strong>, dane techniczne i liczbę właścicieli. Działa tylko dla pojazdów zarejestrowanych w Polsce.</p>
                 <ul class="dec-links">
                     <li><a href="https://historiapojazdu.gov.pl/" target="_blank" rel="noopener noreferrer">historiapojazdu.gov.pl <span class="dec-hint">dane z rejestru państwowego</span></a></li>
                 </ul>
@@ -819,8 +744,8 @@
 
         <div class="dec-legend">
             <span><span class="dec-badge is-day">Dokładny dzień</span> data co do dnia</span>
-            <span><span class="dec-badge is-month">Miesiąc i rok</span> okres produkcji</span>
-            <span><span class="dec-badge is-year">Rok</span> sam rok, bez daty dziennej</span>
+            <span><span class="dec-badge is-month">Miesiąc i rok</span> miesiąc montażu</span>
+            <span><span class="dec-badge is-year">Rok</span> bez daty dziennej</span>
         </div>
 
     </div>
