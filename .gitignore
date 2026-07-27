@@ -1,6 +1,12 @@
+# --- Sekrety (NIE commitować) ---
 .vscode/sftp.json
-
-# Rezerwacje – sekrety (NIE commitować)
 reservations/config.php
 **/service-account*.json
 *.gcal-token.json
+
+# --- Śmieci narzędzi ---
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
+.DS_Store

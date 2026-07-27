@@ -2292,3 +2292,469 @@ footer a:hover { color: var(--primary-red); }
     .rez-success-check { animation: none; }
     .rez-tile, .rez-day, .rez-slot, .rez-summary-cta { transition: none; }
 }
+
+/* =============================================
+   ABOUT PAGE (o-nas.html)
+   Komponenty ogólnego użytku – rejestr pojazdów, profile osób,
+   pas wyróżnień. Do wykorzystania także na oferta.html i podstronach usług.
+   ============================================= */
+
+/* ---- Hero z fotografią z hali ---- */
+.about-hero {
+    position: relative;
+    z-index: 2;
+    margin-top: 100px;
+    min-height: min(86vh, 760px);
+    display: flex;
+    align-items: flex-end;
+    padding: 6rem 5% clamp(2.5rem, 5vw, 4.5rem);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.about-hero-media {
+    position: absolute;
+    inset: 0;
+}
+
+.about-hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Kadr hero jest szerszy niż widok, więc przycina się w poziomie.
+       Niższe X pokazuje lewą część zdjęcia i spycha auto w prawo,
+       zostawiając nagłówkowi ciemną ścianę hali zamiast jasnej maski. */
+    object-position: 28% 50%;
+    display: block;
+}
+
+/* Przyciemnienie pod tekstem: mocne w lewym dolnym rogu, zanika ku prawej górze.
+   Zdjęcia z hali mają tam ciemną posadzkę, więc kontrast wychodzi > 7:1. */
+.about-hero-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(to top,
+            oklch(13% 0.006 30 / 0.96) 0%,
+            oklch(13% 0.006 30 / 0.72) 32%,
+            oklch(13% 0.006 30 / 0.15) 66%,
+            transparent 100%),
+        linear-gradient(to right,
+            oklch(13% 0.006 30 / 0.85) 0%,
+            oklch(13% 0.006 30 / 0.25) 45%,
+            transparent 75%);
+}
+
+.about-hero-inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    /* .about-hero jest kontenerem flex – bez min-width:0 element nie zejdzie
+       poniżej swojej szerokości min-content i długi nagłówek rozpycha hero
+       poza ekran telefonu. */
+    min-width: 0;
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.ah-eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem 0.85rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.ah-eyebrow b {
+    color: var(--primary-red);
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.ah-eyebrow i {
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--primary-red);
+    flex-shrink: 0;
+}
+
+.about-hero h1 {
+    margin: 0 0 1.75rem;
+    text-transform: uppercase;
+}
+
+.ah-kicker {
+    display: block;
+    font-size: clamp(0.95rem, 1.9vw, 1.35rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.ah-main {
+    display: block;
+    font-size: clamp(3rem, 9vw, 7rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+    color: var(--text-main);
+}
+
+.ah-lead {
+    max-width: 60ch;
+    font-size: clamp(1rem, 1.7vw, 1.2rem);
+    line-height: 1.75;
+    color: oklch(88% 0.005 30);
+}
+
+.ah-lead b {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.ah-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid oklch(100% 0 0 / 0.14);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-main);
+}
+
+.ah-facts span { display: block; }
+.ah-facts em { font-style: normal; color: var(--primary-red); }
+
+/* ---- Rejestr pojazdów ---- */
+.vehicle-register {
+    max-width: 1240px;
+    margin: 0 auto;
+}
+
+.vr-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(1.75rem, 3.5vw, 3.5rem);
+    align-items: center;
+    padding: clamp(2rem, 4vw, 3.5rem) 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.vr-entry:last-child { border-bottom: 1px solid var(--border-subtle); }
+
+/* Naprzemienny rytm – co drugi wpis ze zdjęciem po prawej */
+.vr-entry:nth-child(even) .vr-media { order: 2; }
+
+.vr-media {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-1);
+    transition: border-color 0.25s ease;
+}
+
+.vr-entry:hover .vr-media { border-color: var(--border-accent); }
+
+.vr-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.vr-entry:hover .vr-media img { transform: scale(1.035); }
+
+.vr-num {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0.18em;
+    color: var(--primary-red);
+    margin-bottom: 0.5rem;
+}
+
+.vr-title {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.05;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.vr-sub {
+    margin-top: 0.4rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+}
+
+/* ---- Lista specyfikacji (dl) ---- */
+.spec-list {
+    margin: 1.5rem 0 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.spec-row {
+    display: grid;
+    grid-template-columns: 8rem minmax(0, 1fr);
+    gap: 0.25rem 1.25rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.spec-row dt {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    padding-top: 0.28rem;
+}
+
+.spec-row dd {
+    margin: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-main);
+}
+
+/* ---- Profile osób ---- */
+.people-list {
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.person-entry {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 2.75rem);
+    align-items: start;
+    padding: clamp(2rem, 3.5vw, 3rem) 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.person-entry:last-child { border-bottom: 1px solid var(--border-subtle); }
+
+.person-portrait {
+    aspect-ratio: 3 / 4;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface-1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.person-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.person-plate-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+}
+
+.person-plate-id {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 3.4rem;
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--primary-red);
+}
+
+.person-name {
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.05;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.person-role {
+    margin-top: 0.4rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--primary-red);
+}
+
+/* ---- Pas wyróżnień ---- */
+.credential-band {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Separatory jako box-shadow (nie border), żeby nieparzysty ostatni rząd
+   nie świecił kolorem obramowania – overflow:hidden przycina wystające. */
+.credential-item {
+    padding: 1.7rem 1.6rem;
+    box-shadow: 1px 0 0 var(--border-subtle), 0 1px 0 var(--border-subtle);
+}
+
+.credential-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin-bottom: 0.55rem;
+}
+
+.credential-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    color: var(--text-main);
+}
+
+.credential-value em {
+    font-style: normal;
+    color: var(--primary-red);
+}
+
+.credential-note {
+    max-width: 1080px;
+    margin: 1.25rem auto 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.credential-note a { color: var(--text-muted); }
+.credential-note a:hover { color: var(--primary-red); }
+
+/* ---- CTA z dwoma numerami ---- */
+.cta-meta {
+    margin: 2.25rem auto 0;
+    max-width: 720px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 2rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    color: var(--text-muted);
+}
+
+.cta-meta em { font-style: normal; color: var(--text-main); }
+
+/* ---- Responsywność strony o nas ---- */
+@media (max-width: 900px) {
+    .vr-entry,
+    .person-entry {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    /* zdjęcie zawsze nad danymi – naprzemienność traci sens w jednej kolumnie */
+    .vr-entry:nth-child(even) .vr-media { order: 0; }
+
+    .person-portrait {
+        max-width: 190px;
+        aspect-ratio: 1 / 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-hero {
+        margin-top: 80px;
+        min-height: min(80vh, 620px);
+        padding-top: 4rem;
+    }
+
+    .about-hero-media::after {
+        background: linear-gradient(to top,
+            oklch(13% 0.006 30 / 0.97) 0%,
+            oklch(13% 0.006 30 / 0.8) 45%,
+            oklch(13% 0.006 30 / 0.35) 100%);
+    }
+
+    .ah-facts { gap: 0.4rem 1.5rem; font-size: 0.85rem; }
+    .spec-row { grid-template-columns: 7rem minmax(0, 1fr); }
+    .credential-item { padding: 1.35rem 1.25rem; }
+
+    /* Na mobile h2 traci margin-bottom (4rem -> 1.5rem), a .section-subtitle
+       trzyma margin-top:-2.5rem ustawiony pod desktop – wypadkowa -16px wciągała
+       podtytuł na czerwoną kreskę h2::after. Korekta MUSI stać tutaj: identyczna
+       reguła w bloku @media przy linii ~1066 jest martwa, bo bazowa definicja
+       .section-subtitle pojawia się dopiero w linii ~1162, a media query nie
+       podnosi specyficzności – wygrywa późniejsze źródło.
+       Dotyczy wszystkich podstron używających tej pary, nie tylko o-nas. */
+    .section-subtitle { margin-top: 0; }
+}
+
+@media (max-width: 480px) {
+    .ah-eyebrow { font-size: 0.7rem; letter-spacing: 0.1em; }
+    .ah-kicker { letter-spacing: 0.1em; }
+    .ah-main { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+    .ah-lead { font-size: 0.98rem; }
+    .spec-row { grid-template-columns: 1fr; gap: 0.1rem; }
+    .spec-row dt { padding-top: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vr-media img,
+    .vr-media { transition: none; }
+    .vr-entry:hover .vr-media img { transform: none; }
+
+    /* Sekcje czekają na klasę .fade-in-up z opacity:0. Przy wyłączonych animacjach
+       nie wolno ich ukryć – pokazujemy treść od razu, bez ruchu. */
+    .animate-on-scroll { opacity: 1; }
+    .fade-in-up { animation: none; }
+}

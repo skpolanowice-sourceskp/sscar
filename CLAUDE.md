@@ -11,7 +11,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 
 ## 1. Czym jest projekt
 
-Strona stacji kontroli pojazdów **SSCAR** (Sosnowiec) + system **rezerwacji online**
+Strona stacji kontroli pojazdów **SSCAR** (Wrocław, ul. Polanowicka 82, stacja **DW/126/P**) + system **rezerwacji online**
 + **panel obsługi (admin)**. Trzy warstwy w jednym repo:
 
 1. **Witryna statyczna** — landing i podstrony usług (HTML + wspólny `styles.css`).
@@ -43,12 +43,33 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 
 ## 3. Mapa plików
 
+> **Zasada porządku (od 2026-07-27):** korzeń repo = **web root** — leży w nim tylko to, co ma trafić
+> na serwer. Wszystko inne siedzi w `tools/` (skrypty dev), `docs/` (dokumentacja) i `img/_src/`
+> (oryginały zdjęć). Te trzy katalogi są na liście `ignore` w `.vscode/sftp.json` — **nie wgrywaj ich**.
+> Pliki kontekstowe (`CLAUDE.md`, `PRODUCT.md`, `DESIGN.md`) zostają w korzeniu, bo narzędzia
+> szukają ich właśnie tam; z deploya wycina je reguła `*.md`.
+
 ### Witryna statyczna (root)
 - `index.html`, `o-nas.html`, `oferta.html`, `cennik.html`, podstrony usług
   (`badania-techniczne.html`, `klimatyzacja.html`, `geometria-3d.html`,
   `sprawdzenie-przed-zakupem.html`, `wulkanizacja.html`, …), `dekoder.html`, `guide.html`.
 - `styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
-- `nav.js`, `reviews_data.js`, `dane_klima.js` + `dane_klima.json` (dane do klimatyzacji).
+- `nav.js`, `reviews_data.js`, `dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
+- Zasoby: `Logo-SSCAR.png`, `favicon.png`, `Clean_Smooth_transition.mp4` (hero na `index.html`),
+  `img/` — warianty responsywne zdjęć. **`Logo-SSCAR.png` i `favicon.png` muszą zostać w korzeniu:**
+  wskazują na nie bezwzględne `og:image` na 13 podstronach (przeniesienie zerwałoby podglądy w social media).
+- Pliki obsługi wyszukiwarek: `robots.txt`, `sitemap.xml`, `google79c7a3b6a6e8553f.html` (weryfikacja GSC).
+- `htaccess` — kopia `.htaccess` z korzenia serwera (wymuszenie HTTPS). **Celowo bez kropki**, żeby
+  przypadkowa synchronizacja FTP nie nadpisała reguł żyjących na serwerze. Zmiany nanoś ręcznie.
+
+### Narzędzia i dokumentacja (poza deployem)
+- `tools/optimize_images.py` — warianty responsywne: `img/_src/` → `img/`. Uruchamiaj z korzenia
+  (`python tools/optimize_images.py`); skrypt liczy ścieżki od katalogu nadrzędnego. Flaga `--auto`
+  przerabia hurtem nowe pliki z `img/_src/`, pomijając te z listy `SOURCES` (po nazwie bez rozszerzenia).
+- `tools/fix_encoding.py` + `tools/dane_klima.json` — **źródło** bazy klimatyzacji. Skrypt generuje
+  `dane_klima.js` w korzeniu; JSON nie jest wysyłany na serwer (2770 rekordów, ~665 KB oszczędności).
+- `img/_src/` — oryginały zdjęć (23,6 MB) + stare, ręczne konwersje `.webp` (nieużywane przez stronę).
+- `docs/README-rezerwacja-setup.md` (instrukcja wdrożenia rezerwacji), `docs/IDEA.md`.
 
 ### Rezerwacja publiczna
 - `rezerwacja.html` + `rezerwacja.js` — formularz rezerwacji (klient).
@@ -157,6 +178,8 @@ pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_ext
 - **Hasła nie wpisuj inline** — czytaj ze `sftp.json` do zmiennej PowerShell, np. `WebClient.UploadFile($remote,"STOR",$local)`.
 - Po zmianie `panel*.js`/`panel.css` **podbij `?v=` w `panel.html`** (inaczej zostanie stary cache).
 - `config.php` żyje tylko na serwerze (gitignored) — nie nadpisuj go deployem.
+- **NIE wgrywaj** `tools/`, `docs/`, `img/_src/`, `*.md`, `*.py`, `.vscode/`, `.git/` — są na liście
+  `ignore` w `sftp.json`. Samo `img/` (warianty) **wgrywaj**, to zasoby produkcyjne.
 
 ---
 
@@ -194,6 +217,68 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-27 (b)** — **Uporządkowanie struktury repo: korzeń = web root, reszta do `tools/`, `docs/`,
+  `img/_src/`.** Powód: w korzeniu (który leci na FTP) leżało **26,7 MB oryginałów zdjęć** i plików
+  źródłowych, których strona nigdy nie używa — 6 wielkich JPG-ów, 6 nieużywanych ręcznych konwersji
+  `.webp` oraz `dane_klima.json` (665 KB; klient ładuje wyłącznie wygenerowany `dane_klima.js`).
+  Przeniesione przez `git mv` (historia zachowana):
+  `img/_src/` ← oryginały + stare `.webp`; `tools/` ← `optimize_images.py`, `fix_encoding.py`,
+  `dane_klima.json`; `docs/` ← `README-rezerwacja-setup.md`, `IDEA.md`.
+  **Skrypty przepisane na ścieżki od korzenia** (`BASE_DIR` = katalog nadrzędny wobec `tools/`), bo po
+  przeprowadzce liczyłyby je względem siebie i pisały do `tools/img/`. `fix_encoding.py` dostał przy
+  okazji docstring i sensowny komunikat (wcześniej ślepe `open('dane_klima.json')` względem CWD).
+  **Pułapka `--auto`:** oryginały leżą teraz w tym samym katalogu, który skanuje `--auto`, a ich slugi
+  są ręczne (`BMW-M3-F.jpg` → `m3`), więc bez filtra przerobiłby je drugi raz jako `bmw-m3-f-*`.
+  Filtr porównuje **nazwę bez rozszerzenia** — to samo zabezpiecza przed łapaniem starych `.webp`.
+  Weryfikacja: oba skrypty uruchomione z nowych lokalizacji dają **bit w bit identyczny** wynik
+  (`git status dane_klima.js` pusty, warianty w `img/` przeliczone bez zmian).
+  `.vscode/sftp.json` → `ignore` += `img/_src`, `tools`, `docs`. `.gitignore` przepisany (naprawione
+  mojibake w komentarzu + `__pycache__/`, `*.pyc`, `Thumbs.db`, `desktop.ini`, `.DS_Store`).
+  **Świadomie NIE ruszone:** pliki `.html` (URL-e = SEO), `Logo-SSCAR.png`/`favicon.png` (bezwzględne
+  `og:image` na 13 podstronach + cache social media), `panel*` (zakładki obsługi), `htaccess`
+  (kopia serwerowa, celowo bez kropki — patrz sekcja 3).
+- **2026-07-27** — **`o-nas.html` przepisana od zera + nowe komponenty wielokrotnego użytku w `styles.css`.**
+  Stara strona to były 4 akapity ogólników i kafelki ze stylami w atrybucie `style`. Nowa oś: **dowody zamiast
+  deklaracji** — rejestr pojazdów z hali + imienni diagności z numerami uprawnień.
+  **Struktura (finalna):** hero na zdjęciu z hali → rejestr pojazdów → diagności → co dostajesz przy każdym
+  badaniu → pas wyróżnień → opinie → CTA (rezerwacja + dwa telefony).
+  **⚠️ Czego tu ŚWIADOMIE NIE MA (nie dodawać z powrotem):** listy usług i sprzętu — jest w `oferta.html`
+  i `cennik.html`; etapów sprawdzenia przed zakupem — jest w `sprawdzenie-przed-zakupem.html`; opisowych
+  biogramów diagnostów — profile to sama karta danych (nazwisko, uprawnienia, staż, specjalizacja).
+  Decyzja właściciela: strona ma nie dublować treści z podstron usługowych.
+  **Fakty firmowe (ustalone z właścicielem, używać ich zamiast ogólników):** stacja **DW/126/P**, uruchomiona
+  **2024**; **Sebastian Stefanik** (upr. `DWR/D/0046`, w zawodzie od 2017, badania + klimatyzacja) i
+  **Michał Jarosiński** (upr. `DW/D/0249`, od 2022, badania + geometria, autor strony); geometria na
+  **HANWAY HWAV28**; zakres: badania okresowe, **motocykle, LPG, haki, powypadkowe** (BEZ przyczep i zabytkowych);
+  Orły Motoryzacji **2025 i 2026**, Złoty Medal 2025, 4,9/5 z ~258 opinii Google.
+  **⚠️ Zasada redakcyjna rejestru pojazdów:** wpis dostaje `.spec-list` **tylko gdy istnieją twarde dane**
+  (silnik/moc/napęd — dziś M3, drift BMW, AMG GT 63 S). Żadnych opisów zdjęcia w roli specyfikacji typu
+  „Zawieszenie: obniżone" ani „Nadwozie: pickup" — to nic nie wnosi. Eclipse, Maverick i Chevrolet mają
+  wyłącznie numer, nazwę i podtytuł; zdjęcie niesie je samo i daje rytm sekcji. Etykiet z wykonaną usługą
+  świadomie NIE ma (nie da się ich rzetelnie odtworzyć ze zdjęć).
+  **Nowe komponenty (globalne, do użycia na innych podstronach):** `.about-hero` + `.ah-*` (hero na pełnym
+  zdjęciu, tekst w lewym dolnym rogu), `.vehicle-register`/`.vr-entry` (numerowany, naprzemienny wpis
+  zdjęcie+dane), `.spec-list`/`.spec-row` (`<dl>` jako tabela techniczna), `.person-entry` (profil osoby),
+  `.credential-band` (pas wyróżnień, separatory na `box-shadow` jak `.dec-card`), `.cta-meta`.
+  **Pipeline obrazów:** `optimize_images.py` przepisany — generuje warianty **800/1400/2200 px** (webp + jpg
+  fallback 1400) do **`img/`** ze slugami ASCII (pliki źródłowe mają w nazwach „przód", co psuło FTP i wymagało
+  kodowania URL). `HERO_SOURCES` robi osobny kadr hero przycięty do górnych 66% — **dolny pas zdjęć zawiera
+  wypalony podpis (marka/rocznik/moc + logo SKP)**, który na pełnoekranowym hero przebijał zza nagłówka.
+  Flaga `--auto` przerabia hurtem cokolwiek wrzucisz do `img/_src/`. Efekt: 23,6 MB źródeł → 46–120 KB na
+  zdjęcie w wariancie mobilnym.
+  **⚠️ Naprawiony błąd globalny (dotyczył 9 podstron):** na mobile `h2` traci `margin-bottom` (4rem→1.5rem),
+  a `.section-subtitle` trzyma `margin-top:-2.5rem` — wypadkowa **−16 px** wciągała podtytuł na czerwoną kreskę
+  `h2::after`. W pliku istniała już korekta w `@media (max-width:768px)` ok. linii 1066, ale to **martwy kod**:
+  bazowa definicja `.section-subtitle` stoi dopiero ok. linii 1162, a media query NIE podnosi specyficzności,
+  więc wygrywa późniejsze źródło. Działająca korekta musi być **na końcu pliku** (jest w bloku 768px sekcji
+  ABOUT PAGE). Pamiętaj o tym przy każdej „poprawce w media query" w tym pliku.
+  Doszedł też globalny guard `@media (prefers-reduced-motion)` na `.animate-on-scroll` (bez niego treść
+  zostawała niewidoczna przy wyłączonych animacjach) i `<noscript>` w `o-nas.html` z tego samego powodu.
+  **SEO:** schema.org rozszerzone o `foundingDate`, `award[]` i `employee[]` z `hasCredential` (numery uprawnień).
+  **Świadomie BEZ `aggregateRating`** — ocena pochodzi z Google, oznaczanie cudzych opinii jako własnych łamie
+  wytyczne. `hasOfferCatalog` też usunięty razem z sekcją usług: dane strukturalne mają opisywać treść widoczną
+  na stronie, więc katalog usług należy do `oferta.html`/`cennik.html`, nie tutaj.
+  `?v=20260727a` na wszystkich 13 podstronach.
 - **2026-07-25** — `dekoder.html`: nowa sekcja **„Gdzie sprawdzić datę produkcji"** (`#dekodery-marek`).
   Zamysł: co zrobić, gdy nasz dekoder nic nie pokaże. Style inline w `<style>`, prefiks `dec-` (NIE w
   `styles.css` → brak bumpu `?v=`).

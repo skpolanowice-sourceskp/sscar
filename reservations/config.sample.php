@@ -7,7 +7,7 @@
  * 3. Plik klucza service-account trzymaj POZA katalogiem WWW (public_html),
  *    np. /home/USER/sscar-secrets/service-account.json
  *
- * Patrz: README-rezerwacja-setup.md
+ * Patrz: docs/README-rezerwacja-setup.md
  */
 
 return [
