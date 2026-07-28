@@ -287,6 +287,8 @@ nav ul li a.nav-cta::after { display: none; }
     height: 100%;
     z-index: 0;
     overflow: hidden;
+    background: #050607;
+    contain: strict;
 }
 
 #hero-video {
@@ -296,16 +298,16 @@ nav ul li a.nav-cta::after { display: none; }
     position: absolute;
     top: 0;
     left: 0;
-    filter: blur(8px);
-    will-change: transform;
-    transform: translateZ(0);
+    object-position: center;
+    opacity: 0.92;
 }
 
 @media (max-width: 768px) {
-    #hero-video { filter: blur(6px); opacity: 0.7; }
+    #hero-video { opacity: 0.72; }
 }
 
-.low-performance-device #hero-video { filter: blur(4px); opacity: 0.6; }
+.hero-video-container.is-suspended { visibility: hidden; }
+.hero-video-container.is-static #hero-video { opacity: 0.68; }
 
 .hero::before {
     content: " ";

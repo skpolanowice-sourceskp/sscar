@@ -79,7 +79,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,900;1,700;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=20260727c">
+    <link rel="stylesheet" href="styles.css?v=20260728a">
 </head>
 
 <body>
@@ -108,8 +108,9 @@
     <!-- Hero / Landing -->
     <div class="hero">
         <div class="hero-video-container">
-            <video id="hero-video" preload="auto" muted playsinline>
-                <source src="Clean_Smooth_transition.mp4" type="video/mp4">
+            <video id="hero-video" preload="metadata" muted playsinline
+                poster="img/hero-car-poster.webp" aria-hidden="true" tabindex="-1">
+                <source src="Clean_Smooth_transition.mp4?v=20260728a" type="video/mp4">
             </video>
         </div>
 
@@ -244,96 +245,121 @@
     <script src="nav.js?v=20260727a"></script>
     <script>initPage();</script>
     <script>
-        // Video scroll effect
-        function detectDeviceCapabilities() {
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isLowEnd = navigator.hardwareConcurrency <= 4 || navigator.deviceMemory <= 2;
-            if (isMobile || isLowEnd) {
-                document.body.classList.add('low-performance-device');
-                return true;
-            }
-            return false;
-        }
+        // Lekki scroll-scrub: maks. 24 aktualizacje filmu na sekundę,
+        // jedna operacja seek naraz i brak pracy poza widocznym hero.
+        (function initHeroVideo() {
+            'use strict';
 
-        const video = document.getElementById('hero-video');
-        const navSection = document.querySelector('.nav-cards-section');
-        const isLowPerformance = detectDeviceCapabilities();
+            const video = document.getElementById('hero-video');
+            const hero = document.querySelector('.hero');
+            const container = document.querySelector('.hero-video-container');
+            const navSection = document.querySelector('.nav-cards-section');
+            if (!video || !hero || !container) return;
 
-        let maxScroll = 0;
-        let targetProgress = 0;
-        let currentProgress = 0;
-        let ticking = false;
-        let lastUpdateTime = 0;
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const veryLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2)
+                || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+            const staticMode = prefersReducedMotion || Boolean(connection && connection.saveData) || veryLowEnd;
 
-        const SMOOTHING_FACTOR = isLowPerformance ? 0.02 : 0.05;
-        const UPDATE_THROTTLE = isLowPerformance ? 100 : 16;
-
-        function updateMaxScroll() {
-            if (navSection) {
-                maxScroll = navSection.offsetTop - window.innerHeight * 0.5;
-            } else {
-                maxScroll = document.body.scrollHeight - window.innerHeight;
-            }
-            maxScroll = Math.max(maxScroll, 100);
-        }
-
-        if (video) {
-            video.pause();
-            if (isLowPerformance) video.playbackRate = 0.8;
-            video.addEventListener('loadedmetadata', function () {
-                video.currentTime = 0;
-                updateMaxScroll();
-            });
-        }
-
-        window.addEventListener('resize', updateMaxScroll);
-        updateMaxScroll();
-
-        function updateVideo(timestamp) {
-            if (isLowPerformance && timestamp - lastUpdateTime < UPDATE_THROTTLE) {
-                if (ticking) window.requestAnimationFrame(updateVideo);
+            if (staticMode) {
+                container.classList.add('is-static');
+                video.preload = 'none';
                 return;
             }
-            lastUpdateTime = timestamp;
-            const diff = targetProgress - currentProgress;
-            if (Math.abs(diff) < 0.0001) {
-                currentProgress = targetProgress;
-                ticking = false;
-            } else {
-                currentProgress += diff * SMOOTHING_FACTOR;
-                ticking = true;
-                window.requestAnimationFrame(updateVideo);
+
+            const FRAME_MS = 1000 / 24;
+            const FRAME_SECONDS = 1 / 24;
+            let duration = 0;
+            let maxScroll = 100;
+            let targetTime = 0;
+            let lastSeekAt = -FRAME_MS;
+            let frameRequest = 0;
+            let timer = 0;
+            let resizeRequest = 0;
+            let heroVisible = true;
+            let pageVisible = !document.hidden;
+
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
             }
-            if (video && video.duration && !video.seeking) {
-                const targetTime = currentProgress * video.duration;
-                const tolerance = isLowPerformance ? 0.1 : 0.03;
-                if (Math.abs(video.currentTime - targetTime) > tolerance) {
-                    video.currentTime = targetTime;
+
+            function measureScrollRange() {
+                maxScroll = navSection
+                    ? navSection.offsetTop - window.innerHeight * 0.5
+                    : document.documentElement.scrollHeight - window.innerHeight;
+                maxScroll = Math.max(maxScroll, 100);
+            }
+
+            function readTargetTime() {
+                if (!duration) return;
+                targetTime = clamp(window.scrollY / maxScroll, 0, 1) * duration;
+                queueFrame();
+            }
+
+            function queueFrame() {
+                if (!duration || !heroVisible || !pageVisible || frameRequest || timer) return;
+                frameRequest = window.requestAnimationFrame(commitFrame);
+            }
+
+            function commitFrame(timestamp) {
+                frameRequest = 0;
+                if (!heroVisible || !pageVisible || video.seeking) return;
+
+                if (Math.abs(video.currentTime - targetTime) < FRAME_SECONDS * 0.6) return;
+
+                const remainingBudget = FRAME_MS - (timestamp - lastSeekAt);
+                if (remainingBudget > 2) {
+                    timer = window.setTimeout(function () {
+                        timer = 0;
+                        queueFrame();
+                    }, remainingBudget);
+                    return;
                 }
+
+                lastSeekAt = timestamp;
+                video.currentTime = clamp(targetTime, 0, Math.max(0, duration - 0.001));
             }
-        }
 
-        window.addEventListener('scroll', function () {
-            targetProgress = Math.max(0, Math.min(window.scrollY / maxScroll, 1));
-            if (!ticking) {
-                ticking = true;
-                window.requestAnimationFrame(updateVideo);
-            }
-        });
+            video.addEventListener('loadedmetadata', function () {
+                duration = Number.isFinite(video.duration) ? video.duration : 0;
+                measureScrollRange();
+                readTargetTime();
+            }, { once: true });
 
-        window.addEventListener('load', function () {
-            updateMaxScroll();
-            targetProgress = Math.max(0, Math.min(window.scrollY / maxScroll, 1));
-            currentProgress = targetProgress;
-            if (video) video.currentTime = targetProgress * (video.duration || 0);
-        });
-
-        if (isLowPerformance) {
-            document.addEventListener('DOMContentLoaded', function () {
-                const mouseGlow = document.querySelector('.mouse-glow');
-                if (mouseGlow) mouseGlow.style.display = 'none';
+            video.addEventListener('seeked', function () {
+                if (Math.abs(video.currentTime - targetTime) >= FRAME_SECONDS * 0.6) queueFrame();
             });
-        }
+
+            window.addEventListener('scroll', readTargetTime, { passive: true });
+            window.addEventListener('resize', function () {
+                if (resizeRequest) return;
+                resizeRequest = window.requestAnimationFrame(function () {
+                    resizeRequest = 0;
+                    measureScrollRange();
+                    readTargetTime();
+                });
+            }, { passive: true });
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver(function (entries) {
+                    heroVisible = entries[0].isIntersecting;
+                    container.classList.toggle('is-suspended', !heroVisible);
+                    if (heroVisible) readTargetTime();
+                }, { rootMargin: '10% 0px' });
+                observer.observe(hero);
+            }
+
+            document.addEventListener('visibilitychange', function () {
+                pageVisible = !document.hidden;
+                if (pageVisible) readTargetTime();
+            });
+
+            video.pause();
+            video.preload = 'auto';
+            video.load();
+            measureScrollRange();
+        }());
     </script>
 </body>
 

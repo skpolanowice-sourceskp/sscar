@@ -217,6 +217,12 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-07-28** — **Optymalizacja scroll-scrub filmu auta w hero.** `Clean_Smooth_transition.mp4`
+  przekodowany do H.264 960×540/24 fps bez audio, z klatką kluczową co 4 klatki (48 zamiast 1) i rozmyciem
+  zapisanym w materiale; plik zmalał z 1 003 767 do 774 701 B. Usunięto pełnoekranowy `filter: blur()` z CSS.
+  Sterowanie w `index.html` ogranicza seek do 24 fps, scala kolejne żądania, wykonuje tylko jeden seek naraz i
+  zatrzymuje pracę poza widocznym hero/ukrytą kartą. `prefers-reduced-motion`, Save-Data i bardzo słabe urządzenia
+  dostają statyczny `img/hero-car-poster.webp`. Cache: `styles.css?v=20260728a`, film `?v=20260728a`.
 - **2026-07-27 (b)** — **Uporządkowanie struktury repo: korzeń = web root, reszta do `tools/`, `docs/`,
   `img/_src/`.** Powód: w korzeniu (który leci na FTP) leżało **26,7 MB oryginałów zdjęć** i plików
   źródłowych, których strona nigdy nie używa — 6 wielkich JPG-ów, 6 nieużywanych ręcznych konwersji
