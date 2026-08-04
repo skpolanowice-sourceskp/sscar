@@ -55,8 +55,8 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
   `sprawdzenie-przed-zakupem.html`, `wulkanizacja.html`, …), `dekoder.html`, `guide.html`.
 - `styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
 - `nav.js`, `reviews_data.js`, `dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
-- Zasoby: `Logo-SSCAR.png`, `favicon.png`, `Clean_Smooth_transition.mp4` (hero na `index.html`),
-  `img/` — warianty responsywne zdjęć. **`Logo-SSCAR.png` i `favicon.png` muszą zostać w korzeniu:**
+- Zasoby: `Logo-SSCAR.png`, `favicon.png`, `img/` — warianty responsywne zdjęć
+  (hero `index.html` = `img/hero-stacja-*`; od 2026-08-04 zdjęcie, nie film). **`Logo-SSCAR.png` i `favicon.png` muszą zostać w korzeniu:**
   wskazują na nie bezwzględne `og:image` na 13 podstronach (przeniesienie zerwałoby podglądy w social media).
 - Pliki obsługi wyszukiwarek: `robots.txt`, `sitemap.xml`, `google79c7a3b6a6e8553f.html` (weryfikacja GSC).
 - `htaccess` — kopia `.htaccess` z korzenia serwera (wymuszenie HTTPS). **Celowo bez kropki**, żeby
@@ -217,6 +217,125 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-08-04 (e)** — **Hero `index.html`: film zastąpiony zdjęciem stacji. Cały scroll-scrub USUNIĘTY.**
+  Powód: film `Clean_Smooth_transition.mp4` sterowany scrollem regularnie się zacinał (decyzja właściciela).
+  **Co zniknęło:** `Clean_Smooth_transition.mp4` (774 KB), `img/hero-car-poster.webp`, `.hero-video-container`,
+  `#hero-video`, klasy `.is-static`/`.is-suspended` oraz **~115 linii inline JS** w `index.html` (`initHeroVideo`:
+  throttling 24 fps, `IntersectionObserver`, `visibilitychange`, tryb `staticMode` dla Save-Data/słabych urządzeń).
+  Nie ma już żadnego JS-u obsługującego hero — to teraz czysty `<picture>`.
+  **⚠️ Konsekwencja dla wpisu 2026-07-28:** opisana tam optymalizacja filmu jest **nieaktualna**; `maxScroll`
+  liczony z `querySelector('.nav-cards-section')` też zniknął, więc **kolejność sekcji na `index.html` nie jest
+  już związana ze sterowaniem filmem** (dawniej nie wolno było ruszać pozycji sekcji „Nasze usługi").
+  **Nowe zasoby:** źródło `img/_src/stacja-sscar.png` (2,54 MB) → `hero-stacja-800.webp` (78 KB),
+  `hero-stacja-1400.webp` (185 KB), `hero-stacja-1400.jpg` (272 KB). Wpis dodany do `SOURCES`
+  w `tools/optimize_images.py` — **nie do `HERO_SOURCES`**, bo tamten tryb przycina dolny pas z wypalonym
+  podpisem (tu nie ma czego przycinać) i wymusza szerokości 1200/1900/2600, co przy oryginale 1537 px
+  wyprodukowałoby dwa identyczne pliki. Zwykłe `variants()` samo pomija wariant 2200 (nie powiększamy).
+  **⚠️ Sufit rozdzielczości: oryginał ma 1537 px szerokości**, więc największy wariant to 1400. Przy podmianie
+  zdjęcia na ostrzejsze warto wrócić do 2200.
+  **Art direction (`styles.css`):** `.hero` = `justify-content: flex-end` — blok treści siedzi na dole, na pustej
+  kostce; wyśrodkowany przykrywał szyld „PRZEGLĄDY REJESTRACYJNE" i bramę. `.hero-logo-main` **700 → 420 px**:
+  plik logo ma proporcję **1.4:1** (2100×1500), więc 700 px szerokości = **500 px wysokości** i sam blok treści
+  zjadał cały kadr. `.hero-photo` zachowuje `position: fixed` + `contain: strict` po starym kontenerze wideo
+  (darmowy paralaks, kolejne sekcje mają własne tło i je zasłaniają). Dwuwarstwowy scrim na `::after`
+  (pion: jasno u góry, `0.94` na dole; poziom: wygaszenie oszronionego świerka po lewej) — kostka ma ~L75%,
+  bez tego `#ddd` nie wyrabia kontrastu AA. Wejście: `heroPhotoIn` (opacity + `scale(1.045)→1`, tylko `transform`),
+  wyciszone w istniejącym guardzie `prefers-reduced-motion` razem z `fadeInUp` logo/h1/przycisków.
+  **⚠️ Kadr `object-position` jest wyliczony, nie „na oko":** desktop `57% 42%`, mobile **`63% 45%`**. Procent
+  w `object-position` to NIE „wyśrodkuj na X%" tylko `(szerokość_obrazu − szerokość_boxa) × X`. Przy 500 px
+  widać ~37% szerokości zdjęcia, a szyld zajmuje 43,6–74,6% — przy `58%` okno wypadało 36,5–73,6% i ucinało
+  „REJESTRACYJNE". Nie zmieniaj tych wartości bez przeliczenia.
+  **Decyzja właściciela:** logo w hero **zostaje czerwone i bez zmian**, mimo że ląduje na czerwonej bramie
+  (słaby kontrast czerwień-na-czerwieni) i daje trzy znaki SSCAR w jednym kadrze (nagłówek + szyld + hero).
+  Odrzucone warianty: usunięcie logo z powiększeniem `h1` do rozmiaru display z `DESIGN.md`, oraz przemalowanie
+  logo filtrem na biel. **Nie wracać do tego bez pytania.**
+  Cache: `styles.css?v=20260804c` na 13 stronach. Wdrożone FTP (17 plików: 13 HTML + `styles.css`
+  + 3 warianty `img/hero-stacja-*`), zweryfikowane MD5 (17/17) i odpytaniem produkcji po HTTP.
+  **⚠️ Na serwerze został osierocony `Clean_Smooth_transition.mp4`** — i to w wersji **sprzed** optymalizacji
+  z 2026-07-28 (1 003 767 B, nie 774 701 B), czyli tamten przekodowany plik najwyraźniej nigdy nie trafił na
+  FTP. Nic go już nie linkuje; do skasowania ręcznie. `img/hero-car-poster.webp` na serwerze nigdy nie było (550).
+- **2026-08-04** — **SEO: naprawa linkowania wewnętrznego — 11 podstron nie było crawlowanych przez Google.**
+  Diagnoza z Google Search Console (3 mies., dane w `dane_google/`): **71 kliknięć, 816 wyświetleń**, ale
+  wyświetlenia generowały **tylko 2 URL-e** (`/` i `rezerwacja.html`). Raport „Indeksowanie stron":
+  **zindeksowana 1 strona z 12**, pozostałe 11 ze statusem **„Strona wykryta – obecnie niezindeksowana"**
+  — Google znał adresy z sitemapy, ale **nigdy ich nie pobrał**.
+  **Przyczyna:** 6 podstron usługowych miało po **1 linku przychodzącym** (wyłącznie z `oferta.html`, która
+  sama ma 230 słów) i **nie było w nawigacji**. `index.html` nie linkował do żadnej z nich. Google ocenił je
+  jako niewarte crawlowania. Wykluczone jako przyczyny: `meta robots` (wszędzie `index, follow`), `robots.txt`
+  (blokuje tylko `guide.html`), `htaccess` (samo przekierowanie HTTPS), `canonical` (poprawne, self-referencing).
+  **⚠️ Wniosek do zapamiętania: sitemapa NIE wystarcza do indeksacji.** Wszystkie 11 stron było w `sitemap.xml`
+  od maja i to nie pomogło — sitemapa jest sugestią, realnym sygnałem są **linki wewnętrzne**.
+  **Zmiany:** (a) nowy komponent **`.footer-nav`** (`styles.css`, na końcu pliku — patrz pułapka specyficzności)
+  — sitewide mapa linków w stopce, wstawiona do **13 stron**, 4 kolumny (Badania i diagnostyka / Serwis /
+  Stacja / Narzędzia), bieżąca strona oznaczona `aria-current="page"`; (b) nowa sekcja **„Nasze usługi"** na
+  `index.html` — 6 kart `.nav-index` z opisowymi anchorami (*„Badania techniczne Wrocław", „Geometria 3D
+  i zbieżność kół"*), wstawiona **dokładnie w miejscu** dawnej sekcji „Czego szukasz?", żeby nie ruszyć
+  `maxScroll` w scroll-scrubie filmu hero (`querySelector('.nav-cards-section')` bierze pierwszy element);
+  (c) blok **„Zobacz też"** (reuse `.nav-index`, zero nowego CSS) na 6 stronach usługowych, przed `.cta-section`;
+  (d) `sitemap.xml` — dodany **brakujący `rezerwacja.html`** (2. strona serwisu po wyświetleniach!), `lastmod`
+  odświeżony na `2026-08-04`. Efekt: każda podstrona ma teraz **12 linków przychodzących** zamiast 1.
+  Cache: `styles.css?v=20260804a` na wszystkich 13 stronach.
+  **Po wdrożeniu FTP OBOWIĄZKOWO:** w GSC „Sprawdzenie adresu URL" → **„Poproś o zaindeksowanie"** dla każdego
+  z 11 adresów (sam deploy nie wymusi crawla), potem „Zweryfikuj poprawkę" w raporcie indeksowania.
+  **Nie robione świadomie (dopiero po zaindeksowaniu):** `FAQPage` (jedyna sekcja FAQ jest w
+  `badania-techniczne.html`), nagłówki `h2` w `oferta.html`/`cennik.html`, rozbudowa treści — optymalizacja
+  treści, której crawler nie pobrał, jest bezwartościowa.
+  **Ustalenie do protokołu:** `meta description` **jest na każdej stronie** — na `index.html`, `dekoder.html`
+  i `klima.html` atrybuty `name` i `content` są rozbite na dwie linie, więc jednoliniowy grep daje fałszywy
+  negatyw. Nie „naprawiać" tego ponownie.
+  **Sekcja „Czego szukasz?" USUNIĘTA z `index.html`** (decyzja właściciela) — dublowała górne menu (te same
+  5 pozycji). Bezpieczne dla SEO: wszystkie 5 stron ma linki w nagłówku ORAZ w nowej stopce na każdej stronie.
+- **2026-08-04 (b)** — **⚠️⚠️ ODKRYCIE: HTTPS jest za ochroną antybotową, która serwuje stronę „Weryfikacja"
+  zamiast treści.** Znalezione przy weryfikacji deployu (patrz wpis wyżej). Stan faktyczny, zmierzony:
+
+  | Zasób | HTTPS | HTTP |
+  |---|---|---|
+  | `robots.txt` | **przechodzi** (whitelist po ścieżce) | OK |
+  | `sitemap.xml` | **CHALLENGE** (HTML „Weryfikacja", kod 200) | OK (13 URL) |
+  | `*.html`, `styles.css` | **CHALLENGE** (kod 200) | OK |
+
+  Challenge to strona `<title>Weryfikacja</title>` z JS-em bijącym do **`/__nodea/sentry`**; dostaje ją
+  **każdy** User-Agent (także Chrome i spoofowany Googlebot), więc filtr działa na **wykonaniu JS**, nie na UA.
+  **✅ ROZSTRZYGNIĘTE — to NIE jest przyczyna problemu z indeksacją. Nie gonić tego tropu.**
+  Dowód z GSC („Sprawdzenie adresu URL" dla `geometria-3d.html`): sekcja **Wykrywalność** pokazuje
+  „Mapy witryn: `https://www.sscar.pl/sitemap.xml`" **oraz** „Strona odsyłająca: `oferta.html`". Skoro Google
+  wskazuje sitemapę jako źródło wykrycia, to **odczytał ją po HTTPS**, a skoro zna link z `oferta.html`, to
+  **pobrał też jej treść**. Zweryfikowany Googlebot (po reverse DNS) jest więc z challenge'u **zwolniony** —
+  challenge dotyczy tylko klientów nieprzechodzących JS (curl, PowerShell, podszyty UA z obcego IP).
+  Potwierdzenie diagnozy właściwej: w tym samym raporcie „Ostatnie skanowanie: **Nie dotyczy**" — strona nigdy
+  nie została pobrana, mimo że Google zna ją z **dwóch** źródeł. To problem **priorytetu crawlowania**
+  (za słabe linkowanie wewnętrzne), nie dostępu. Naprawiane wpisem 2026-08-04 wyżej.
+  **Co z tego zostaje jako realne ryzyko:** challenge blokuje `sitemap.xml`, CSS i HTML dla **narzędzi SEO
+  i innych robotów** (Bing, Ahrefs, Screaming Frog, walidatory) — audyty zewnętrzne będą zwracać śmieci.
+  **⚠️ Pułapka diagnostyczna:** challenge zwraca **kod 200**, więc „strona odpowiada 200" NIE znaczy, że
+  serwuje treść. Przy każdym sprawdzaniu produkcji weryfikuj **zawartość**, nie tylko kod. Sam popełniłem
+  ten błąd, biorąc challenge za „stary cache".
+- **2026-08-04 (d)** — **SEO, druga tura: `oferta.html` wzmocniona, semantyka nagłówków, `FAQPage`.**
+  Kontekst: GSC potwierdziło, że `oferta.html` to **strona odsyłająca**, z której Google odkrywa podstrony
+  usługowe — a miała 230 słów i **ani jednego nagłówka** poza `h1` (nazwy usług siedziały w `<span>`).
+  (a) **`oferta.html`** — dodany wstęp z twardymi faktami (stacja DW/126/P, zakres badań: motocykle, LPG, haki,
+  powypadkowe, **bez przyczep i zabytkowych**, godziny, telefon), usługi pogrupowane pod **2 nagłówki `h2`**
+  („Badania techniczne i diagnostyka", „Serwis i obsługa pojazdu"), a nazwy usług `span` → **`h3`**
+  (hierarchia h1→h2→h3). 230 → **354 słowa**. Kolejność usług zmieniona tak, by pasowała do grup.
+  (b) **`cennik.html`** — `h3.table-title` → **`h2.table-title`** (4 szt.), naprawiony przeskok h1→h3.
+  (c) **`badania-techniczne.html`** — dodany **`FAQPage`** do `@graph` (3 pytania, tekst 1:1 z treścią widoczną
+  na stronie; schemat musi odpowiadać temu, co widzi użytkownik).
+  **⚠️ Pułapka CSS przy zamianie `span`→`h2`/`h3`:** globalne `h2` ma `text-align:center`, `margin-bottom:4rem`
+  i **czerwoną kreskę `h2::after`**. W kafelkach usług i tytułach tabel trzeba to zdejmować jawnie —
+  dopisane na końcu `styles.css`: `.service-list h3.service-entry-title{margin:0;text-align:left}` +
+  `::after{content:none}` oraz `h2.table-title::after{content:none}`. Bez tego pod każdą nazwą usługi
+  pojawia się czerwony pasek, a odstępy się rozjeżdżają.
+  **⚠️ Pułapka, w którą wpadłem:** hurtowe `replace('</h3>','</h2>')` w `cennik.html` popsuło **6 innych**
+  `<h3>` (m.in. kolumny nowej stopki) — otwarcia `<h3>` z zamknięciami `</h2>`. Przy zamianie poziomu nagłówka
+  używaj regexa parami (`(<h3[^>]*>)(.*?)</h2>` → `\1\2</h3>`), nigdy dwóch niezależnych `replace`.
+  Cache: `styles.css?v=20260804b` na 13 stronach. Wdrożone FTP + zweryfikowane MD5 i odpytaniem produkcji.
+- **2026-08-04 (c)** — **`.htaccess` NIE ISTNIEJE na serwerze — wymuszenie HTTPS nie działa.** Sekcja 3 tego
+  pliku twierdziła, że `htaccess` (bez kropki) to kopia żywego `.htaccess` z korzenia serwera. Sprawdzone
+  przez FTP (`GetFileSize`): `.htaccess` → **550 (brak pliku)**, jest tylko `htaccess` (103 B, bez kropki),
+  którego Apache nie czyta. Skutek: `http://www.sscar.pl/` oddaje pełną treść z **kodem 200 bez przekierowania**
+  — ta sama treść żyje pod http:// i https:// (duplicate content). Łagodzi to `canonical` wskazujący na
+  `https://`, ale przekierowanie należy przywrócić. **Nie wgrywać `.htaccess` automatycznie** — to zmiana
+  infrastrukturalna, robić świadomie i z weryfikacją, że hosting ją przyjmuje.
 - **2026-07-28** — **Optymalizacja scroll-scrub filmu auta w hero.** `Clean_Smooth_transition.mp4`
   przekodowany do H.264 960×540/24 fps bez audio, z klatką kluczową co 4 klatki (48 zamiast 1) i rozmyciem
   zapisanym w materiale; plik zmalał z 1 003 767 do 774 701 B. Usunięto pełnoekranowy `filter: blur()` z CSS.

@@ -43,6 +43,9 @@ SOURCES = [
     ("eclipse-przód.jpg", "eclipse"),
     ("Maverick-przód.jpg", "maverick"),
     ("mandaryna-bok-1.jpg", "chevrolet-3100"),
+    # Hero index.html – budynek stacji o świcie. Oryginał ma 1537 px szerokości,
+    # więc wariant 2200 zostanie pominięty (nie powiększamy).
+    ("stacja-sscar.png", "hero-stacja"),
 ]
 
 # Warianty hero: (plik źródłowy, slug, ile procent wysokości zostawić od góry).

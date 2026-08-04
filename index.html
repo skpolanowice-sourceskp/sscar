@@ -79,7 +79,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,900;1,700;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=20260728a">
+    <link rel="stylesheet" href="styles.css?v=20260804c">
+    <link rel="preload" as="image" href="img/hero-stacja-1400.jpg"
+          imagesrcset="img/hero-stacja-800.webp 800w, img/hero-stacja-1400.webp 1400w"
+          imagesizes="100vw" fetchpriority="high">
 </head>
 
 <body>
@@ -107,11 +110,14 @@
 
     <!-- Hero / Landing -->
     <div class="hero">
-        <div class="hero-video-container">
-            <video id="hero-video" preload="metadata" muted playsinline
-                poster="img/hero-car-poster.webp" aria-hidden="true" tabindex="-1">
-                <source src="Clean_Smooth_transition.mp4?v=20260728a" type="video/mp4">
-            </video>
+        <div class="hero-photo">
+            <picture>
+                <source type="image/webp"
+                        srcset="img/hero-stacja-800.webp 800w, img/hero-stacja-1400.webp 1400w"
+                        sizes="100vw">
+                <img src="img/hero-stacja-1400.jpg" width="1400" height="932" fetchpriority="high"
+                     alt="Budynek stacji kontroli pojazdów SSCAR przy Polanowickiej 82 we Wrocławiu o świcie, czerwona brama numer 1 i szyld „Przeglądy rejestracyjne”, oszroniony świerk na pierwszym planie">
+            </picture>
         </div>
 
         <div class="hero-content">
@@ -125,47 +131,55 @@
         </div>
     </div>
 
-    <!-- Nawigacja po podstronach -->
+    <!-- Usługi -->
     <section class="nav-cards-section animate-on-scroll">
-        <h2>Czego szukasz?</h2>
-        <nav class="nav-index" aria-label="Sekcje serwisu">
-            <a href="o-nas.html" class="nav-index-item">
+        <h2>Nasze usługi</h2>
+        <nav class="nav-index" aria-label="Usługi stacji">
+            <a href="badania-techniczne.html" class="nav-index-item">
                 <span class="nav-index-num">01</span>
                 <span class="nav-index-body">
-                    <span class="nav-index-title">O nas</span>
-                    <span class="nav-index-desc">Poznaj nasz zespół i filozofię działania</span>
+                    <span class="nav-index-title">Badania techniczne Wrocław</span>
+                    <span class="nav-index-desc">Przeglądy rejestracyjne aut osobowych, ciężarowych, taxi, motocykli i LPG</span>
                 </span>
                 <span class="nav-index-arrow" aria-hidden="true">→</span>
             </a>
-            <a href="oferta.html" class="nav-index-item">
+            <a href="geometria-3d.html" class="nav-index-item">
                 <span class="nav-index-num">02</span>
                 <span class="nav-index-body">
-                    <span class="nav-index-title">Oferta</span>
-                    <span class="nav-index-desc">Badania techniczne, geometria 3D, wulkanizacja, klimatyzacja</span>
+                    <span class="nav-index-title">Geometria 3D i zbieżność kół</span>
+                    <span class="nav-index-desc">Pomiar i regulacja kątów ustawienia kół na urządzeniu HANWAY HWAV28</span>
                 </span>
                 <span class="nav-index-arrow" aria-hidden="true">→</span>
             </a>
-            <a href="cennik.html" class="nav-index-item">
+            <a href="klimatyzacja.html" class="nav-index-item">
                 <span class="nav-index-num">03</span>
                 <span class="nav-index-body">
-                    <span class="nav-index-title">Cennik</span>
-                    <span class="nav-index-desc">Przejrzyste ceny wszystkich usług</span>
+                    <span class="nav-index-title">Serwis klimatyzacji</span>
+                    <span class="nav-index-desc">Nabijanie czynnika R134A i R1234YF, kontrola szczelności, odgrzybianie</span>
                 </span>
                 <span class="nav-index-arrow" aria-hidden="true">→</span>
             </a>
-            <a href="dekoder.html" class="nav-index-item">
+            <a href="wulkanizacja.html" class="nav-index-item">
                 <span class="nav-index-num">04</span>
                 <span class="nav-index-body">
-                    <span class="nav-index-title">Dekoder VIN</span>
-                    <span class="nav-index-desc">Sprawdź historię i dane pojazdu po numerze VIN</span>
+                    <span class="nav-index-title">Wulkanizacja i wymiana opon</span>
+                    <span class="nav-index-desc">Wymiana i wyważanie kół, naprawa ogumienia, sezonowa zmiana opon</span>
                 </span>
                 <span class="nav-index-arrow" aria-hidden="true">→</span>
             </a>
-            <a href="klima.html" class="nav-index-item">
+            <a href="sprawdzenie-przed-zakupem.html" class="nav-index-item">
                 <span class="nav-index-num">05</span>
                 <span class="nav-index-body">
-                    <span class="nav-index-title">Baza klimatyzacji</span>
-                    <span class="nav-index-desc">Rodzaj czynnika i pojemność układu dla Twojego auta</span>
+                    <span class="nav-index-title">Sprawdzenie auta przed zakupem</span>
+                    <span class="nav-index-desc">Kompletna inspekcja używanego samochodu przed transakcją</span>
+                </span>
+                <span class="nav-index-arrow" aria-hidden="true">→</span>
+            </a>
+            <a href="badania-powypadkowe.html" class="nav-index-item">
+                <span class="nav-index-num">06</span>
+                <span class="nav-index-body">
+                    <span class="nav-index-title">Badania powypadkowe</span>
+                    <span class="nav-index-desc">Badanie dodatkowe wymagane po uszkodzeniu elementów nośnych pojazdu</span>
                 </span>
                 <span class="nav-index-arrow" aria-hidden="true">→</span>
             </a>
@@ -236,6 +250,41 @@
     </section>
 
     <footer>
+        <nav class="footer-nav" aria-label="Mapa serwisu">
+            <div class="footer-nav-col">
+                <h3>Badania i diagnostyka</h3>
+                <ul>
+                    <li><a href="badania-techniczne.html">Badania techniczne Wrocław</a></li>
+                    <li><a href="badania-powypadkowe.html">Badania powypadkowe</a></li>
+                    <li><a href="sprawdzenie-przed-zakupem.html">Sprawdzenie auta przed zakupem</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Serwis</h3>
+                <ul>
+                    <li><a href="geometria-3d.html">Geometria 3D i zbieżność kół</a></li>
+                    <li><a href="klimatyzacja.html">Serwis klimatyzacji</a></li>
+                    <li><a href="wulkanizacja.html">Wulkanizacja i wymiana opon</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Stacja</h3>
+                <ul>
+                    <li><a href="oferta.html">Oferta</a></li>
+                    <li><a href="cennik.html">Cennik usług</a></li>
+                    <li><a href="o-nas.html">O nas</a></li>
+                    <li><a href="#kontakt">Kontakt</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Narzędzia</h3>
+                <ul>
+                    <li><a href="rezerwacja.html">Rezerwacja online</a></li>
+                    <li><a href="dekoder.html">Dekoder VIN i DAM/ORGA</a></li>
+                    <li><a href="klima.html">Baza klimatyzacji</a></li>
+                </ul>
+            </div>
+        </nav>
         <p>Potrzebujesz taką profesjonalną stronę spersonalizowaną pod twoje potrzeby? <br>
             Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
             Lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> – Michał Jarosiński
@@ -244,123 +293,6 @@
 
     <script src="nav.js?v=20260727a"></script>
     <script>initPage();</script>
-    <script>
-        // Lekki scroll-scrub: maks. 24 aktualizacje filmu na sekundę,
-        // jedna operacja seek naraz i brak pracy poza widocznym hero.
-        (function initHeroVideo() {
-            'use strict';
-
-            const video = document.getElementById('hero-video');
-            const hero = document.querySelector('.hero');
-            const container = document.querySelector('.hero-video-container');
-            const navSection = document.querySelector('.nav-cards-section');
-            if (!video || !hero || !container) return;
-
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            const veryLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2)
-                || (navigator.deviceMemory && navigator.deviceMemory <= 2);
-            const staticMode = prefersReducedMotion || Boolean(connection && connection.saveData) || veryLowEnd;
-
-            if (staticMode) {
-                container.classList.add('is-static');
-                video.preload = 'none';
-                return;
-            }
-
-            const FRAME_MS = 1000 / 24;
-            const FRAME_SECONDS = 1 / 24;
-            let duration = 0;
-            let maxScroll = 100;
-            let targetTime = 0;
-            let lastSeekAt = -FRAME_MS;
-            let frameRequest = 0;
-            let timer = 0;
-            let resizeRequest = 0;
-            let heroVisible = true;
-            let pageVisible = !document.hidden;
-
-            function clamp(value, min, max) {
-                return Math.min(Math.max(value, min), max);
-            }
-
-            function measureScrollRange() {
-                maxScroll = navSection
-                    ? navSection.offsetTop - window.innerHeight * 0.5
-                    : document.documentElement.scrollHeight - window.innerHeight;
-                maxScroll = Math.max(maxScroll, 100);
-            }
-
-            function readTargetTime() {
-                if (!duration) return;
-                targetTime = clamp(window.scrollY / maxScroll, 0, 1) * duration;
-                queueFrame();
-            }
-
-            function queueFrame() {
-                if (!duration || !heroVisible || !pageVisible || frameRequest || timer) return;
-                frameRequest = window.requestAnimationFrame(commitFrame);
-            }
-
-            function commitFrame(timestamp) {
-                frameRequest = 0;
-                if (!heroVisible || !pageVisible || video.seeking) return;
-
-                if (Math.abs(video.currentTime - targetTime) < FRAME_SECONDS * 0.6) return;
-
-                const remainingBudget = FRAME_MS - (timestamp - lastSeekAt);
-                if (remainingBudget > 2) {
-                    timer = window.setTimeout(function () {
-                        timer = 0;
-                        queueFrame();
-                    }, remainingBudget);
-                    return;
-                }
-
-                lastSeekAt = timestamp;
-                video.currentTime = clamp(targetTime, 0, Math.max(0, duration - 0.001));
-            }
-
-            video.addEventListener('loadedmetadata', function () {
-                duration = Number.isFinite(video.duration) ? video.duration : 0;
-                measureScrollRange();
-                readTargetTime();
-            }, { once: true });
-
-            video.addEventListener('seeked', function () {
-                if (Math.abs(video.currentTime - targetTime) >= FRAME_SECONDS * 0.6) queueFrame();
-            });
-
-            window.addEventListener('scroll', readTargetTime, { passive: true });
-            window.addEventListener('resize', function () {
-                if (resizeRequest) return;
-                resizeRequest = window.requestAnimationFrame(function () {
-                    resizeRequest = 0;
-                    measureScrollRange();
-                    readTargetTime();
-                });
-            }, { passive: true });
-
-            if ('IntersectionObserver' in window) {
-                const observer = new IntersectionObserver(function (entries) {
-                    heroVisible = entries[0].isIntersecting;
-                    container.classList.toggle('is-suspended', !heroVisible);
-                    if (heroVisible) readTargetTime();
-                }, { rootMargin: '10% 0px' });
-                observer.observe(hero);
-            }
-
-            document.addEventListener('visibilitychange', function () {
-                pageVisible = !document.hidden;
-                if (pageVisible) readTargetTime();
-            });
-
-            video.pause();
-            video.preload = 'auto';
-            video.load();
-            measureScrollRange();
-        }());
-    </script>
 </body>
 
 </html>
