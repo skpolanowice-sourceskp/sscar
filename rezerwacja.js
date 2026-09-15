@@ -659,7 +659,7 @@
             setFieldError('rez-f-email', 'rez-e-email', 'Podaj poprawny adres e-mail.'); ok = false;
         } else setFieldError('rez-f-email', 'rez-e-email', '');
 
-        if (!consent) { el('rez-e-consent').textContent = 'Zaznacz zgodę, aby kontynuować.'; ok = false; }
+        if (!consent) { el('rez-e-consent').textContent = 'Potwierdź zapoznanie się z informacją o przetwarzaniu danych.'; ok = false; }
         else el('rez-e-consent').textContent = '';
 
         return ok;

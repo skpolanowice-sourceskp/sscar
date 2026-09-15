@@ -3062,3 +3062,364 @@ footer a:hover { color: var(--primary-red); }
    .table-title sam ustawia margin/align/rozmiar; zdejmujemy tylko czerwona
    kreske, ktora globalne h2::after dokleja pod naglowkiem. */
 h2.table-title::after { content: none; display: none; }
+
+/* ============================================================
+   RODO / POLITYKA PRYWATNOSCI (od 2026-09-15)
+   Uklad "manual serwisowy": sticky spis tresci + numerowane sekcje.
+   Prefix .rodo-. Dopisane NA KONCU pliku — globalne h2 ma
+   text-align:center, margin-bottom:4rem i czerwona kreske ::after,
+   wiec .rodo-sec h2 musi je nadpisac z wyzsza specyficznoscia
+   (patrz pulapka specyficznosci w CLAUDE.md).
+   ============================================================ */
+
+.rodo-stamp {
+    margin-top: 1.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+}
+
+.rodo-stamp b {
+    color: var(--primary-red);
+    font-weight: 700;
+}
+
+.rodo-doc {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    max-width: 1120px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* ---- Spis tresci ---- */
+.rodo-index {
+    position: sticky;
+    top: 120px;
+}
+
+.rodo-index-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin-bottom: 0.9rem;
+}
+
+.rodo-index ol {
+    list-style: none;
+    counter-reset: rodo-toc;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.rodo-index li {
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rodo-index a {
+    display: grid;
+    grid-template-columns: 1.85rem minmax(0, 1fr);
+    gap: 0.4rem;
+    align-items: baseline;
+    padding: 0.6rem 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+}
+
+.rodo-index a::before {
+    counter-increment: rodo-toc;
+    content: counter(rodo-toc, decimal-leading-zero);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 0.8rem;
+    color: var(--primary-red);
+}
+
+.rodo-index a:hover,
+.rodo-index a:focus-visible {
+    color: var(--text-main);
+    padding-left: 0.35rem;
+}
+
+/* ---- Tresc dokumentu ---- */
+.rodo-body {
+    max-width: 68ch;
+}
+
+.rodo-lead {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+.rodo-lead strong { color: var(--text-main); font-weight: 700; }
+
+/* ---- Blok "w skrocie" ---- */
+.rodo-tldr {
+    margin: 2.25rem 0 0;
+    padding: 1.6rem 0 1.7rem;
+    border-top: 1px solid var(--border-accent);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rodo-tldr-title {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--primary-red);
+    margin-bottom: 1.1rem;
+}
+
+.rodo-tldr ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+/* UWAGA: to NIE moze byc `display: grid`. W grid containerze kazdy element
+   inline (tu <strong>) staje sie osobnym grid itemem, a tekst po nim laduje
+   w anonimowym itemie w kolumnie szerokiej na 0.9rem i lamie sie po jednym
+   slowie. Marker pozycjonujemy absolutnie, jak w .rodo-list. */
+.rodo-tldr li {
+    position: relative;
+    padding-left: 1.75rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+}
+
+.rodo-tldr li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.72rem;
+    width: 9px;
+    height: 2px;
+    background: var(--primary-red);
+}
+
+.rodo-tldr strong { color: var(--text-main); font-weight: 700; }
+
+/* ---- Sekcje ---- */
+.rodo-sec {
+    /* Globalne `section { padding: 7rem 5% }` dotyczy takze sekcji zagniezdzonych,
+       wiec padding trzeba zerowac w calosci, nie tylko od gory. */
+    margin-top: 3.25rem;
+    padding: 3.25rem 0 0;
+    border-top: 1px solid var(--border-subtle);
+    scroll-margin-top: 120px;
+}
+
+.rodo-sec h2 {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    align-items: baseline;
+    text-align: left;
+    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+    letter-spacing: 0.03em;
+    margin-bottom: 1.25rem;
+}
+
+.rodo-sec h2::after { content: none; display: none; }
+
+.rodo-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 0.95rem;
+    letter-spacing: 0;
+    color: var(--primary-red);
+}
+
+.rodo-sec p {
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.rodo-sec p:last-child { margin-bottom: 0; }
+.rodo-sec strong { color: var(--text-main); font-weight: 700; }
+
+/* .tip-box strong ma te sama specyficznosc (0,1,1) co .rodo-sec strong, a nasza
+   regula stoi dalej w pliku i przejelaby czerwien komponentu. Przywracamy ja. */
+.rodo-sec .tip-box strong { color: var(--primary-red); }
+
+.rodo-sec a {
+    color: var(--primary-red);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.rodo-sec a:hover,
+.rodo-sec a:focus-visible { text-decoration: underline; }
+
+/* ---- Lista wyliczeniowa ---- */
+.rodo-list {
+    list-style: none;
+    margin: 1.25rem 0 1.5rem;
+    padding: 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.rodo-list li {
+    position: relative;
+    padding: 0.7rem 0 0.7rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+.rodo-list li::before {
+    content: '\203A';
+    position: absolute;
+    left: 0.2rem;
+    top: 0.6rem;
+    color: var(--primary-red);
+    font-weight: 700;
+}
+
+.rodo-list strong { color: var(--text-main); font-weight: 700; }
+
+/* ---- Tabela celow i podstaw prawnych ---- */
+.rodo-table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0 0.5rem;
+}
+
+.rodo-table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.rodo-table th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0 1.1rem 0.7rem 0;
+    border-bottom: 1px solid var(--border-accent);
+    white-space: nowrap;
+}
+
+.rodo-table th:last-child,
+.rodo-table td:last-child { padding-right: 0; }
+
+.rodo-table td {
+    padding: 0.85rem 1.1rem 0.85rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    vertical-align: top;
+    line-height: 1.6;
+}
+
+.rodo-table td:first-child {
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.rodo-law {
+    display: block;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+.rodo-law b {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-main);
+}
+
+/* ---- Prawa osoby, ktorej dane dotycza ---- */
+.rodo-rights {
+    margin: 1.5rem 0 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.rodo-right {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.25rem 1.25rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rodo-right dt {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary-red);
+    padding-top: 0.15rem;
+}
+
+.rodo-right dd {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+.rodo-right dd b {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* ---- Responsywnosc ---- */
+@media (max-width: 900px) {
+    .rodo-doc { grid-template-columns: 1fr; gap: 2.5rem; }
+
+    /* Naglowek na mobile ma 80px, nie 100px. */
+    .rodo-sec { scroll-margin-top: 95px; }
+
+    .rodo-index {
+        position: static;
+        padding-bottom: 0.5rem;
+    }
+
+    .rodo-index ol {
+        columns: 2;
+        column-gap: 2rem;
+    }
+
+    .rodo-index li { break-inside: avoid; }
+}
+
+@media (max-width: 560px) {
+    .rodo-index ol { columns: 1; }
+    .rodo-sec h2 { grid-template-columns: 2.1rem minmax(0, 1fr); }
+    .rodo-right { grid-template-columns: 1fr; gap: 0.15rem; }
+    .rodo-right dt { padding-top: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rodo-index a { transition: none; }
+    .rodo-index a:hover,
+    .rodo-index a:focus-visible { padding-left: 0; }
+}

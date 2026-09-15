@@ -5,7 +5,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 „Utrzymanie tego pliku" na końcu). Szczegóły marki/designu są w `PRODUCT.md` i `DESIGN.md`
 — tu ich nie powtarzamy.
 
-> Daty w tym pliku są bezwzględne. Stan na: **2026-06-24**.
+> Daty w tym pliku są bezwzględne. Stan na: **2026-09-15**.
 
 ---
 
@@ -217,6 +217,47 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-15** — **Nowa strona `rodo.html` (obowiazek informacyjny RODO) + poprawiona semantyka zgody w rezerwacji.**
+  Formularz rezerwacji zbieral dane bez zadnej informacji o przetwarzaniu — brakowalo realizacji art. 13 RODO.
+  **(a) `rodo.html`** — 10 numerowanych sekcji w ukladzie „manual serwisowy": sticky spis tresci (desktop) +
+  tresc max 68ch. Dane administratora wziete ze **zrzutu z rejestru SKP** (CEIDG/BIP): Sebastian Stefanik,
+  siedziba **ul. Jagodowa 12, 55-003 Nadolice Male**, NIP **8992532559**, stacja DW/126/P, Polanowicka 82.
+  **⚠️ Telefon kontaktowy w `rodo.html` to CELOWO `609 995 620` (linia opon), NIE `796 995 620` (SKP).**
+  Decyzja wlasciciela z 2026-09-15. To jedyna strona w serwisie z numerem 609 jako glownym kontaktem —
+  na pozostalych 13 podstronach 609 wystepuje wylacznie przy wulkanizacji. NIE ujednolicac do 796.
+  Tresc opisuje **rzeczywisty** przeplyw danych w aplikacji, nie ogolniki: pola formularza 1:1 z `book.php`,
+  Google Calendar jako odbiorca (grafik = zrodlo prawdy), lista numerow zablokowanych (`rez_phone_blocked`)
+  ujawniona w sekcji o automatyzacji, brak analityki + mapa Google i CDN-y w sekcji cookies.
+  **(b) Checkbox zgody przepisany.** Bylo: „Wyrazam zgode na przetwarzanie moich danych w celu obslugi
+  rezerwacji" — **prawnie bledne**: obsluga rezerwacji to art. 6 ust. 1 lit. b (umowa), a nie zgoda;
+  zgoda jest odwolywalna, wiec deklarowanie jej jako podstawy tworzy fikcje. Jest: potwierdzenie zapoznania
+  sie z informacja + link do `rodo.html`. Komunikat walidacji w `rezerwacja.js` dostosowany.
+  **(c) Sitewide:** link „Ochrona danych (RODO)" w kolumnie „Stacja" `.footer-nav` na **13 stronach**,
+  wpis w `sitemap.xml` (priority 0.2).
+  **⚠️ Pulapka CSS, w ktora wpadlem:** `.rodo-sec` to `<section>` **zagniezdzony** w `<section>`, wiec lapie
+  globalne `section { padding: 7rem 5% }`. Nadpisanie samego `padding-top` NIE wystarcza — zostaje 7rem
+  na dole i 5% po bokach. Trzeba `padding: 3.25rem 0 0`. To samo dotyczy kazdej przyszlej sekcji w sekcji.
+  **⚠️ Druga pulapka:** `.tip-box strong` (czerwien komponentu) ma **identyczna specyficznosc** (0,1,1)
+  co `.rodo-sec strong`, a nowy CSS lezy na koncu pliku, wiec wygrywal i zjadal czerwien. Fix:
+  jawne `.rodo-sec .tip-box strong`. Przy dopisywaniu `.<blok> strong|a|p` na koncu `styles.css` sprawdz,
+  czy nie przykrywasz istniejacego komponentu o tej samej specyficznosci.
+  **⚠️ Trzecia pulapka (zlapana dopiero na produkcyjnym renderze):** `.rodo-tldr li` bylo `display: grid`
+  z kolumnami `0.9rem | 1fr`, zeby ustawic czerwony myslnik obok tekstu. W grid containerze **kazdy element
+  inline staje sie osobnym grid itemem** — `<strong>` wypadal do wlasnego wiersza, a tekst za nim ladowal
+  w anonimowym itemie w kolumnie szerokiej na 0.9rem i lamal sie **po jednym slowie w linii**. Regula:
+  jesli kontener ma w srodku mieszana tresc inline (tekst + `<strong>`/`<a>`), marker rob przez
+  `position: absolute` + `padding-left` (tak jak `.rodo-list li`), NIGDY przez grid/flex.
+  Nowy CSS: prefix `.rodo-`, **na koncu `styles.css`** (patrz pulapka specyficznosci). Cache:
+  `styles.css?v=20260915a` na 13 stronach + `rezerwacja.js?v=20260915a`.
+  **NIEZWERYFIKOWANE — do potwierdzenia przez wlasciciela przed publikacja:** (1) nazwa prawna operatora
+  hostingu (w tekscie ogolne „dostawca hostingu i poczty"); (2) czy dziala **biuro rachunkowe** (jesli nie —
+  usunac z listy odbiorcow); (3) okres przechowywania **rejestru badan technicznych** (celowo opisany jako
+  „przez okres wymagany przepisami", bez liczby). Dokument nie byl konsultowany prawnie.
+  **✅ ROZSTRZYGNIETE — diagnostow ma byc DWOCH. NIE dopisywac trzeciego.** Rejestr SKP (zrzut z BIP)
+  wymienia 3 nazwiska, w tym **Marcina Klemczynskiego DW/D/0222**, ale **Marcin odchodzi ze stacji**
+  (decyzja wlasciciela, 2026-09-15). `o-nas.html` z dwoma profilami (Stefanik + Jarosinski) jest **poprawna**
+  i celowa — nie jest nieaktualna. Jesli w przyszlosci rejestr nadal bedzie pokazywal 3 osoby, to zaleglosc
+  po stronie urzedu, nie blad strony.
 - **2026-08-04 (e)** — **Hero `index.html`: film zastąpiony zdjęciem stacji. Cały scroll-scrub USUNIĘTY.**
   Powód: film `Clean_Smooth_transition.mp4` sterowany scrollem regularnie się zacinał (decyzja właściciela).
   **Co zniknęło:** `Clean_Smooth_transition.mp4` (774 KB), `img/hero-car-poster.webp`, `.hero-video-container`,
