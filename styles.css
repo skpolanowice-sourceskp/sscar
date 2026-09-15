@@ -2939,9 +2939,24 @@ footer a:hover { color: var(--primary-red); }
     padding-bottom: 2.5rem;
     border-bottom: 1px solid var(--border-subtle);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
+    /* 4 stale kolumny zamiast repeat(auto-fit, minmax(200px, 1fr)).
+       auto-fit liczyl liczbe kolumn od szerokosci kontenera, wiec miedzy
+       ~769 a ~930 px robil rozjechany uklad 3+1 (Narzedzia same w drugim
+       rzedzie), a im wezszy kontener, tym ciasniej upakowane kolumny -
+       sasiednie linki zlewaly sie w jeden blok tekstu. */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* Osobny column-gap: odstep w PIONIE moze byc mniejszy niz w POZIOMIE,
+       bo to poziomy odstep rozdziela kolumny wizualnie. */
+    gap: 2rem 2.5rem;
     text-align: left;
+}
+
+/* Element gridu ma domyslnie min-width:auto, wiec dlugi link (np.
+   "Sprawdzenie auta przed zakupem", "Ochrona danych (RODO)") potrafi
+   rozepchnac kolumne ponad jej tor i nachodzic na sasiadke.
+   min-width:0 zdejmuje ten domyslny minimalny rozmiar. */
+.footer-nav-col {
+    min-width: 0;
 }
 
 .footer-nav-col h3 {
@@ -2976,6 +2991,10 @@ footer a:hover { color: var(--primary-red); }
     font-size: 0.9rem;
     line-height: 1.4;
     display: inline-block;
+    /* Domyka zabezpieczenie z min-width:0 - link nie wyjdzie poza kolumne,
+       a bardzo dlugie slowo zostanie zlamane zamiast rozpychac tor. */
+    max-width: 100%;
+    overflow-wrap: break-word;
     transition: color 0.25s, transform 0.25s;
 }
 
@@ -2990,9 +3009,18 @@ footer a:hover { color: var(--primary-red); }
     font-weight: 700;
 }
 
+/* Ponizej ~1024 px cztery kolumny robia sie za ciasne (kazde slowo laduje
+   w osobnej linii), wiec schodzimy na rowny uklad 2x2 zamiast 3+1. */
+@media (max-width: 1024px) {
+    .footer-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem 2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .footer-nav {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1.75rem 1.25rem;
         margin-bottom: 2rem;
         padding-bottom: 2rem;
