@@ -52,7 +52,10 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 ### Witryna statyczna (root)
 - `index.html`, `o-nas.html`, `oferta.html`, `cennik.html`, podstrony usług
   (`badania-techniczne.html`, `klimatyzacja.html`, `geometria-3d.html`,
-  `sprawdzenie-przed-zakupem.html`, `wulkanizacja.html`, …), `dekoder.html`, `guide.html`.
+  `sprawdzenie-przed-zakupem.html`, `wulkanizacja.html`, …), `dekoder.html`, `guide.html`, `rodo.html`.
+- **Blog:** `blog.html` (hub) + wpisy `blog-<slug>.html` **płasko w korzeniu** (NIE w katalogu
+  `blog/` — bez `.htaccess` na serwerze katalog mógłby wystawić listing plików). Prowadzony
+  **ręcznie**; procedura i checklista SEO w `docs/BLOG.md`, szablon w `docs/blog-post-template.html`.
 - `styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
 - `nav.js`, `reviews_data.js`, `dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
 - Zasoby: `Logo-SSCAR.png`, `favicon.png`, `img/` — warianty responsywne zdjęć
@@ -70,6 +73,8 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
   `dane_klima.js` w korzeniu; JSON nie jest wysyłany na serwer (2770 rekordów, ~665 KB oszczędności).
 - `img/_src/` — oryginały zdjęć (23,6 MB) + stare, ręczne konwersje `.webp` (nieużywane przez stronę).
 - `docs/README-rezerwacja-setup.md` (instrukcja wdrożenia rezerwacji), `docs/IDEA.md`.
+- `docs/BLOG.md` — **procedura dodawania wpisu na bloga** (z FB → przepisanie → deploy → GSC)
+  + checklista SEO + pułapki. `docs/blog-post-template.html` — szablon wpisu z `{{PLACEHOLDERAMI}}`.
 
 ### Rezerwacja publiczna
 - `rezerwacja.html` + `rezerwacja.js` — formularz rezerwacji (klient).
@@ -217,6 +222,36 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-15 (b)** — **Blog: `blog.html` + konwencja wpisów, prowadzony RĘCZNIE.**
+  **Decyzja: automatyczny import postów z Facebooka ODRZUCONY** (rozważany: Graph API,
+  użytkownik systemowy w Meta Business, cron na vh.pl). Powód podwójny: (1) przy 2–3 postach
+  miesięcznie ~1 dzień kodu + setup w Meta + doglądanie tokenu zwraca się po latach;
+  (2) **ważniejszy — SEO**: post z FB to dwa zdania, przeniesiony 1:1 jest thin contentem.
+  Wartość powstaje dopiero przy **przepisaniu** posta na tekst pod wyszukiwarkę, czego automat
+  nie zrobi. Surowy post z FB traktujemy jako **materiał źródłowy**. Apka Meta (`sscar`,
+  App ID 1555028076421441, tryb *In development*) **została utworzona** — jeśli kiedyś skala
+  wzrośnie, wystarczy wygenerować token użytkownika systemowego.
+  **Struktura: płasko w korzeniu** — `blog.html` (hub) + `blog-<slug>.html`. NIE katalog `blog/`,
+  bo **na serwerze nie ma `.htaccess`** (wpis 2026-08-04 c), więc katalog bez `index.html` mógłby
+  wystawić listing plików, a dodanie tam `index.html` zdublowałoby hub. W GSC filtruj po `blog-`.
+  **⚠️ Blog linkujemy ze STOPKI (15 stron), NIE z górnego menu.** `nav ul` to `display:flex`
+  **bez zawijania**; obecne 7 pozycji zajmuje ~680 px i między 769 a ~1050 px jest już na styk —
+  ósma pozycja by je przepełniła. Stopka to zresztą dokładnie ten mechanizm, który w sierpniu
+  odblokował crawlowanie 11 podstron. Blog dodany też do `sitemap.xml` (priority 0.7, weekly).
+  **CSS:** blok `.blog-*` (hub) + `.post-*` (treść wpisu) **na końcu `styles.css`** — globalne `h2`
+  ma `text-align:center`, `margin-bottom:4rem` i czerwoną kreskę `::after`, więc `.post-body h2`
+  i `.blog-list h2.blog-card-title` jawnie to zdejmują (`::after { content: none }`).
+  **Dokumentacja: `docs/BLOG.md`** — procedura krok po kroku (materiał → przepisanie → zdjęcia →
+  plik → podpięcie → FTP → „Poproś o zaindeksowanie" w GSC), checklista SEO i lista pułapek.
+  Szablon: `docs/blog-post-template.html` z `{{PLACEHOLDERAMI}}` (kontrola: `grep -o "{{[A-Z_]*}}"`).
+  **Stan: hub jest PUSTY** (blok `.blog-empty`) i **świadomie nie wdrożony** — pusty blog to thin
+  content; wchodzi na produkcję razem z pierwszym wpisem. Cache: `styles.css?v=20260915c` (15 stron).
+  **⚠️ Przy okazji naprawiona stopka — pułapka `min-width` w gridzie.** Element gridu ma domyślnie
+  `min-width: auto`, więc długi link (`Ochrona danych (RODO)` przelało czarę) potrafi **rozepchnąć
+  kolumnę ponad jej tor i nachodzić na sąsiadkę**. Fix: `.footer-nav-col { min-width: 0 }` +
+  `max-width:100%` i `overflow-wrap:break-word` na linkach. Przy okazji `repeat(auto-fit,
+  minmax(200px,1fr))` → **`repeat(4, minmax(0,1fr))`** + breakpoint `≤1024px → 2×2` (auto-fit
+  robił rozjechany układ 3+1 między ~769 a ~930 px). Pamiętaj o tym przy każdym nowym gridzie.
 - **2026-09-15** — **Nowa strona `rodo.html` (obowiazek informacyjny RODO) + poprawiona semantyka zgody w rezerwacji.**
   Formularz rezerwacji zbieral dane bez zadnej informacji o przetwarzaniu — brakowalo realizacji art. 13 RODO.
   **(a) `rodo.html`** — 10 numerowanych sekcji w ukladzie „manual serwisowy": sticky spis tresci (desktop) +

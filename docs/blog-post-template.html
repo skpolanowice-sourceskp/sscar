@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ===== DO PODMIANY =========================================
+         {{TYTUL}}        - tytul wpisu, max ~60 znakow razem z " – SSCAR"
+         {{OPIS}}         - meta description, 140-160 znakow, ze slowem kluczowym
+         {{SLUG}}         - nazwa pliku bez "blog-" i bez ".html", np. wymiana-opon-termin
+         {{DATA_ISO}}     - 2026-09-15
+         {{DATA_PL}}      - 15 września 2026
+         {{ALT_ZDJECIA}}  - opis zdjecia dla czytnikow i Google
+         Sprawdz, czy nie zostal zaden {{ }} : grep -o "{{[A-Z_]*}}" blog-{{SLUG}}.html
+         ============================================================ -->
+
+    <title>{{TYTUL}} – SSCAR</title>
+    <meta name="description" content="{{OPIS}}">
+    <link rel="canonical" href="https://www.sscar.pl/blog-{{SLUG}}.html">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.sscar.pl/blog-{{SLUG}}.html">
+    <meta property="og:title" content="{{TYTUL}} – SSCAR">
+    <meta property="og:description" content="{{OPIS}}">
+    <meta property="og:image" content="https://www.sscar.pl/img/blog-{{SLUG}}-1400.jpg">
+    <meta property="og:image:alt" content="{{ALT_ZDJECIA}}">
+    <meta property="og:locale" content="pl_PL">
+    <meta property="og:site_name" content="SSCAR">
+    <meta property="article:published_time" content="{{DATA_ISO}}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{TYTUL}} – SSCAR">
+    <meta name="twitter:description" content="{{OPIS}}">
+    <meta name="twitter:image" content="https://www.sscar.pl/img/blog-{{SLUG}}-1400.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://www.sscar.pl/"},
+            {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.sscar.pl/blog.html"},
+            {"@type": "ListItem", "position": 3, "name": "{{TYTUL}}", "item": "https://www.sscar.pl/blog-{{SLUG}}.html"}
+          ]
+        },
+        {
+          "@type": "BlogPosting",
+          "headline": "{{TYTUL}}",
+          "description": "{{OPIS}}",
+          "image": "https://www.sscar.pl/img/blog-{{SLUG}}-1400.jpg",
+          "datePublished": "{{DATA_ISO}}",
+          "dateModified": "{{DATA_ISO}}",
+          "inLanguage": "pl-PL",
+          "mainEntityOfPage": {"@type": "WebPage", "@id": "https://www.sscar.pl/blog-{{SLUG}}.html"},
+          "isPartOf": {"@type": "Blog", "name": "Blog SSCAR", "url": "https://www.sscar.pl/blog.html"},
+          "author": {
+            "@type": "Organization",
+            "name": "SSCAR - Stacja Kontroli Pojazdów",
+            "url": "https://www.sscar.pl/"
+          },
+          "publisher": {
+            "@type": "AutoRepair",
+            "name": "SSCAR - Stacja Kontroli Pojazdów",
+            "url": "https://www.sscar.pl/",
+            "telephone": "+48609995620",
+            "email": "skpolanowice@gmail.com",
+            "vatID": "PL8992532559",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "ul. Polanowicka 82",
+              "addressLocality": "Wrocław",
+              "postalCode": "51-180",
+              "addressCountry": "PL"
+            }
+          }
+        }
+      ]
+    }
+    </script>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,900;1,700;1,900&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=20260915c">
+</head>
+<body>
+    <div class="mouse-glow"></div>
+
+    <header>
+        <a href="index.html" class="logo-link">
+            <img src="Logo-SSCAR.png" alt="SSCAR Logo" class="logo-img">
+        </a>
+        <div class="menu-toggle" id="mobile-menu-btn">
+            <span></span><span></span><span></span>
+        </div>
+        <nav id="nav-menu">
+            <ul>
+                <li><a href="rezerwacja.html" class="nav-link nav-cta">Rezerwacja</a></li>
+                <li><a href="o-nas.html" class="nav-link">O nas</a></li>
+                <li><a href="oferta.html" class="nav-link">Oferta</a></li>
+                <li><a href="cennik.html" class="nav-link">Cennik</a></li>
+                <li><a href="dekoder.html" class="nav-link">Dekoder VIN</a></li>
+                <li><a href="klima.html" class="nav-link">Baza Klimatyzacji</a></li>
+                <li><a href="index.html#kontakt" class="nav-link">Kontakt</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <nav class="breadcrumb">
+        <a href="index.html">Strona główna</a>
+        <span>›</span>
+        <a href="blog.html">Blog</a>
+        <span>›</span>
+        {{TYTUL}}
+    </nav>
+
+    <div class="page-hero animate-on-scroll">
+        <h1>{{TYTUL}}</h1>
+    </div>
+
+    <section class="animate-on-scroll">
+        <div class="post-wrap">
+
+            <div class="post-meta">
+                <time class="post-meta-date" datetime="{{DATA_ISO}}">{{DATA_PL}}</time>
+                <span>SSCAR &middot; Wrocław</span>
+            </div>
+
+            <!-- LEAD: 2-3 zdania. Odpowiedz na pytanie czytelnika OD RAZU,
+                 nie buduj napiecia. Google czesto bierze stad snippet. -->
+            <p class="post-lead">{{LEAD}}</p>
+
+            <!-- ZDJECIE GLOWNE. Warianty robi tools/optimize_images.py.
+                 loading="eager" - to zdjecie jest nad zalamaniem strony. -->
+            <figure class="post-figure">
+                <img src="img/blog-{{SLUG}}-1400.jpg"
+                     srcset="img/blog-{{SLUG}}-800.webp 800w, img/blog-{{SLUG}}-1400.webp 1400w"
+                     sizes="(max-width: 760px) 100vw, 760px"
+                     alt="{{ALT_ZDJECIA}}" width="1400" height="875" loading="eager">
+                <figcaption>{{PODPIS_ZDJECIA}}</figcaption>
+            </figure>
+
+            <div class="post-body">
+
+                <p>Pierwszy akapit tresci.</p>
+
+                <h2>Pierwszy srodtytul</h2>
+                <p>Tresc. Wpleć naturalnie link do powiazanej uslugi, np.
+                   <a href="badania-techniczne.html">badania technicznego</a>.</p>
+
+                <h2>Drugi srodtytul</h2>
+                <ul>
+                    <li>Punkt pierwszy</li>
+                    <li>Punkt drugi</li>
+                </ul>
+
+                <h2>Ile to kosztuje</h2>
+                <p>Aktualne stawki znajdziesz w <a href="cennik.html">cenniku</a>,
+                   a termin zarezerwujesz <a href="rezerwacja.html">online</a>.</p>
+
+            </div>
+
+            <a href="blog.html" class="post-back">← Wszystkie wpisy</a>
+
+        </div>
+    </section>
+
+    <!-- ZOBACZ TEZ - reuse komponentu .nav-index, zero nowego CSS.
+         Wskaz 2-3 NAJBLIZSZE tematycznie podstrony uslugowe. -->
+    <section class="animate-on-scroll">
+        <h2>Zobacz też</h2>
+        <nav class="nav-index" aria-label="Powiązane usługi">
+            <a href="badania-techniczne.html" class="nav-index-item">
+                <span class="nav-index-num">01</span>
+                <span class="nav-index-body">
+                    <span class="nav-index-title">Badania techniczne</span>
+                    <span class="nav-index-desc">Przegląd rejestracyjny aut osobowych, ciężarowych, taxi, motocykli i LPG</span>
+                </span>
+                <span class="nav-index-arrow" aria-hidden="true">→</span>
+            </a>
+            <a href="cennik.html" class="nav-index-item">
+                <span class="nav-index-num">02</span>
+                <span class="nav-index-body">
+                    <span class="nav-index-title">Cennik usług</span>
+                    <span class="nav-index-desc">Przejrzyste ceny wszystkich usług stacji</span>
+                </span>
+                <span class="nav-index-arrow" aria-hidden="true">→</span>
+            </a>
+        </nav>
+    </section>
+
+    <div class="cta-section">
+        <h3>Umów wizytę w SSCAR</h3>
+        <p>Rezerwacja online zajmuje minutę. Możesz też po prostu zadzwonić.</p>
+        <div class="btn-group" style="animation:none; justify-content:center;">
+            <a href="rezerwacja.html" class="btn"><i class="fas fa-calendar-check"></i>&nbsp; Rezerwacja online</a>
+            <a href="tel:+48796995620" class="btn btn-outline"><i class="fas fa-phone"></i>&nbsp; 796 995 620</a>
+        </div>
+    </div>
+
+    <footer>
+        <nav class="footer-nav" aria-label="Mapa serwisu">
+            <div class="footer-nav-col">
+                <h3>Badania i diagnostyka</h3>
+                <ul>
+                    <li><a href="badania-techniczne.html">Badania techniczne Wrocław</a></li>
+                    <li><a href="badania-powypadkowe.html">Badania powypadkowe</a></li>
+                    <li><a href="sprawdzenie-przed-zakupem.html">Sprawdzenie auta przed zakupem</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Serwis</h3>
+                <ul>
+                    <li><a href="geometria-3d.html">Geometria 3D i zbieżność kół</a></li>
+                    <li><a href="klimatyzacja.html">Serwis klimatyzacji</a></li>
+                    <li><a href="wulkanizacja.html">Wulkanizacja i wymiana opon</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Stacja</h3>
+                <ul>
+                    <li><a href="oferta.html">Oferta</a></li>
+                    <li><a href="cennik.html">Cennik usług</a></li>
+                    <li><a href="o-nas.html">O nas</a></li>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="index.html#kontakt">Kontakt</a></li>
+                    <li><a href="rodo.html">Ochrona danych (RODO)</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav-col">
+                <h3>Narzędzia</h3>
+                <ul>
+                    <li><a href="rezerwacja.html">Rezerwacja online</a></li>
+                    <li><a href="dekoder.html">Dekoder VIN i DAM/ORGA</a></li>
+                    <li><a href="klima.html">Baza klimatyzacji</a></li>
+                </ul>
+            </div>
+        </nav>
+        <p>Potrzebujesz takiej strony dla swojej firmy?<br>
+            Zadzwoń: <a href="tel:+48608078802">608 078 802</a>
+            lub napisz <a href="mailto:graf.m.jar@gmail.com">graf.m.jar@gmail.com</a> &ndash; Michał Jarosiński
+        </p>
+    </footer>
+
+    <script src="nav.js?v=20260727a"></script>
+    <script>initPage();</script>
+</body>
+</html>
