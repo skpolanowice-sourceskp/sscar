@@ -46,6 +46,10 @@ SOURCES = [
     # Hero index.html – budynek stacji o świcie. Oryginał ma 1537 px szerokości,
     # więc wariant 2200 zostanie pominięty (nie powiększamy).
     ("stacja-sscar.png", "hero-stacja"),
+    # Blog: geometria na golej ramie (wpis z 2026-09-04). Zdjecia z hali,
+    # 1. poziome 2048x1536, 2. pionowe 1536x2048 - wariant 2200 sie pominie.
+    ("blog-geometria-kol-na-golej-ramie.jpg", "blog-geometria-kol-na-golej-ramie"),
+    ("blog-geometria-kol-na-golej-ramie-2.jpg", "blog-geometria-kol-na-golej-ramie-2"),
 ]
 
 # Warianty hero: (plik źródłowy, slug, ile procent wysokości zostawić od góry).
