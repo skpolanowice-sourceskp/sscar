@@ -149,7 +149,7 @@ rezerwacji online dla wybranego numeru). Logowanie jednym wspólnym hasłem.
    Wynik wklej do `config.php` jako `'admin_pass_hash' => '...'` (wzór w `config.sample.php`).
 
 2. **Wgraj pliki** (FTP vh.pl, jak resztę):
-   - `panel.html`, `panel.css`, `panel.js`, `panel-calendar.js`, `panel-calendar-edit.js`, `panel-clients.js` (katalog strony),
+   - `panel.html` (korzeń), `css/panel.css`, `js/panel.js`, `js/panel-calendar.js`, `js/panel-calendar-edit.js`, `js/panel-clients.js`,
    - `reservations/admin/` (cały katalog z `.htaccess`),
    - zaktualizowane `reservations/lib.php`, `reservations/google.php`, `reservations/book.php`.
 

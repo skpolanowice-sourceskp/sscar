@@ -1,6 +1,6 @@
 # Blog SSCAR — jak dodać wpis
 
-> Stan na: **2026-09-15**. Blog prowadzimy **ręcznie**, świadomie — patrz „Dlaczego nie automat".
+> Stan na: **2026-09-16**. Blog prowadzimy **ręcznie**, świadomie — patrz „Dlaczego nie automat".
 
 ---
 
@@ -64,8 +64,10 @@ Post z FB rozwijamy do **minimum 400 słów**. Reguły:
 2. Dopisz wpis do `SOURCES` w `tools/optimize_images.py` (**nie** do `HERO_SOURCES` —
    tamten tryb przycina dolny pas kadru).
 3. Z korzenia repo: `python tools/optimize_images.py`
-4. **`alt` jest obowiązkowy** i ma opisywać zdjęcie, nie upychać fraz.
-5. `width`/`height` w `<img>` zostaw — bez nich strona skacze przy ładowaniu (CLS).
+4. **Zdjęcie pionowe** (3:4) dostaje `<figure class="post-figure is-portrait">` — bez tej klasy
+   rozpycha się na ~1000 px wysokości w kolumnie tekstu.
+5. **`alt` jest obowiązkowy** i ma opisywać zdjęcie, nie upychać fraz.
+6. `width`/`height` w `<img>` zostaw — bez nich strona skacze przy ładowaniu (CLS).
 
 ### Krok 4 — plik wpisu
 1. Skopiuj `docs/blog-post-template.html` → `blog-<slug>.html` **do korzenia**.
@@ -88,7 +90,7 @@ Wgraj, zachowując ścieżki:
 - `blog.html`
 - `sitemap.xml`
 - `img/blog-<slug>-*` (wszystkie warianty)
-- `styles.css` + **wszystkie** strony z podbitym `?v=` — **tylko jeśli ruszałeś CSS**
+- `css/styles.css` + **wszystkie** strony z podbitym `?v=` — **tylko jeśli ruszałeś CSS**
 
 Hasło FTP czytaj ze `sftp.json` do zmiennej, nigdy inline (patrz CLAUDE.md §7).
 Po wgraniu zweryfikuj MD5 i odpytaj produkcję **po HTTP** — HTTPS przechodzi przez
@@ -121,14 +123,14 @@ Sam deploy nie wymusza crawla.
 
 ## 5. Pułapki specyficzne dla tego projektu
 
-- **Globalne `h2` psuje nagłówki w treści.** `styles.css` daje każdemu `h2`
+- **Globalne `h2` psuje nagłówki w treści.** `css/styles.css` daje każdemu `h2`
   `text-align:center`, `margin-bottom:4rem` i **czerwoną kreskę `::after`**. Dlatego blok
-  `.blog-*`/`.post-*` siedzi **na końcu** `styles.css` i jawnie te trzy rzeczy zdejmuje
+  `.blog-*`/`.post-*` siedzi **na końcu** `css/styles.css` i jawnie te trzy rzeczy zdejmuje
   (`.post-body h2::after { content: none }`). Jeśli dopiszesz nowy nagłówek w treści —
   używaj `.post-body h2`/`h3`, nie własnych klas.
 - **Media query nie podnosi specyficzności.** Poprawka w `@media` umieszczona **przed**
   regułą bazową jest martwym kodem. Wszystko nowe dopisuj na końcu pliku.
-- **Cache.** Ruszasz `styles.css` → podbij `?v=` na **wszystkich** stronach, łącznie z nowymi
+- **Cache.** Ruszasz `css/styles.css` → podbij `?v=` na **wszystkich** stronach, łącznie z nowymi
   wpisami. Nie ruszasz CSS → nie podbijaj niczego.
 - **Nie wgrywaj** `docs/`, `tools/`, `img/_src/`, `*.md` — są na liście `ignore` w `sftp.json`.
 - **Górne menu jest pełne.** `nav ul` to `display:flex` bez zawijania; 7 pozycji zajmuje

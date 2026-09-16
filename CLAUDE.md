@@ -14,9 +14,9 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 Strona stacji kontroli pojazdów **SSCAR** (Wrocław, ul. Polanowicka 82, stacja **DW/126/P**) + system **rezerwacji online**
 + **panel obsługi (admin)**. Trzy warstwy w jednym repo:
 
-1. **Witryna statyczna** — landing i podstrony usług (HTML + wspólny `styles.css`).
+1. **Witryna statyczna** — landing i podstrony usług (HTML + wspólny `css/styles.css`).
 2. **Rezerwacja online** — publiczny formularz (`rezerwacja.html`) → backend PHP w `reservations/`.
-3. **Panel admina** — `panel.html` + `panel*.js/.css` (root) → backend w `reservations/admin/`.
+3. **Panel admina** — `panel.html` (root) + `js/panel*.js` + `css/panel.css` → backend w `reservations/admin/`.
 
 **Źródło prawdy grafiku = Google Calendar.** Dane rezerwacji i profile klientów trzymamy
 dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
@@ -56,8 +56,11 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - **Blog:** `blog.html` (hub) + wpisy `blog-<slug>.html` **płasko w korzeniu** (NIE w katalogu
   `blog/` — bez `.htaccess` na serwerze katalog mógłby wystawić listing plików). Prowadzony
   **ręcznie**; procedura i checklista SEO w `docs/BLOG.md`, szablon w `docs/blog-post-template.html`.
-- `styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
-- `nav.js`, `reviews_data.js`, `dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
+- `css/styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
+- `js/nav.js`, `js/reviews_data.js`, `js/dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
+- **⚠️ Katalogi `css/` i `js/` (od 2026-09-16).** Pliki `.html` zostają **PŁASKO w korzeniu** —
+  to zaindeksowane URL-e, a bez `.htaccess` na serwerze nie da się zrobić przekierowań 301.
+  Przenoszenie assetów jest bezpieczne (ich URL-e nie są w indeksie), przenoszenie stron NIE JEST.
 - Zasoby: `Logo-SSCAR.png`, `favicon.png`, `img/` — warianty responsywne zdjęć
   (hero `index.html` = `img/hero-stacja-*`; od 2026-08-04 zdjęcie, nie film). **`Logo-SSCAR.png` i `favicon.png` muszą zostać w korzeniu:**
   wskazują na nie bezwzględne `og:image` na 13 podstronach (przeniesienie zerwałoby podglądy w social media).
@@ -70,14 +73,14 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
   (`python tools/optimize_images.py`); skrypt liczy ścieżki od katalogu nadrzędnego. Flaga `--auto`
   przerabia hurtem nowe pliki z `img/_src/`, pomijając te z listy `SOURCES` (po nazwie bez rozszerzenia).
 - `tools/fix_encoding.py` + `tools/dane_klima.json` — **źródło** bazy klimatyzacji. Skrypt generuje
-  `dane_klima.js` w korzeniu; JSON nie jest wysyłany na serwer (2770 rekordów, ~665 KB oszczędności).
+  `js/dane_klima.js`; JSON nie jest wysyłany na serwer (2770 rekordów, ~665 KB oszczędności).
 - `img/_src/` — oryginały zdjęć (23,6 MB) + stare, ręczne konwersje `.webp` (nieużywane przez stronę).
 - `docs/README-rezerwacja-setup.md` (instrukcja wdrożenia rezerwacji), `docs/IDEA.md`.
 - `docs/BLOG.md` — **procedura dodawania wpisu na bloga** (z FB → przepisanie → deploy → GSC)
   + checklista SEO + pułapki. `docs/blog-post-template.html` — szablon wpisu z `{{PLACEHOLDERAMI}}`.
 
 ### Rezerwacja publiczna
-- `rezerwacja.html` + `rezerwacja.js` — formularz rezerwacji (klient).
+- `rezerwacja.html` + `js/rezerwacja.js` — formularz rezerwacji (klient).
 - `reservations/availability.php` — wolne terminy (freeBusy z Google) dla formularza. Dla usług z polami
   `spacing`+`match` (klimatyzacja) dodatkowo wygasza sloty w oknie ±`spacing` min wokół istniejących klim –
   wykrywanych z **eventów Google** po tytule (`gcal_list_events` + `rez_match_event_starts`), nie z bazy.
@@ -115,9 +118,9 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
   `google_event_id` i blokady. NIE usuwać z serwera.
 
 ### Panel admina — frontend (root)
-- `panel.html` — szkielet; ładuje 4 skrypty + `panel.css`. **Cache-busting przez `?v=YYYYMMDDx`** — bumpuj po każdej zmianie panelu.
+- `panel.html` — szkielet (w korzeniu); ładuje 4 skrypty z `js/` + `css/panel.css`. **Cache-busting przez `?v=YYYYMMDDx`** — bumpuj po każdej zmianie panelu.
 - `panel.js` — powłoka: boot, logowanie, router widoków, `window.PanelAPI.api()` (wstrzykuje CSRF, `credentials: same-origin`, serializuje `json`).
-- `panel.css` — self-contained, prefix `pnl-`, tokeny marki (ciemny + czerwień). NIE w `styles.css`.
+- `css/panel.css` — self-contained, prefix `pnl-`, tokeny marki (ciemny + czerwień). NIE w `css/styles.css`.
 - `panel-calendar.js` — widok Kalendarz: siatka 10-min, render eventów, szuflada szczegółów. Eksportuje `window.PanelCalendarInternals`.
 - `panel-calendar-edit.js` — tworzenie/edycja/przeciąganie/rozciąganie/usuwanie. `window.PanelCalendarEdit`.
 - `panel-clients.js` — widok Klienci: lista/szukaj + **ręczne dodawanie** (`+ Nowy`), profil, **edycja danych**
@@ -181,10 +184,14 @@ pola `rez_bookings` i wydarzenia Google w poszukiwaniu numeru telefonu (`rez_ext
 - Zwykłe **FTP**; dane logowania w `.vscode/sftp.json` (host `ftp.vh16333.vh.net.pl`, remotePath `/`).
 - Wgrywaj zmienione pliki **zachowując ścieżki** (np. `reservations/admin/event.php`).
 - **Hasła nie wpisuj inline** — czytaj ze `sftp.json` do zmiennej PowerShell, np. `WebClient.UploadFile($remote,"STOR",$local)`.
-- Po zmianie `panel*.js`/`panel.css` **podbij `?v=` w `panel.html`** (inaczej zostanie stary cache).
+- Po zmianie `js/panel*.js`/`css/panel.css` **podbij `?v=` w `panel.html`** (inaczej zostanie stary cache).
 - `config.php` żyje tylko na serwerze (gitignored) — nie nadpisuj go deployem.
 - **NIE wgrywaj** `tools/`, `docs/`, `img/_src/`, `*.md`, `*.py`, `.vscode/`, `.git/` — są na liście
-  `ignore` w `sftp.json`. Samo `img/` (warianty) **wgrywaj**, to zasoby produkcyjne.
+  `ignore` w `sftp.json`. Samo `img/` (warianty) oraz `css/` i `js/` **wgrywaj**, to zasoby produkcyjne.
+- **⚠️ Kasowanie plików z serwera: nazwy spoza ASCII psuje .NET.** `FtpWebRequest` mangluje ścieżki
+  z polskimi znakami i zwraca 550 (pliku „nie ma", choć jest). Do takich operacji użyj **`ftplib`
+  z Pythona** z `ftp.encoding = 'utf-8'` — działa. (Serwer nie zna `OPTS UTF8 ON`, ale nazwy trzyma
+  w UTF-8.)
 
 ---
 
@@ -222,6 +229,29 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-16** — **Porządki: katalogi `css/` i `js/`, 30 MB śmieci skasowane z serwera.**
+  **⚠️ Pliki `.html` ZOSTAJĄ PŁASKO W KORZENIU — nie przenosić ich do podkatalogów.** To zaindeksowane
+  URL-e, a na serwerze **nie ma `.htaccess`** (wpis 2026-08-04 c), więc nie da się wystawić przekierowań
+  301. Przeniesienie = trwałe 404 na każdej stronie i utrata pracy z 2026-08-04, która dopiero wepchnęła
+  11 podstron do indeksu. Assety to inna sprawa — ich URL-e nie są w indeksie, więc je wolno przenosić.
+  **Nowa struktura:** `css/` ← `styles.css`, `panel.css`; `js/` ← `nav.js`, `reviews_data.js`,
+  `rezerwacja.js`, `dane_klima.js`, `panel*.js` (8 szt.). Odwołania poprawione na 17 stronach.
+  `?v=` NIE bumpowane — zmiana ścieżki sama unieważnia cache. `dane_google/` (eksporty z GSC)
+  → `docs/dane_google/`, bo **nie było na liście `ignore`** i przy zwykłej synchronizacji FTP
+  wylądowałoby na produkcji.
+  **Sprawdzone przed przenosinami (i warte sprawdzenia następnym razem):** (a) `url()` w CSS —
+  `styles.css` ma tylko absolutny `@import` fontów, więc zejście o poziom niżej nic nie psuje;
+  (b) `fetch()` w JS (`js/rezerwacja.js`, `js/panel.js` → `reservations/...`) rozwiązuje się względem
+  **dokumentu**, a dokumenty zostały w korzeniu — działa bez zmian.
+  **Skasowane z serwera (24 pliki, ~30 MB):** 12 obrazów z maja (6 oryginałów `.jpg` + 6 starych
+  ręcznych `.webp`), które zostały po reorganizacji repo z 2026-07-27; `Clean_Smooth_transition.mp4`
+  (1,0 MB, osierocony od 2026-08-04 e); `dane_klima.json` (0,68 MB, klient ładuje tylko `.js`);
+  10 starych kopii JS/CSS z korzenia. Każdy plik przed usunięciem zweryfikowany jako nieużywany
+  (grep po `*.html`, `css/`, `js/`, `reservations/`). Korzeń serwera: **47 MB → 17,4 MB**.
+  Lokalnie usunięte 6 starych ręcznych `.webp` z `img/_src/` (2,9 MB); **oryginały `.jpg`/`.png`
+  ZOSTAJĄ** — to źródła dla `optimize_images.py`, nigdy nie trafiają na FTP.
+  Osierocony `blog-...-2-1400.jpg` NIE został skasowany, tylko **wykorzystany** jako `src` fallback
+  przy zdjęciu pionowym (skrypt i tak generuje go przy każdym uruchomieniu).
 - **2026-09-15 (b)** — **Blog: `blog.html` + konwencja wpisów, prowadzony RĘCZNIE.**
   **Decyzja: automatyczny import postów z Facebooka ODRZUCONY** (rozważany: Graph API,
   użytkownik systemowy w Meta Business, cron na vh.pl). Powód podwójny: (1) przy 2–3 postach
@@ -244,8 +274,13 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
   **Dokumentacja: `docs/BLOG.md`** — procedura krok po kroku (materiał → przepisanie → zdjęcia →
   plik → podpięcie → FTP → „Poproś o zaindeksowanie" w GSC), checklista SEO i lista pułapek.
   Szablon: `docs/blog-post-template.html` z `{{PLACEHOLDERAMI}}` (kontrola: `grep -o "{{[A-Z_]*}}"`).
-  **Stan: hub jest PUSTY** (blok `.blog-empty`) i **świadomie nie wdrożony** — pusty blog to thin
-  content; wchodzi na produkcję razem z pierwszym wpisem. Cache: `styles.css?v=20260915c` (15 stron).
+  **Stan: WDROŻONE 2026-09-16** razem z pierwszym wpisem (hub celowo nie poszedł na produkcję pusty —
+  pusty blog to thin content). Cache: `styles.css?v=20260915c` (16 stron). Pierwszy wpis:
+  `blog-geometria-kol-na-golej-ramie.html` — geometria 3D na ramie Land Cruisera bez nadwozia,
+  materiałem źródłowym był post z FB z 2026-09-04 (3 zdania → 537 słów). Blok `.blog-empty` w
+  `blog.html` został usunięty; wzorzec kafelka został jako komentarz HTML nad listą.
+  **Zdjęcia pionowe:** `.post-figure.is-portrait` ogranicza szerokość do 480 px — bez tej klasy
+  zdjęcie 3:4 rozpycha się na ~1000 px wysokości w kolumnie tekstu.
   **⚠️ Przy okazji naprawiona stopka — pułapka `min-width` w gridzie.** Element gridu ma domyślnie
   `min-width: auto`, więc długi link (`Ochrona danych (RODO)` przelało czarę) potrafi **rozepchnąć
   kolumnę ponad jej tor i nachodzić na sąsiadkę**. Fix: `.footer-nav-col { min-width: 0 }` +
