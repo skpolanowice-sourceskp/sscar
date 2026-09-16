@@ -3717,3 +3717,46 @@ h2.table-title::after { content: none; display: none; }
     .blog-card:hover,
     .blog-card:focus-visible { transform: none; }
 }
+
+/* ============================================================
+   NAGLOWEK — zageszczenie menu w srednich szerokosciach (od 2026-09-16)
+   `nav ul` to display:flex BEZ zawijania, wiec pozycje nie schodza do
+   drugiej linii tylko wypychaja sie poza naglowek. Przy 8 pozycjach
+   (doszedl Blog) i logo o max-height 160 px menu nie miescilo sie
+   miedzy 769 a ~1200 px — a przy 7 pozycjach bylo tam ciasne juz wczesniej,
+   bo w tym zakresie NIE BYLO ZADNEGO breakpointu (mobilne menu wchodzi
+   dopiero <=768 px).
+   Bloki sa NA KONCU pliku: media query nie podnosi specyficznosci, wiec
+   musza stac PO bazowych regulach `nav ul li a` (~linia 134).
+   ============================================================ */
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    header {
+        padding: 0 3%;
+        gap: 1rem;
+    }
+
+    .logo-img { max-height: 110px; }
+
+    nav ul li { margin-left: 1rem; }
+
+    nav ul li a {
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+
+    nav ul li a.nav-cta { padding: 0.5rem 0.9rem; }
+}
+
+@media (min-width: 769px) and (max-width: 980px) {
+    .logo-img { max-height: 88px; }
+
+    nav ul li { margin-left: 0.7rem; }
+
+    nav ul li a {
+        font-size: 0.74rem;
+        letter-spacing: 0.3px;
+    }
+
+    nav ul li a.nav-cta { padding: 0.45rem 0.75rem; }
+}

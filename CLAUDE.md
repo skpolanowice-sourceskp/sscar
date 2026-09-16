@@ -57,6 +57,30 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
   `blog/` — bez `.htaccess` na serwerze katalog mógłby wystawić listing plików). Prowadzony
   **ręcznie**; procedura i checklista SEO w `docs/BLOG.md`, szablon w `docs/blog-post-template.html`.
 - `css/styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
+> ### ⚠️ REGUŁA: nawigacja MUSI być identyczna na wszystkich stronach — header **i** stopka
+>
+> Nowa podstrona = dopisanie linku w **dwóch** miejscach na **każdej** stronie: górne menu
+> (`nav#nav-menu`) oraz stopka (`.footer-nav`). Nigdy w jednym bez drugiego.
+>
+> - Górne menu: `<li><a href="X.html" class="nav-link">…</a></li>` — **klasa `nav-link`
+>   jest obowiązkowa**. Bez niej `nav.js` nie zamknie menu mobilnego po kliknięciu.
+> - Bieżąca strona: `class="nav-link active"` w headerze, `aria-current="page"` w stopce.
+> - **⚠️ Pułapka przy `sed` po `*.html`:** wzorzec `href="o-nas.html"…` trafia ZARÓWNO
+>   w header, jak i w stopkę. Rozróżniaj je po obecności `class="nav-link` (header)
+>   kontra jej braku (stopka) — inaczej wstawisz pozycję dwa razy albo nie tam, gdzie trzeba.
+> - Kontrola przed deployem (nie powinna nic wypisać):
+>   ```bash
+>   for f in *.html; do grep -q 'id="nav-menu"' "$f" || continue
+>     h=$(awk '/<nav id="nav-menu">/,/<\/nav>/' "$f" | grep -c '<li>')
+>     s=$(awk '/<nav class="footer-nav"/,/<\/nav>/' "$f" | grep -c '<li>')
+>     [ "$h" -eq 8 ] && [ "$s" -eq 15 ] || echo "$f: header=$h stopka=$s"
+>   done
+>   ```
+>   (8 i 15 to stan na 2026-09-16 — aktualizuj te liczby przy każdej nowej pozycji.)
+> - **Skąd ta reguła:** 2026-09-16 Blog trafił do stopki na 16 stronach, a do headera tylko
+>   na `o-nas.html` — `sed` dopasowywał `class="nav-link"`, a tam link ma `class="nav-link active"`.
+>   Menu wyglądało inaczej na różnych podstronach.
+
 - `js/nav.js`, `js/reviews_data.js`, `js/dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
 - **⚠️ Katalogi `css/` i `js/` (od 2026-09-16).** Pliki `.html` zostają **PŁASKO w korzeniu** —
   to zaindeksowane URL-e, a bez `.htaccess` na serwerze nie da się zrobić przekierowań 301.
@@ -229,6 +253,22 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-16 (b)** — **Blog w górnym menu na wszystkich stronach + brakujący breakpoint nagłówka.**
+  **Błąd do protokołu:** przy dodawaniu bloga (2026-09-15 b) link trafił do stopki na 16 stronach,
+  ale do **headera tylko na `o-nas.html`** — czyszczący `awk` dopasowywał `class="nav-link"`, a tam
+  link „O nas" ma `class="nav-link active"`, więc go ominął. Dodatkowo ta wstawka **nie miała klasy
+  `nav-link`**, przez co `nav.js` nie zamykał menu mobilnego po kliknięciu. Stąd nowa **REGUŁA
+  o synchronizacji header↔stopka w sekcji 3** — czytaj ją przed dodaniem jakiejkolwiek podstrony.
+  **Zmiana decyzji z 2026-09-15 (b):** wtedy Blog trafił świadomie tylko do stopki, bo menu nie
+  mieściło ósmej pozycji. Teraz jest w **obu** miejscach, a problem z szerokością rozwiązany u źródła.
+  **⚠️ Odkrycie przy okazji: między 769 a 1200 px NIE BYŁO ŻADNEGO breakpointu nagłówka** (mobilne
+  menu wchodzi dopiero ≤768 px), więc menu było tam ciasne **już przy siedmiu pozycjach** — logo ma
+  `max-height: 160px` (≈224 px szerokości przy proporcji 1.4:1), co przy ~810 px treści zostawiało
+  nawigacji ~560 px na ~680 px potrzebnych. Dwa nowe bloki **na końcu `css/styles.css`**:
+  `769–1200 px` (logo 110 px, `margin-left` 1rem, font 0.8rem, `padding: 0 3%`) i `769–980 px`
+  (logo 88 px, `margin-left` 0.7rem, font 0.74rem). Media query NIE podnosi specyficzności, więc
+  muszą stać PO bazowych `nav ul li a` — stąd koniec pliku.
+  Cache: `css/styles.css?v=20260916a` (16 stron + szablon wpisu).
 - **2026-09-16** — **Porządki: katalogi `css/` i `js/`, 30 MB śmieci skasowane z serwera.**
   **⚠️ Pliki `.html` ZOSTAJĄ PŁASKO W KORZENIU — nie przenosić ich do podkatalogów.** To zaindeksowane
   URL-e, a na serwerze **nie ma `.htaccess`** (wpis 2026-08-04 c), więc nie da się wystawić przekierowań
