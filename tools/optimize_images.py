@@ -62,6 +62,18 @@ HERO_SOURCES = [
 
 HERO_WIDTHS = [1200, 1900, 2600]
 
+# Miniatury do listy wzorcow zuzycia na geometria-3d.html. Wyswietlaja sie
+# w kolumnie 150 px, wiec 800 px webp starcza z zapasem na ekrany 2x -
+# warianty 1400/2200 byłyby czystym balastem na serwerze.
+THUMB_SOURCES = [
+    ("wear/wear-pilowanie.jpg", "wear-pilowanie"),
+    ("wear/wear-krawedz-wewnetrzna.jpg", "wear-krawedz-wewnetrzna"),
+    ("wear/wear-krawedz-zewnetrzna.jpg", "wear-krawedz-zewnetrzna"),
+    ("wear/wear-oba-barki.jpg", "wear-oba-barki"),
+    ("wear/wear-srodek.jpg", "wear-srodek"),
+]
+THUMB_WIDTH = 800
+
 
 def slugify(name):
     """Nazwa pliku -> bezpieczny slug ASCII (ą->a, spacje->myślniki)."""
@@ -103,6 +115,21 @@ def variants(src_path, slug):
                 written += os.path.getsize(jpg_path)
 
     return written, skipped
+
+
+def thumb_variants(src_path, slug):
+    """Jeden wariant webp o szerokosci THUMB_WIDTH. Zwraca zapisane bajty."""
+    with Image.open(src_path) as img:
+        if img.mode in ("RGBA", "P", "LA"):
+            img = img.convert("RGB")
+
+        target_w = min(THUMB_WIDTH, img.width)
+        target_h = round(img.height * target_w / img.width)
+        resized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+
+        out = os.path.join(OUT_DIR, f"{slug}-{THUMB_WIDTH}.webp")
+        resized.save(out, "WEBP", quality=WEBP_QUALITY, method=6)
+        return os.path.getsize(out)
 
 
 def hero_variants(src_path, slug, keep_top):
@@ -156,6 +183,7 @@ def collect():
 
         handled = {stem(name) for name, _ in SOURCES}
         handled |= {stem(name) for name, _, _ in HERO_SOURCES}
+        handled |= {stem(name) for name, _ in THUMB_SOURCES}
         for filename in sorted(os.listdir(SRC_DIR)):
             if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
                 continue
@@ -210,6 +238,19 @@ def main():
         total_out += written
         print(f"  {filename} -> {slug}-*  kadr {w}x{h}"
               f" (górne {keep_top:.0%})  {written/1024/1024:.2f}MB")
+
+    for filename, slug in THUMB_SOURCES:
+        src_path = os.path.join(SRC_DIR, filename)
+        if not os.path.exists(src_path):
+            print(f"  pominieto miniature (brak pliku): {filename}")
+            continue
+        try:
+            written = thumb_variants(src_path, slug)
+        except Exception as exc:
+            print(f"  BLAD miniatury {filename}: {exc}")
+            continue
+        total_out += written
+        print(f"  {filename} -> {slug}-{THUMB_WIDTH}.webp  {written/1024:.0f}KB")
 
     if total_src:
         print(f"\nŹródła: {total_src/1024/1024:.2f}MB"

@@ -10,3 +10,9 @@ __pycache__/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# --- Wyjscie atrapy canvas (tools/canvas_harness.js) ---
+tools/check.js
+tools/ops.json
+tools/_*.json
+tools/out_*.png

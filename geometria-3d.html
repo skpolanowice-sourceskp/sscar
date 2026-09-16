@@ -102,27 +102,23 @@
     <p class="hero-tagline">Precyzyjne ustawienie zbieżności i kątów kół z użyciem nowoczesnego sprzętu 3D. Specjalizujemy się w zawieszeniach wielowahaczowych i autach sportowych.</p>
 </div>
 
-<!-- Stats -->
-<section style="padding-bottom: 2rem;">
-    <div class="stats-row animate-on-scroll">
-        <div class="stat-block">
-            <div class="stat-number">150<span style="font-size:1.5rem">zł</span></div>
-            <div class="stat-label">pomiar<br>(każde auto)</div>
-        </div>
-        <div class="stat-block">
-            <div class="stat-number">4</div>
-            <div class="stat-label">koła mierzone<br>jednocześnie</div>
-        </div>
-        <div class="stat-block">
-            <div class="stat-number">0,01°</div>
-            <div class="stat-label">dokładność<br>pomiaru</div>
-        </div>
-
+<!-- Spis sekcji (sticky) -->
+<nav class="secnav" aria-label="Spis sekcji na tej stronie">
+    <div class="secnav-inner">
+        <span class="secnav-legend">Na tej stronie</span>
+        <ul class="secnav-list">
+            <li><a href="#dlaczego"><span class="secnav-num">01</span>Dlaczego</a></li>
+            <li><a href="#kiedy"><span class="secnav-num">02</span>Kiedy zrobić</a></li>
+            <li><a href="#jak-pracujemy"><span class="secnav-num">03</span>Jak pracujemy</a></li>
+            <li><a href="#cennik"><span class="secnav-num">04</span>Cennik</a></li>
+            <li><a href="#geo-lab"><span class="secnav-num">05</span>Laboratorium</a></li>
+        </ul>
+        <a class="secnav-cta" href="#umow">Umów termin</a>
     </div>
-</section>
+</nav>
 
 <!-- Dlaczego ważna -->
-<section class="animate-on-scroll">
+<section class="animate-on-scroll" id="dlaczego">
     <h2>Dlaczego geometria jest tak ważna?</h2>
     <p class="section-subtitle">Źle ustawione koła to nie tylko szybsze zużycie opon – to realne zagrożenie bezpieczeństwa i wyższe rachunki za paliwo.</p>
     <div class="feature-grid">
@@ -137,7 +133,7 @@
             <p>Koła „walczące" ze sobą zwiększają opory toczenia, przez co silnik pracuje ciężej. Efekt: wyższe zużycie paliwa o kilka procent.</p>
         </div>
         <div class="feature-item">
-            <i class="fas fa-steering-wheel"></i>
+            <i class="fas fa-road"></i>
             <h4>Prowadzenie auta</h4>
             <p>Auto nie prowadzi prosto, ciągnie w bok, kierownica jest skrzywiona? To klasyczne objawy złej geometrii wymagające natychmiastowej korekty.</p>
         </div>
@@ -160,7 +156,7 @@
 </section>
 
 <!-- Kiedy jechać -->
-<section style="background:rgba(10,10,10,0.5); padding:5rem 5%;" class="animate-on-scroll">
+<section id="kiedy" style="background:rgba(10,10,10,0.5); padding:5rem 5%;" class="animate-on-scroll">
     <h2>Kiedy zrobić geometrię?</h2>
     <p class="section-subtitle">Nie czekaj aż auto zacznie się prowadzić źle – te sytuacje wymagają kontroli natychmiast.</p>
     <div class="two-col" style="max-width:1000px; margin:0 auto;">
@@ -190,7 +186,7 @@
 </section>
 
 <!-- Jak robimy -->
-<section class="animate-on-scroll">
+<section class="animate-on-scroll" id="jak-pracujemy">
     <h2>Jak pracujemy?</h2>
     <p class="section-subtitle">Używamy systemu pomiarowego 3D na podczerwień – 2 kamery i 4 ekrany zakładane na felgi jednocześnie mierzą wszystkie koła i dają pełny obraz ustawień pojazdu.</p>
     <div class="process-steps">
@@ -231,7 +227,7 @@
 </section>
 
 <!-- Cennik -->
-<section style="background:rgba(10,10,10,0.5); padding:5rem 5%;" class="animate-on-scroll">
+<section id="cennik" style="background:rgba(10,10,10,0.5); padding:5rem 5%;" class="animate-on-scroll">
     <h2>Cennik geometrii kół</h2>
     <p class="section-subtitle">Cena zależy od typu zawieszenia i zakresu prac. Pomiar zawsze jest pierwszym krokiem.</p>
     <div style="max-width:900px; margin:0 auto;">
@@ -293,1238 +289,1835 @@
     </div>
 </section>
 
-<!-- ===== INTERAKTYWNA INFOGRAFIKA GEOMETRII ===== -->
+<!-- ===== LABORATORIUM GEOMETRII: symulator 3D ===== -->
 <section class="geo-lab animate-on-scroll" id="geo-lab">
-<h2>Interaktywne laboratorium geometrii</h2>
-<p class="section-subtitle">Przesuń suwak – obserwuj kąt w czasie rzeczywistym i sprawdź jak wpływa na zużycie opony.</p>
+    <h2>Laboratorium geometrii</h2>
+    <p class="section-subtitle">Jedno koło w przestrzeni, pięć parametrów, jeden wspólny model. Ustaw kąty i zobacz, jak zmienia się odcisk opony na drodze oraz zachowanie auta.</p>
 
-<div class="geo-tabs">
-    <button class="geo-tab active" data-tab="camber">
-        <span class="geo-tab-icon">⟂</span>
-        Camber<br><small>kąt pochylenia</small>
-    </button>
-    <button class="geo-tab" data-tab="toe">
-        <span class="geo-tab-icon">⇔</span>
-        Toe<br><small>zbieżność</small>
-    </button>
-    <button class="geo-tab" data-tab="caster">
-        <span class="geo-tab-icon">↻</span>
-        Caster<br><small>kąt wyprzedzenia</small>
-    </button>
-</div>
+    <div class="lab">
 
-<!-- CAMBER -->
-<div class="geo-panel active" id="panel-camber">
-    <div class="geo-panel-inner">
-        <div class="geo-visual">
-            <canvas id="canvas-camber" width="320" height="340"></canvas>
-            <div class="geo-value-badge" id="camber-badge">0.0°</div>
-        </div>
-        <div class="geo-controls">
-            <div class="geo-info-box">
-                <h3>Kąt pochylenia koła <em>(Camber)</em></h3>
-                <p id="camber-desc">Kąt między płaszczyzną koła a pionem – mierzony od przodu auta. <strong>Zero stopni</strong> to ustawienie neutralne: koło stoi prosto, opona pracuje całą szerokością.</p>
-                <div class="geo-wear-label">Zużycie opony:</div>
-                <div class="geo-tire-wear" id="camber-wear">
-                    <div class="tire-section" data-pos="0">Z</div>
-                    <div class="tire-section" data-pos="1"></div>
-                    <div class="tire-section" data-pos="2"></div>
-                    <div class="tire-section" data-pos="3"></div>
-                    <div class="tire-section" data-pos="4">W</div>
+        <!-- ---------- WIDOK 3D ---------- -->
+        <div class="lab-stage">
+            <div class="lab-viewport">
+                <canvas id="geo-canvas" role="img" aria-label="Model 3D koła przedniego lewego z aktualnymi kątami geometrii"></canvas>
+
+                <div class="lab-hud" aria-hidden="true">
+                    <span class="hud-chip" data-p="camber"><i>Camber</i><b id="hud-camber">0,0°</b></span>
+                    <span class="hud-chip" data-p="toe"><i>Zbieżność</i><b id="hud-toe">0,0 mm</b></span>
+                    <span class="hud-chip" data-p="caster"><i>Caster</i><b id="hud-caster">0,0°</b></span>
                 </div>
-                <div class="geo-wear-labels"><span>Bok zew.</span><span>Środek</span><span>Bok wew.</span></div>
-            </div>
-            <div class="geo-slider-wrap">
-                <span class="slider-limit">−3°</span>
-                <input type="range" id="slider-camber" min="-30" max="30" value="0" step="1" class="geo-slider">
-                <span class="slider-limit">+3°</span>
-            </div>
-            <div class="geo-presets">
-                <button class="preset-btn" data-slider="slider-camber" data-val="-20">Sportowy<br>−2°</button>
-                <button class="preset-btn" data-slider="slider-camber" data-val="0">Standardowy<br>0°</button>
-                <button class="preset-btn" data-slider="slider-camber" data-val="20">Awaryjny<br>+2°</button>
-            </div>
-            <div class="geo-fact" id="camber-fact">
-                <i class="fas fa-lightbulb"></i> Ujemny camber poprawia przyczepność w zakrętach – stosowany w autach sportowych i rajdowych.
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- TOE -->
-<div class="geo-panel" id="panel-toe">
-    <div class="geo-panel-inner">
-        <div class="geo-visual">
-            <canvas id="canvas-toe" width="320" height="340"></canvas>
-            <div class="geo-value-badge" id="toe-badge">0.0 mm</div>
+                <p class="lab-hint" id="lab-hint">Koło przednie lewe. Przeciągnij widok, żeby obejrzeć je z każdej strony.</p>
+
+                <noscript><p class="lab-noscript">Symulator wymaga włączonego JavaScriptu. Opis wszystkich kątów znajdziesz w sekcjach powyżej.</p></noscript>
+            </div>
+
+            <div class="lab-cams" role="group" aria-label="Ustaw widok pod wybrany kąt">
+                <button type="button" class="cam-btn is-on" data-cam="iso">Perspektywa</button>
+                <button type="button" class="cam-btn" data-cam="camber">Camber</button>
+                <button type="button" class="cam-btn" data-cam="toe">Zbieżność</button>
+                <button type="button" class="cam-btn" data-cam="caster">Caster</button>
+            </div>
         </div>
-        <div class="geo-controls">
-            <div class="geo-info-box">
-                <h3>Zbieżność <em>(Toe)</em></h3>
-                <p id="toe-desc">Widok z góry: czy koła są równoległe, czy skierowane do wewnątrz (<em>toe-in</em>) lub na zewnątrz (<em>toe-out</em>). <strong>Zero</strong> – koła idealnie równoległe.</p>
-                <div class="geo-wear-label">Zużycie opony:</div>
-                <div class="geo-tire-wear" id="toe-wear">
-                    <div class="tire-section" data-pos="0">Z</div>
-                    <div class="tire-section" data-pos="1"></div>
-                    <div class="tire-section" data-pos="2"></div>
-                    <div class="tire-section" data-pos="3"></div>
-                    <div class="tire-section" data-pos="4">W</div>
+
+        <!-- ---------- STEROWANIE ---------- -->
+        <div class="lab-panel">
+
+            <p class="panel-group">Geometria</p>
+
+            <div class="ctl" data-p="camber">
+                <div class="ctl-head">
+                    <label for="in-camber">Camber <i>kąt pochylenia koła</i></label>
+                    <output class="ctl-val" id="out-camber" for="in-camber">0,0°</output>
                 </div>
-                <div class="geo-wear-labels"><span>Bok zew.</span><span>Środek</span><span>Bok wew.</span></div>
-            </div>
-            <div class="geo-slider-wrap">
-                <span class="slider-limit">−5 mm</span>
-                <input type="range" id="slider-toe" min="-50" max="50" value="0" step="1" class="geo-slider">
-                <span class="slider-limit">+5 mm</span>
-            </div>
-            <div class="geo-presets">
-                <button class="preset-btn" data-slider="slider-toe" data-val="-30">Toe-out<br>−3 mm</button>
-                <button class="preset-btn" data-slider="slider-toe" data-val="0">Neutralny<br>0 mm</button>
-                <button class="preset-btn" data-slider="slider-toe" data-val="30">Toe-in<br>+3 mm</button>
-            </div>
-            <div class="geo-fact" id="toe-fact">
-                <i class="fas fa-lightbulb"></i> Zbieżność (toe-in) poprawia stabilność prostoliniową. Rozbieżność (toe-out) zwiększa zwrotność.
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CASTER -->
-<div class="geo-panel" id="panel-caster">
-    <div class="geo-panel-inner">
-        <div class="geo-visual">
-            <canvas id="canvas-caster" width="320" height="340"></canvas>
-            <div class="geo-value-badge" id="caster-badge">5.0°</div>
-        </div>
-        <div class="geo-controls">
-            <div class="geo-info-box">
-                <h3>Kąt wyprzedzenia sworznia zwrotnicy <em>(Caster)</em></h3>
-                <p id="caster-desc">Widok z boku: pochylenie osi skrętu koła. Dodatni caster oznacza przechylenie osi w kierunku kierowcy – koła mają tendencję do samoprostowania się. Efekt stabilizujący.</p>
-                <div class="geo-wear-label">Wpływ na prowadzenie:</div>
-                <div class="geo-caster-effects" id="caster-effects">
-                    <div class="effect-bar">
-                        <span>Stabilność prostoliniowa</span>
-                        <div class="effect-track"><div class="effect-fill" id="caster-stability"></div></div>
-                    </div>
-                    <div class="effect-bar">
-                        <span>Powrót kierownicy</span>
-                        <div class="effect-track"><div class="effect-fill" id="caster-return"></div></div>
-                    </div>
-                    <div class="effect-bar">
-                        <span>Siła na kierownicy</span>
-                        <div class="effect-track"><div class="effect-fill danger" id="caster-force"></div></div>
-                    </div>
+                <div class="ctl-track">
+                    <span class="ctl-band" style="left:41.7%;right:41.7%"></span>
+                    <span class="ctl-zero" style="left:50%"></span>
+                    <span class="ctl-fill" id="fill-camber"></span>
+                    <input type="range" id="in-camber" class="ctl-range" min="-30" max="30" step="1" value="-3">
                 </div>
+                <div class="ctl-scale"><span>−3,0°</span><span class="ctl-spec">norma ±0,5°</span><span>+3,0°</span></div>
             </div>
-            <div class="geo-slider-wrap">
-                <span class="slider-limit">0°</span>
-                <input type="range" id="slider-caster" min="0" max="100" value="50" step="1" class="geo-slider">
-                <span class="slider-limit">+10°</span>
-            </div>
-            <div class="geo-presets">
-                <button class="preset-btn" data-slider="slider-caster" data-val="10">Niski<br>1°</button>
-                <button class="preset-btn" data-slider="slider-caster" data-val="50">Normalny<br>5°</button>
-                <button class="preset-btn" data-slider="slider-caster" data-val="85">Sportowy<br>8.5°</button>
-            </div>
-            <div class="geo-fact" id="caster-fact">
-                <i class="fas fa-lightbulb"></i> Zbyt mały caster to „pływające" auto, zbyt duży – ciężka kierownica. Fabryczne ustawienie to zazwyczaj 3–8°.
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Porównanie zużycia opon -->
-<div class="wear-comparison animate-on-scroll">
-    <h3>Typowe wzorce zużycia opon a geometria</h3>
-    <div class="wear-cards">
-        <div class="wear-card">
-            <div class="wear-card-tire">
-                <div class="wct-band worn"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
+            <div class="ctl" data-p="toe">
+                <div class="ctl-head">
+                    <label for="in-toe">Zbieżność <i>toe, suma na osi</i></label>
+                    <output class="ctl-val" id="out-toe" for="in-toe">0,0 mm</output>
+                </div>
+                <div class="ctl-track">
+                    <span class="ctl-band" style="left:44%;right:44%"></span>
+                    <span class="ctl-zero" style="left:50%"></span>
+                    <span class="ctl-fill" id="fill-toe"></span>
+                    <input type="range" id="in-toe" class="ctl-range" min="-50" max="50" step="1" value="2">
+                </div>
+                <div class="ctl-scale"><span>−5 mm</span><span class="ctl-spec">norma ±0,6 mm</span><span>+5 mm</span></div>
             </div>
-            <div class="wear-card-info">
-                <strong>Zużyty bok zewnętrzny</strong>
-                <p>Za duży dodatni camber lub za duże przeciążenia boczne. Opona pracuje na zewnętrznej krawędzi.</p>
-                <span class="wear-tag">Camber +</span>
+
+            <div class="ctl" data-p="caster">
+                <div class="ctl-head">
+                    <label for="in-caster">Caster <i>wyprzedzenie sworznia</i></label>
+                    <output class="ctl-val" id="out-caster" for="in-caster">0,0°</output>
+                </div>
+                <div class="ctl-track">
+                    <span class="ctl-band" style="left:30%;right:20%"></span>
+                    <span class="ctl-fill" id="fill-caster"></span>
+                    <input type="range" id="in-caster" class="ctl-range" min="0" max="100" step="1" value="45">
+                </div>
+                <div class="ctl-scale"><span>0°</span><span class="ctl-spec">norma 3–8°</span><span>+10°</span></div>
             </div>
-        </div>
-        <div class="wear-card">
-            <div class="wear-card-tire">
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band worn"></div>
+
+            <p class="panel-group">Symulacja jazdy</p>
+
+            <div class="ctl" data-p="steer">
+                <div class="ctl-head">
+                    <label for="in-steer">Skręt koła <i>tu widać, co robi caster</i></label>
+                    <output class="ctl-val" id="out-steer" for="in-steer">0°</output>
+                </div>
+                <div class="ctl-track">
+                    <span class="ctl-zero" style="left:50%"></span>
+                    <span class="ctl-fill" id="fill-steer"></span>
+                    <input type="range" id="in-steer" class="ctl-range" min="-34" max="34" step="1" value="0">
+                </div>
+                <div class="ctl-scale"><span>34° w lewo</span><span class="ctl-spec"></span><span>34° w prawo</span></div>
             </div>
-            <div class="wear-card-info">
-                <strong>Zużyty bok wewnętrzny</strong>
-                <p>Za duży ujemny camber lub ugięcie wahacza. Charakterystyczne dla aut z obniżeniem bez korekty geometrii.</p>
-                <span class="wear-tag">Camber −</span>
+
+            <div class="ctl" data-p="press">
+                <div class="ctl-head">
+                    <label for="in-press">Ciśnienie <i>nie jest kątem, a ściera tak samo</i></label>
+                    <output class="ctl-val" id="out-press" for="in-press">2,2 bar</output>
+                </div>
+                <div class="ctl-track">
+                    <span class="ctl-band" style="left:30%;right:50%"></span>
+                    <span class="ctl-fill" id="fill-press"></span>
+                    <input type="range" id="in-press" class="ctl-range" min="14" max="34" step="1" value="22">
+                </div>
+                <div class="ctl-scale"><span>1,4 bar</span><span class="ctl-spec">norma 2,0–2,4</span><span>3,4 bar</span></div>
             </div>
-        </div>
-        <div class="wear-card">
-            <div class="wear-card-tire">
-                <div class="wct-band worn" style="flex:0.5"></div>
-                <div class="wct-band" style="flex:0.3"></div>
-                <div class="wct-band" style="flex:0.4"></div>
-                <div class="wct-band" style="flex:0.3"></div>
-                <div class="wct-band worn" style="flex:0.5"></div>
-            </div>
-            <div class="wear-card-info">
-                <strong>Zużyte oba boki</strong>
-                <p>Za niskie ciśnienie lub środkowe niedopompowanie. Opona ugina się nadmiernie – kontakt ziemią tylko na krawędziach.</p>
-                <span class="wear-tag">Ciśnienie</span>
-            </div>
-        </div>
-        <div class="wear-card">
-            <div class="wear-card-tire saw">
-                <div class="wct-band"></div>
-                <div class="wct-band saw-worn"></div>
-                <div class="wct-band"></div>
-                <div class="wct-band saw-worn"></div>
-                <div class="wct-band"></div>
-            </div>
-            <div class="wear-card-info">
-                <strong>„Piłowanie" bieżnika</strong>
-                <p>Błędna zbieżność (toe). Opona ciągnie w bok zamiast toczyć się prosto – klocki bieżnika ścierają się nierówno.</p>
-                <span class="wear-tag">Toe błąd</span>
+
+            <div class="panel-foot">
+                <button type="button" class="panel-reset" id="lab-reset">Ustawienia fabryczne</button>
+                <span class="panel-note">Camber i zbieżność są w modelu 3D powiększone, inaczej byłyby gołym okiem niewidoczne. Wszystkie odczyty liczbowe są rzeczywiste.</span>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- ---------- ODCZYT ---------- -->
+    <div class="lab-out">
+
+        <div class="out-patch">
+            <h3>Odcisk opony na drodze</h3>
+            <canvas id="patch-canvas" role="img" aria-label="Wykres rozkładu nacisku na szerokości bieżnika"></canvas>
+            <div class="patch-axis"><span>krawędź zewnętrzna</span><span>środek</span><span>krawędź wewnętrzna</span></div>
+            <p class="out-verdict" id="verdict" aria-live="polite">Ustawienie w normie. Nacisk rozkłada się równomiernie na całej szerokości bieżnika.</p>
+        </div>
+
+        <div class="out-eff">
+            <h3>Skutki ustawienia</h3>
+            <dl class="meters">
+                <div class="meter is-key" id="m-life">
+                    <dt>Trwałość opony</dt>
+                    <dd><span class="meter-bar"><i></i></span><b>–</b></dd>
+                </div>
+                <div class="meter" id="m-stab">
+                    <dt>Stabilność na wprost</dt>
+                    <dd><span class="meter-bar"><i></i></span><b>–</b></dd>
+                </div>
+                <div class="meter" id="m-ret">
+                    <dt>Powrót kierownicy</dt>
+                    <dd><span class="meter-bar"><i></i></span><b>–</b></dd>
+                </div>
+                <div class="meter" id="m-agi">
+                    <dt>Reakcja na skręt</dt>
+                    <dd><span class="meter-bar"><i></i></span><b>–</b></dd>
+                </div>
+                <div class="meter is-inv" id="m-eff">
+                    <dt>Opór na kierownicy</dt>
+                    <dd><span class="meter-bar"><i></i></span><b>–</b></dd>
+                </div>
+            </dl>
+            <p class="out-note">Przebieg szacunkowy dla opony osobowej ścieranej do 1,6 mm. Model poglądowy, nie zastępuje pomiaru na urządzeniu.</p>
+        </div>
+    </div>
+
+    <!-- ---------- DIAGNOSTYKA PO BIEŻNIKU ---------- -->
+    <div class="dx animate-on-scroll">
+        <h3 class="dx-title">Rozpoznaj problem po bieżniku</h3>
+        <p class="dx-lead">Opona zapisuje błąd ustawienia wcześniej, niż poczujesz go na kierownicy. Przy każdej pozycji jest przycisk „Odtwórz”: ustawi symulator powyżej tak, żeby ten właśnie wzorzec powstał na twoich oczach.</p>
+
+        <ol class="dx-list">
+
+            <li class="dx-row">
+                <span class="dx-num">01</span>
+                <figure class="dx-shot"><img src="img/wear-pilowanie-800.webp" width="440" height="330" loading="lazy" decoding="async" alt="Bieżnik z klockami startymi ukośnie: jedna krawędź każdego klocka ostra, druga ścięta"></figure>
+                <div class="dx-body">
+                    <h4>Piłowanie bieżnika</h4>
+                    <p>Klocki bieżnika starte ukośnie. Przesuń dłonią w poprzek opony: w jedną stronę gładko, w drugą jak po pile. Koło przy każdym metrze jazdy jest wleczone bokiem.</p>
+                    <p class="dx-cause"><span class="dx-tag">Geometria</span> Błędna zbieżność. Najszybszy sposób na zniszczenie kompletu opon.</p>
+                </div>
+                <button type="button" class="dx-sim" data-camber="-3" data-toe="42" data-caster="45" data-press="22">Odtwórz</button>
+            </li>
+
+            <li class="dx-row">
+                <span class="dx-num">02</span>
+                <figure class="dx-shot"><img src="img/wear-krawedz-wewnetrzna-800.webp" width="440" height="330" loading="lazy" decoding="async" alt="Wewnętrzna krawędź bieżnika starta do gładka, reszta opony z pełnym rzeźbieniem"></figure>
+                <div class="dx-body">
+                    <h4>Starta krawędź wewnętrzna</h4>
+                    <p>Pas przy wewnętrznej krawędzi wygładzony, zwykle niewidoczny bez podniesienia auta. Środek i zewnętrzna strona wyglądają na zdrowe.</p>
+                    <p class="dx-cause"><span class="dx-tag">Geometria</span> Zbyt duży ujemny camber: obniżenie bez korekty, zmęczone wahacze, skutek stłuczki.</p>
+                </div>
+                <button type="button" class="dx-sim" data-camber="-24" data-toe="2" data-caster="45" data-press="22">Odtwórz</button>
+            </li>
+
+            <li class="dx-row">
+                <span class="dx-num">03</span>
+                <figure class="dx-shot"><img src="img/wear-krawedz-zewnetrzna-800.webp" width="440" height="330" loading="lazy" decoding="async" alt="Zewnętrzna krawędź bieżnika starta do gładka, przeciwna strona z głębokimi rowkami"></figure>
+                <div class="dx-body">
+                    <h4>Starta krawędź zewnętrzna</h4>
+                    <p>Zużycie po zewnętrznej stronie opony, widoczne od razu przy kole. Bark bywa zaokrąglony, jakby został zlizany.</p>
+                    <p class="dx-cause"><span class="dx-tag">Geometria</span> Dodatni camber albo zbyt duża zbieżność. Przy wyższych przebiegach częściej objaw zużytego zawieszenia niż samego ustawienia.</p>
+                </div>
+                <button type="button" class="dx-sim" data-camber="22" data-toe="2" data-caster="45" data-press="22">Odtwórz</button>
+            </li>
+
+            <li class="dx-row">
+                <span class="dx-num">04</span>
+                <figure class="dx-shot"><img src="img/wear-oba-barki-800.webp" width="440" height="330" loading="lazy" decoding="async" alt="Obie krawędzie bieżnika starte, środek opony z zachowanym rzeźbieniem"></figure>
+                <div class="dx-body">
+                    <h4>Starte oba barki</h4>
+                    <p>Krawędzie zużyte symetrycznie, środek bieżnika w dobrym stanie. Opona ugina się pod obciążeniem i dotyka drogi tylko brzegami.</p>
+                    <p class="dx-cause"><span class="dx-tag is-alt">Ciśnienie</span> Za miękko. Geometria bywa tu bez winy, dlatego ciśnienie sprawdzamy przed każdym pomiarem.</p>
+                </div>
+                <button type="button" class="dx-sim" data-camber="-3" data-toe="2" data-caster="45" data-press="15">Odtwórz</button>
+            </li>
+
+            <li class="dx-row">
+                <span class="dx-num">05</span>
+                <figure class="dx-shot"><img src="img/wear-srodek-800.webp" width="440" height="330" loading="lazy" decoding="async" alt="Środkowy pas bieżnika starty do gładka, obie krawędzie opony nietknięte"></figure>
+                <div class="dx-body">
+                    <h4>Starty środek bieżnika</h4>
+                    <p>Wypolerowany pas przez środek opony, barki praktycznie nieużywane. Auto jeździ twardo i wcześniej gubi przyczepność na mokrym.</p>
+                    <p class="dx-cause"><span class="dx-tag is-alt">Ciśnienie</span> Za twardo. Opona wybrzusza się na środku i tylko ten pas przenosi obciążenie.</p>
+                </div>
+                <button type="button" class="dx-sim" data-camber="-3" data-toe="2" data-caster="45" data-press="32">Odtwórz</button>
+            </li>
+
+        </ol>
+    </div>
 </section>
 
 <style>
-/* ===== GEO LAB ===== */
+/* ===== LABORATORIUM GEOMETRII =====
+   Symulator 3D + odczyt zuzycia + lista wzorcow bieznika.
+   Prefiks: .lab- / .ctl- / .out- / .dx-  (CSS celowo inline w tym pliku,
+   zeby nie ruszac css/styles.css i nie bumpowac ?v= na 16 stronach). */
 .geo-lab { padding: 5rem 5%; }
 .geo-lab h2 { text-align: center; }
+.geo-lab .section-subtitle { max-width: 66ch; margin-left: auto; margin-right: auto; }
 
-.geo-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin: 2.5rem 0 2rem;
-    flex-wrap: wrap;
+/* ---------- rama przyrzadu ---------- */
+.lab,
+.lab-out {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+    gap: 1px;
+    background: var(--border-subtle);
+    border: 1px solid var(--border-subtle);
 }
-.geo-tab {
-    background: rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,255,255,0.1);
+.lab { margin-top: 3rem; }
+.lab-out { margin-top: 1px; }
+
+/* ---------- widok 3D ---------- */
+.lab-stage { background: var(--dark-bg); display: flex; flex-direction: column; min-width: 0; }
+.lab-viewport { position: relative; flex: 1; min-height: 0; }
+#geo-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    touch-action: pan-y;
+    cursor: grab;
+}
+#geo-canvas.is-grabbed { cursor: grabbing; }
+
+.lab-hud {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1px;
+    pointer-events: none;
+}
+.hud-chip {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.9rem;
+    background: oklch(13% 0.006 30 / 0.78);
+    border-left: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.32rem 0.7rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    transition: background 0.25s ease-out;
+}
+.hud-chip i {
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.62rem;
+    font-weight: 700;
     color: var(--text-muted);
-    padding: 0.8rem 1.6rem;
-    border-radius: 10px;
-    cursor: pointer;
+}
+.hud-chip b {
     font-size: 0.95rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s;
-    text-align: center;
-    line-height: 1.4;
-}
-.geo-tab small { font-weight: 400; text-transform: none; letter-spacing: 0; display: block; font-size: 0.75rem; }
-.geo-tab-icon { font-size: 1.4rem; display: block; margin-bottom: 0.2rem; }
-.geo-tab:hover { border-color: var(--primary-red); color: #fff; }
-.geo-tab.active { border-color: var(--primary-red); background: rgba(227,30,36,0.15); color: #fff; }
-
-.geo-panel { display: none; }
-.geo-panel.active { display: block; }
-
-.geo-panel-inner {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 2.5rem;
-    max-width: 980px;
-    margin: 0 auto;
-    align-items: start;
-}
-@media(max-width:768px){
-    .geo-panel-inner { grid-template-columns: 1fr; }
-}
-
-.geo-visual {
-    position: relative;
-    display: flex;
-    justify-content: center;
-}
-.geo-visual canvas {
-    border-radius: 16px;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.07);
-    display: block;
-}
-.geo-value-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: var(--primary-red);
-    color: #fff;
-    font-weight: 900;
-    font-size: 1.1rem;
-    padding: 0.3rem 0.8rem;
-    border-radius: 8px;
-    min-width: 70px;
-    text-align: center;
+    color: var(--text-main);
     font-variant-numeric: tabular-nums;
+    min-width: 5.4ch;
+    text-align: right;
 }
+.hud-chip.is-live { background: oklch(30% 0.09 25 / 0.92); }
+.hud-chip.is-live i { color: var(--text-main); }
+.hud-chip.is-off b { color: oklch(58% 0.14 25); }
 
-.geo-info-box h3 { font-size: 1.15rem; margin-bottom: 0.7rem; color: #fff; }
-.geo-info-box h3 em { color: var(--primary-red); font-style: normal; }
-.geo-info-box p { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.2rem; line-height: 1.6; }
-
-.geo-wear-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.5rem; }
-.geo-tire-wear {
-    display: flex;
-    height: 52px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-    margin-bottom: 0.4rem;
+.lab-hint {
+    position: absolute;
+    left: 0.85rem;
+    bottom: 0.7rem;
+    margin: 0;
+    max-width: 22ch;
+    font-size: 0.68rem;
+    line-height: 1.45;
+    color: oklch(68% 0.005 30 / 0.7);
+    pointer-events: none;
+    transition: opacity 0.4s ease-out;
 }
-.tire-section {
+.lab-hint.is-gone { opacity: 0; }
+.lab-noscript { padding: 2rem; color: var(--text-muted); font-size: 0.9rem; }
+
+.lab-cams { display: flex; border-top: 1px solid var(--border-subtle); }
+.cam-btn {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,0.3);
-    transition: background 0.4s, color 0.4s;
-    background: rgba(60,60,60,0.5);
-}
-.tire-section.worn-heavy { background: #e31e24 !important; color: #fff; }
-.tire-section.worn-med   { background: rgba(227,30,36,0.55) !important; }
-.tire-section.worn-light { background: rgba(227,30,36,0.25) !important; }
-.tire-section.ok         { background: rgba(40,180,80,0.25) !important; }
-
-.geo-wear-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--border-subtle);
     color: var(--text-muted);
-    margin-bottom: 1.2rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.75rem 0.3rem;
+    cursor: pointer;
+    transition: color 0.2s ease-out, background 0.2s ease-out;
+}
+.cam-btn:last-child { border-right: 0; }
+.cam-btn:hover { color: var(--text-main); background: var(--surface-1); }
+.cam-btn.is-on {
+    color: var(--text-main);
+    background: var(--surface-2);
+    box-shadow: inset 0 -2px 0 var(--primary-red);
 }
 
-.geo-slider-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin: 1.2rem 0 1rem;
+/* ---------- panel sterowania ---------- */
+.lab-panel { background: var(--surface-1); padding: 1.5rem 1.4rem 1.3rem; min-width: 0; }
+.panel-group {
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    margin: 0 0 1.05rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--border-subtle);
 }
-.slider-limit { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; min-width: 36px; text-align: center; }
-.geo-slider {
-    flex: 1;
+.ctl + .panel-group { margin-top: 1.7rem; }
+
+.ctl { margin-bottom: 1.15rem; }
+.ctl:last-of-type { margin-bottom: 0; }
+.ctl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.8rem; margin-bottom: 0.4rem; }
+.ctl-head label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    cursor: pointer;
+}
+.ctl-head label i {
+    display: block;
+    font-style: normal;
+    font-family: 'Barlow', sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    font-size: 0.71rem;
+    line-height: 1.35;
+    color: var(--text-muted);
+}
+.ctl-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--text-main);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transition: color 0.2s ease-out;
+}
+.ctl.is-out .ctl-val { color: oklch(62% 0.19 25.8); }
+
+.ctl-track { position: relative; height: 24px; }
+.ctl-track::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 10px;
+    height: 4px;
+    background: oklch(26% 0.005 30);
+}
+.ctl-band { position: absolute; top: 10px; height: 4px; background: oklch(55% 0.13 148 / 0.5); }
+.ctl-zero { position: absolute; top: 3px; width: 1px; height: 18px; background: oklch(42% 0.005 30); }
+.ctl-fill { position: absolute; top: 10px; height: 4px; background: var(--primary-red); }
+.ctl-range {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    background: transparent;
     -webkit-appearance: none;
     appearance: none;
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, rgba(227,30,36,0.6), rgba(255,255,255,0.15));
-    outline: none;
     cursor: pointer;
 }
-.geo-slider::-webkit-slider-thumb {
+.ctl-range::-webkit-slider-runnable-track { height: 24px; background: transparent; }
+.ctl-range::-moz-range-track { height: 24px; background: transparent; }
+.ctl-range::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 16px; height: 16px;
+    margin-top: 4px;
     border-radius: 50%;
-    background: var(--primary-red);
-    border: 3px solid #fff;
-    box-shadow: 0 0 10px rgba(227,30,36,0.6);
-    cursor: pointer;
-    transition: transform 0.2s;
+    background: var(--text-main);
+    border: 4px solid var(--primary-red);
+    box-shadow: 0 0 0 3px var(--surface-1);
+    cursor: grab;
 }
-.geo-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.ctl-range::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--text-main);
+    border: 4px solid var(--primary-red);
+    box-shadow: 0 0 0 3px var(--surface-1);
+    cursor: grab;
+}
+.ctl-range:focus { outline: none; }
+.ctl-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--surface-1), 0 0 0 6px oklch(62% 0.19 25.8); }
+.ctl-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--surface-1), 0 0 0 6px oklch(62% 0.19 25.8); }
 
-.geo-presets {
+.ctl-scale {
     display: flex;
-    gap: 0.6rem;
-    margin-bottom: 1.2rem;
-    flex-wrap: wrap;
-}
-.preset-btn {
-    flex: 1;
-    min-width: 80px;
-    padding: 0.5rem 0.4rem;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: rgba(255,255,255,0.05);
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+.ctl-spec { color: oklch(64% 0.11 148); }
+
+.panel-foot { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); }
+.panel-reset {
+    background: transparent;
+    border: 1px solid var(--border-accent);
+    color: var(--text-main);
+    font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
-    text-align: center;
-    line-height: 1.4;
-    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s ease-out, border-color 0.2s ease-out;
 }
-.preset-btn:hover { border-color: var(--primary-red); color: #fff; background: rgba(227,30,36,0.15); }
+.panel-reset:hover { background: oklch(28% 0.07 25); border-color: var(--primary-red); }
+.panel-note { display: block; margin-top: 0.85rem; font-size: 0.69rem; line-height: 1.55; color: var(--text-muted); }
 
-.geo-fact {
-    background: rgba(227,30,36,0.08);
-    border-left: 3px solid var(--primary-red);
-    padding: 0.8rem 1rem;
-    border-radius: 0 8px 8px 0;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-}
-.geo-fact i { color: var(--primary-red); margin-right: 0.4rem; }
-
-/* Caster effects bars */
-.geo-caster-effects { margin-bottom: 1.2rem; }
-.effect-bar { margin-bottom: 0.8rem; }
-.effect-bar span { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; }
-.effect-track {
-    height: 10px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 5px;
-    overflow: hidden;
-}
-.effect-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #27ae60, #2ecc71);
-    border-radius: 5px;
-    transition: width 0.4s ease;
-}
-.effect-fill.danger { background: linear-gradient(90deg, #e31e24, #ff6b6b); }
-
-/* Wear comparison */
-.wear-comparison {
-    margin-top: 4rem;
-    padding-top: 3rem;
-    border-top: 1px solid rgba(255,255,255,0.07);
-}
-.wear-comparison h3 { text-align: center; font-size: 1.2rem; margin-bottom: 2rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-.wear-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.2rem;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-.wear-card {
-    background: rgba(30,30,30,0.8);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-    padding: 1.2rem;
-    transition: border-color 0.3s;
-}
-.wear-card:hover { border-color: var(--primary-red); }
-.wear-card-tire {
-    display: flex;
-    height: 38px;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.wct-band { flex: 1; background: rgba(60,60,60,0.7); transition: background 0.3s; }
-.wct-band.worn { background: var(--primary-red); }
-.wct-band.saw-worn { background: rgba(227,30,36,0.55); }
-.wear-card-info strong { font-size: 0.9rem; color: #fff; display: block; margin-bottom: 0.4rem; }
-.wear-card-info p { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.7rem; }
-.wear-tag {
-    display: inline-block;
-    background: rgba(227,30,36,0.2);
-    border: 1px solid rgba(227,30,36,0.4);
-    color: #ff6b6b;
+/* ---------- odczyt ---------- */
+.out-patch, .out-eff { background: var(--surface-1); padding: 1.4rem; min-width: 0; }
+.out-patch h3, .out-eff h3 {
+    font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    letter-spacing: 1px;
     text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    text-align: left;
+}
+#patch-canvas { display: block; width: 100%; height: auto; aspect-ratio: 20 / 7; }
+.patch-axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+.out-verdict {
+    margin: 1rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.87rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+}
+.out-verdict::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    margin-right: 0.6rem;
+    vertical-align: 0.05em;
+    background: oklch(60% 0.15 148);
+}
+.out-verdict.is-warn::before { background: oklch(70% 0.16 75); }
+.out-verdict.is-bad::before { background: var(--primary-red); }
+.out-verdict b { color: var(--text-main); font-weight: 700; }
+
+.meters { display: grid; gap: 0.8rem; margin: 0; }
+.meter dt { font-size: 0.73rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+.meter dd { margin: 0; display: flex; align-items: center; gap: 0.75rem; }
+.meter-bar { flex: 1; height: 6px; background: oklch(26% 0.005 30); position: relative; overflow: hidden; }
+.meter-bar i {
+    position: absolute;
+    inset: 0;
+    background: oklch(58% 0.13 148);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1), background 0.28s ease-out;
+}
+.meter b {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    font-variant-numeric: tabular-nums;
+    min-width: 8ch;
+    text-align: right;
+}
+.meter.is-key { padding-bottom: 0.75rem; margin-bottom: 0.15rem; border-bottom: 1px solid var(--border-subtle); }
+.meter.is-key dt { color: var(--text-main); font-weight: 700; font-size: 0.8rem; }
+.meter.is-key .meter-bar { height: 10px; }
+.meter.is-key b { font-size: 1.4rem; }
+.meter.is-inv .meter-bar i { background: oklch(66% 0.15 70); }
+.out-note { margin-top: 1.1rem; font-size: 0.68rem; line-height: 1.55; color: var(--text-muted); }
+
+/* ---------- lista wzorcow bieznika ---------- */
+.dx { max-width: 1180px; margin: 4.5rem auto 0; }
+.dx-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-main);
+    text-align: center;
+    margin: 0;
+}
+.dx-lead {
+    text-align: center;
+    max-width: 62ch;
+    margin: 0.8rem auto 2.4rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+}
+.dx-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border-subtle); }
+.dx-row {
+    display: grid;
+    grid-template-columns: 2.4rem 150px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.15rem 0.6rem;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.22s ease-out;
+}
+.dx-row:hover { background: var(--surface-1); }
+.dx-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-style: italic;
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: var(--primary-red);
+}
+.dx-shot { margin: 0; width: 150px; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2); }
+.dx-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dx-body h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-main);
+    margin: 0 0 0.35rem;
+}
+.dx-body p { font-size: 0.82rem; line-height: 1.6; color: var(--text-muted); max-width: 64ch; margin: 0; }
+.dx-cause { margin-top: 0.5rem !important; }
+.dx-tag {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-main);
+    background: oklch(34% 0.1 25.8);
+    padding: 0.16rem 0.5rem;
+    margin-right: 0.55rem;
+    vertical-align: 0.05em;
+}
+.dx-tag.is-alt { background: oklch(30% 0.012 30); color: var(--text-muted); }
+.dx-sim {
+    background: transparent;
+    border: 1px solid var(--border-accent);
+    color: var(--text-main);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    padding: 0.6rem 1.1rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s ease-out, border-color 0.2s ease-out;
+}
+.dx-sim:hover { background: oklch(28% 0.07 25); border-color: var(--primary-red); }
+.dx-row.is-picked { background: oklch(20% 0.02 25); }
+
+/* ---------- responsywnosc ---------- */
+@media (max-width: 1024px) {
+    .lab, .lab-out { grid-template-columns: minmax(0, 1fr); }
+    .lab-out { margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); }
+    #geo-canvas { aspect-ratio: 16 / 11; }
+    .dx-row { grid-template-columns: 2.2rem 120px minmax(0, 1fr); row-gap: 0.9rem; }
+    .dx-shot { width: 120px; }
+    .dx-sim { grid-column: 2 / -1; justify-self: start; }
+}
+@media (max-width: 620px) {
+    .geo-lab { padding: 4rem 5%; }
+    .lab-panel { padding: 1.2rem 1rem; }
+    .out-patch, .out-eff { padding: 1.2rem 1rem; }
+    #geo-canvas { aspect-ratio: 1 / 1; }
+    #patch-canvas { aspect-ratio: 12 / 7; }
+    .lab-hud { left: 0; right: 0; flex-direction: row; }
+    .hud-chip { flex: 1; flex-direction: column; align-items: flex-start; gap: 0.1rem; }
+    .hud-chip b { text-align: left; }
+    .lab-hint { display: none; }
+    .cam-btn { font-size: 0.66rem; letter-spacing: 0.06em; padding: 0.7rem 0.2rem; }
+    .patch-axis span:nth-child(2) { display: none; }
+    .dx-row { grid-template-columns: 2rem minmax(0, 1fr); padding: 1.3rem 0.2rem; }
+    .dx-shot { grid-column: 2; width: 100%; aspect-ratio: 16 / 9; }
+    .dx-body { grid-column: 2; }
+    .dx-sim { grid-column: 2; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .meter-bar i { transition: none; }
+    .lab-hint { transition: none; }
+}
+/* ============ SPIS SEKCJI (sticky) ============ */
+/* styles.css ma overflow-x:hidden na html i body — to promuje overflow-y do `auto`,
+   robi z nich kontener przewijania i zabija position:sticky u potomkow.
+   `clip` przycina tak samo, ale NIE tworzy kontenera przewijania. */
+html, body { overflow-x: clip; }
+
+.secnav {
+    position: sticky;
+    top: 100px;                       /* wysokosc naglowka (header height) */
+    z-index: 900;
+    background: oklch(15% 0.006 30 / 0.97);
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+.secnav-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 5%;
+}
+.secnav-legend {
+    flex-shrink: 0;
+    font-family: 'Barlow Condensed', 'Segoe UI', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(52% 0.005 30);
+}
+.secnav-list {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.secnav-list::-webkit-scrollbar { display: none; }
+.secnav-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    white-space: nowrap;
+    padding: 1.15rem 1.15rem 1rem;
+    font-family: 'Barlow Condensed', 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+.secnav-num {
+    font-size: 0.68rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 0;
+    color: oklch(45% 0.06 25.8);
+    transition: color 0.2s ease;
+}
+.secnav-list a:hover,
+.secnav-list a:focus-visible { color: var(--text-main); }
+.secnav-list a:hover .secnav-num,
+.secnav-list a:focus-visible .secnav-num { color: var(--primary-red); }
+.secnav-list a.is-current {
+    color: var(--text-main);
+    border-bottom-color: var(--primary-red);
+}
+.secnav-list a.is-current .secnav-num { color: var(--primary-red); }
+.secnav-cta {
+    flex-shrink: 0;
+    padding: 0.5rem 1.1rem;
+    font-family: 'Barlow Condensed', 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-main);
+    text-decoration: none;
+    background: rgba(227, 30, 36, 0.12);
+    border: 1px solid var(--border-accent);
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.secnav-cta:hover,
+.secnav-cta:focus-visible {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.secnav-list a:focus-visible {
+    outline: 2px solid var(--primary-red);
+    outline-offset: -3px;
+}
+/* focus na .secnav-cta przemalowuje tlo na czerwien - obrys musi wyjsc poza przycisk */
+.secnav-cta:focus-visible,
+.to-top:focus-visible {
+    outline: 2px solid var(--primary-red);
+    outline-offset: 2px;
+}
+
+/* naglowek (100px) + pasek spisu (~56px) nie moga zaslaniac celu kotwicy */
+#dlaczego, #kiedy, #jak-pracujemy, #cennik, #geo-lab, #umow { scroll-margin-top: 162px; }
+
+/* ---- powrot na gore ---- */
+.to-top {
+    position: fixed;
+    right: 1.75rem;
+    bottom: 1.75rem;
+    z-index: 899;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    font-size: 0.85rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease,
+                visibility 0s linear 0.25s,
+                color 0.2s ease, border-color 0.2s ease;
+}
+/* bez JS atrybut `hidden` musi wygrac z display:grid powyzej */
+.to-top[hidden] { display: none; }
+.to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+.to-top:hover,
+.to-top:focus-visible {
+    color: var(--text-main);
+    border-color: var(--border-accent);
+}
+
+@media (max-width: 768px) {
+    .secnav { top: 80px; }
+    .secnav-inner { gap: 0; padding: 0 4%; }
+    .secnav-legend { display: none; }
+    .secnav-list a { padding: 0.9rem 0.85rem 0.75rem; font-size: 0.85rem; }
+    .secnav-cta { display: none; }
+    #dlaczego, #kiedy, #jak-pracujemy, #cennik, #geo-lab, #umow { scroll-margin-top: 130px; }
+    .to-top { right: 1rem; bottom: 1rem; width: 40px; height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .to-top { transition: none; }
 }
 </style>
 
 <script>
+/* ============================================================================
+   LABORATORIUM GEOMETRII — symulator koła w 3D
+   ----------------------------------------------------------------------------
+   Jedna bryła, jeden układ współrzędnych, wszystkie kąty składają się jak
+   w aucie: camber i zbieżność to pozycja koła, caster to pochylenie osi
+   sworznia, a skręt to obrót WOKÓŁ tej pochylonej osi (stąd wzrost camberu
+   i podnoszenie nadwozia przy skręcaniu — nic tego nie udaje, tak wychodzi
+   z mnożenia macierzy).
+
+   Układ (prawoskrętny):  X+ = na zewnątrz auta, Y+ = w górę, Z+ = kierunek jazdy.
+   Koło przednie lewe. Punkt styku z jezdnią w (0,0,0), środek koła w (0,R,0).
+   ========================================================================== */
 (function(){
-/* ---- TABS ---- */
-document.querySelectorAll('.geo-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.geo-tab').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.geo-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-    });
-});
+'use strict';
 
-/* ---- PRESETS ---- */
-document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const slider = document.getElementById(btn.dataset.slider);
-        slider.value = btn.dataset.val;
-        slider.dispatchEvent(new Event('input'));
-    });
-});
+var sec = document.getElementById('geo-lab');
+if(!sec) return;
+var cv = document.getElementById('geo-canvas');
+var pv = document.getElementById('patch-canvas');
+if(!cv || !pv || !cv.getContext) return;
+var g  = cv.getContext('2d');
+var pg = pv.getContext('2d');
+var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-/* ---- CANVAS UTILS ---- */
-function clearCanvas(ctx, w, h){
-    ctx.clearRect(0,0,w,h);
+/* ---------------------------------------------------------------- kolory -- */
+/* Czerwień marki jest w --primary-red jako oklch(). Zamiast zgadywać RGB
+   malujemy ją na pikselu i odczytujemy — zawsze zgodna z arkuszem, a przy
+   nieobsługiwanym formacie zostaje fallback. */
+function toRGB(v, fb){
+    try{
+        var c = document.createElement('canvas'); c.width = c.height = 1;
+        var x = c.getContext('2d', {willReadFrequently:true});
+        x.fillStyle = 'rgba(0,0,0,0)';
+        x.fillStyle = v;
+        x.fillRect(0,0,1,1);
+        var d = x.getImageData(0,0,1,1).data;
+        return d[3] === 0 ? fb : [d[0], d[1], d[2]];
+    }catch(e){ return fb; }
 }
-function drawGround(ctx, w, h){
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    ctx.fillRect(20, h-30, w-40, 8);
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
-    ctx.fillRect(20, h-22, w-40, 6);
+var RED  = toRGB(getComputedStyle(document.documentElement).getPropertyValue('--primary-red').trim(), [189,16,23]);
+var OKC  = [ 62,172,100];
+var WRN  = [214,152, 46];
+var INK  = [242,240,239];
+
+function rgb(c){ return 'rgb(' + (c[0]|0) + ',' + (c[1]|0) + ',' + (c[2]|0) + ')'; }
+function rgba(c, a){ return 'rgba(' + (c[0]|0) + ',' + (c[1]|0) + ',' + (c[2]|0) + ',' + a + ')'; }
+function mix(a, b, t){ t = t < 0 ? 0 : t > 1 ? 1 : t; return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+function ramp(t){ return t < 0.5 ? mix(OKC, WRN, t*2) : mix(WRN, RED, (t-0.5)*2); }
+function clamp(v, a, b){ return v < a ? a : v > b ? b : v; }
+
+/* ------------------------------------------------------------- formatery -- */
+function nf(v, d){ return v.toFixed(d).replace('.', ','); }
+function sf(v, d, u){
+    var s = v > 0.0001 ? '+' : v < -0.0001 ? '−' : '';
+    return s + nf(Math.abs(v), d) + (u || '');
 }
+function km(v){ return Math.round(v/1000)*1000 === 0 ? '0' : (Math.round(v/1000)*1000).toLocaleString('pl-PL'); }
 
-/* ============ CAMBER ============ */
-const cCamber = document.getElementById('canvas-camber');
-const xC = cCamber.getContext('2d');
-const slC = document.getElementById('slider-camber');
+/* ------------------------------------------------------------------ stan -- */
+var S = { camber:-0.3, toe:0.2, caster:4.5, steer:0, press:2.2 };
+var SPEC = {
+    camber: [-0.5, 0.5],
+    toe:    [-0.6, 0.6],
+    caster: [ 3.0, 8.0],
+    press:  [ 2.0, 2.4]
+};
+var R_REAL_MM = 320;              /* promień koła 205/55 R16 w mm */
+/* ⚠️ Kąt pochylenia sworznia (SAI/KPI). Bez niego oś sworznia stoi pionowo,
+   kolumna ląduje DOKŁADNIE nad środkiem koła i cały McPherson wygląda jak
+   wbity w oponę. W aucie oś jest pochylona do wewnątrz o kilkanaście stopni
+   i właśnie dlatego kolumna stoi NAD WAHACZEM, po stronie wewnętrznej.
+   Stała, nieregulowana: strona nie omawia SAI, a w widoku z boku (caster)
+   jest niewidoczny, bo patrzymy wzdłuż osi poprzecznej. */
+var SAI = 15 * Math.PI / 180;
+/* Jak daleko od srodka kola (wzdluz osi sworznia) siedzi gorne mocowanie
+   kolumny. Podniesione z 1,42: sprezyna musi zmiescic sie CALA nad opona. */
+var KP_TOP_T = 1.52;
+/* Prawdziwy camber to 1-3°, a zbieżność 0,2° — w modelu byłyby niewidoczne.
+   Bryłę rysujemy więc z przesadą, ale KAŻDA liczba na ekranie jest prawdziwa. */
+var EX_CAMBER = 2.6;
+var EX_TOE    = 28;
+var active = 'camber';
 
-function drawCamber(angleDeg){
-    const W = cCamber.width, H = cCamber.height;
-    clearCanvas(xC, W, H);
+/* ------------------------------------------------------------- geometria -- */
+var R  = 1.0;                     /* promień opony */
+var HW = 0.30;                    /* połowa szerokości opony */
+var TW = 0.22;                    /* połowa szerokości samego bieżnika */
 
-    const groundY = H - 35;
-    const cx = W / 2;
-    const tireH = 128;   // wysokość opony = średnica
-    const tireW = 52;    // szerokość bieżnika (widok z przodu)
-    const rad = angleDeg * Math.PI / 180;
+/* Profil opony: [x (× HW), r, rodzaj] — 0 ścianka, 1 bieżnik, 2 rowek. */
+var PROF = [
+    [-0.70, 0.620, 0], [-1.02, 0.820, 0], [-0.99, 0.940, 0],
+    [-0.88, 0.992, 1], [-0.66, 0.999, 1],
+    [-0.60, 0.964, 2], [-0.44, 0.964, 2],
+    [-0.38, 1.000, 1], [-0.06, 1.002, 1],
+    [ 0.00, 0.966, 2], [ 0.14, 0.966, 2],
+    [ 0.20, 1.002, 1], [ 0.48, 1.000, 1],
+    [ 0.54, 0.964, 2], [ 0.70, 0.964, 2],
+    [ 0.76, 0.995, 1], [ 0.88, 0.988, 1],
+    [ 0.99, 0.940, 0], [ 1.02, 0.820, 0], [ 0.70, 0.620, 0]
+];
+var NP = PROF.length;
+var NS = (window.innerWidth || 1024) < 700 ? 22 : 30;   /* segmentów obwodowych */
+var XR = 0.74 * HW;               /* płaszczyzna tarczy felgi */
 
-    // Ground
-    xC.fillStyle = 'rgba(255,255,255,0.06)';
-    xC.fillRect(20, groundY, W-40, 8);
-    xC.fillStyle = 'rgba(255,255,255,0.02)';
-    xC.fillRect(20, groundY+8, W-40, 8);
-
-    // Vertical reference line (fixed – nie obraca się)
-    xC.setLineDash([5,5]);
-    xC.strokeStyle = 'rgba(255,255,255,0.18)';
-    xC.lineWidth = 1.5;
-    xC.beginPath();
-    xC.moveTo(cx, 18); xC.lineTo(cx, groundY);
-    xC.stroke();
-    xC.setLineDash([]);
-
-    // Kąt camber – łuk przy kontakcie z podłożem
-    if(Math.abs(angleDeg) > 0.3){
-        xC.strokeStyle = 'rgba(227,30,36,0.8)';
-        xC.lineWidth = 2;
-        xC.beginPath();
-        xC.arc(cx, groundY, 50, -Math.PI/2, -Math.PI/2 + rad, rad < 0);
-        xC.stroke();
-        const arcMid = -Math.PI/2 + rad/2;
-        xC.fillStyle = 'rgba(227,30,36,0.95)';
-        xC.font = 'bold 12px Segoe UI';
-        xC.textAlign = 'center';
-        xC.fillText(angleDeg.toFixed(1)+'°', cx + 66*Math.cos(arcMid), groundY + 66*Math.sin(arcMid));
+var MV = [];                      /* wierzchołki opony w układzie koła */
+var MW = [];                      /* te same, po transformacji, w świecie */
+function buildTire(){
+    MV.length = 0; MW.length = 0;
+    for(var s = 0; s < NS; s++){
+        var a = s / NS * Math.PI * 2;
+        var ca = Math.cos(a), sa = Math.sin(a);
+        var col = [], colW = [];
+        for(var p = 0; p < NP; p++){
+            var r = PROF[p][1];
+            col.push([PROF[p][0]*HW, r*ca, r*sa]);
+            colW.push([0,0,0]);
+        }
+        MV.push(col); MW.push(colW);
     }
+}
+buildTire();
 
-    // === CAŁY UKŁAD OBRACA SIĘ WOKÓŁ PUNKTU KONTAKTU ===
-    xC.save();
-    xC.translate(cx, groundY);
-    xC.rotate(rad);
-    // Układ lokalny: (0,0) = kontakt opony z podłożem, góra = ujemne Y
+/* ---------------------------------------------------------------- macierz -- */
+function rotAxis(ax, ay, az, ang){
+    var l = Math.sqrt(ax*ax + ay*ay + az*az) || 1;
+    ax /= l; ay /= l; az /= l;
+    var c = Math.cos(ang), s = Math.sin(ang), t = 1 - c;
+    return [ t*ax*ax + c,    t*ax*ay - s*az, t*ax*az + s*ay,
+             t*ax*ay + s*az, t*ay*ay + c,    t*ay*az - s*ax,
+             t*ax*az - s*ay, t*ay*az + s*ax, t*az*az + c ];
+}
+function mmul(a, b){
+    var r = new Array(9);
+    for(var i = 0; i < 3; i++) for(var j = 0; j < 3; j++)
+        r[i*3+j] = a[i*3]*b[j] + a[i*3+1]*b[3+j] + a[i*3+2]*b[6+j];
+    return r;
+}
+function mv(m, p, o){
+    var x = p[0], y = p[1], z = p[2];
+    o = o || [0,0,0];
+    o[0] = m[0]*x + m[1]*y + m[2]*z;
+    o[1] = m[3]*x + m[4]*y + m[5]*z;
+    o[2] = m[6]*x + m[7]*y + m[8]*z;
+    return o;
+}
+function sub(a, b){ return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
+function cross(a, b){ return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+function norm(v){ var l = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) || 1; return [v[0]/l, v[1]/l, v[2]/l]; }
+function dot(a, b){ return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
 
-    // --- NADWOZIE / BELKA GÓRNA ---
-    const chassisTopY = -(tireH + 90);
-    xC.fillStyle = 'rgba(72,72,72,0.92)';
-    xC.beginPath();
-    xC.roundRect(-80, chassisTopY, 160, 20, 4);
-    xC.fill();
-    xC.strokeStyle = 'rgba(255,255,255,0.08)';
-    xC.lineWidth = 1;
-    for(let xi = -70; xi < 80; xi += 13){
-        xC.beginPath();
-        xC.moveTo(xi, chassisTopY);
-        xC.lineTo(xi - 9, chassisTopY + 20);
-        xC.stroke();
-    }
+/* ----------------------------------------------------------------- kamera -- */
+var VIEWS = {
+    iso:    { yaw: Math.PI + 0.80, pitch: 0.38, dist: 4.45 },
+    camber: { yaw: Math.PI,        pitch: 0.09, dist: 4.45 },
+    toe:    { yaw: Math.PI,        pitch: 1.34, dist: 4.40 },
+    caster: { yaw: Math.PI*1.5,    pitch: 0.09, dist: 4.45 }
+};
+var cam = { yaw: VIEWS.iso.yaw, pitch: VIEWS.iso.pitch, dist: VIEWS.iso.dist };
+var curView = 'iso';
+var camTo = null, camFrom = null, camT = 0;
+var VIEW_OF = { camber:'camber', toe:'toe', caster:'caster', steer:'iso' };
 
-    // --- AMORTYZATOR MACPHERSON (widok z przodu: lewa strona opony) ---
-    const strutBotY = -tireH - 8;
-    const strutTopY = chassisTopY + 22;
-    const strutOffX = -14;
-
-    // Cylinder
-    xC.strokeStyle = '#4a4a4a';
-    xC.lineWidth = 14;
-    xC.lineCap = 'round';
-    xC.beginPath();
-    xC.moveTo(strutOffX, strutBotY);
-    xC.lineTo(strutOffX, strutBotY - 42);
-    xC.stroke();
-
-    // Tłoczysko
-    xC.strokeStyle = '#aaaaaa';
-    xC.lineWidth = 5;
-    xC.beginPath();
-    xC.moveTo(strutOffX, strutBotY - 34);
-    xC.lineTo(strutOffX, strutTopY + 8);
-    xC.stroke();
-
-    // Sprężyna
-    const coilBot = strutBotY - 14;
-    const coilTop = strutTopY + 16;
-    const nCoils = 8;
-    xC.strokeStyle = 'rgba(185,185,185,0.72)';
-    xC.lineWidth = 2.5;
-    xC.lineCap = 'butt';
-    xC.beginPath();
-    for(let i=0; i<=nCoils; i++){
-        const t = i / nCoils;
-        const sy = coilBot + t*(coilTop - coilBot);
-        const sx = strutOffX + (i%2===0 ? -13 : 13);
-        if(i===0) xC.moveTo(sx, sy); else xC.lineTo(sx, sy);
-    }
-    xC.stroke();
-
-    // Górna poduszka
-    xC.fillStyle = '#555';
-    xC.beginPath();
-    xC.roundRect(strutOffX - 16, strutTopY - 2, 32, 12, 3);
-    xC.fill();
-
-    // Łącznik amortyzatora z piastą
-    xC.strokeStyle = '#555';
-    xC.lineWidth = 5;
-    xC.lineCap = 'round';
-    xC.beginPath();
-    xC.moveTo(strutOffX, strutBotY);
-    xC.lineTo(0, -tireH);
-    xC.stroke();
-
-    // --- WAHACZ (widok z przodu: poziomo w lewo) ---
-    const armY = -tireH * 0.22;
-    xC.strokeStyle = '#6e6e6e';
-    xC.lineWidth = 7;
-    xC.lineCap = 'round';
-    xC.beginPath();
-    xC.moveTo(0, armY);
-    xC.lineTo(-78, armY + 8);
-    xC.stroke();
-
-    // Tuleja przy nadwoziu
-    xC.fillStyle = '#666';
-    xC.beginPath(); xC.arc(-78, armY + 8, 7, 0, Math.PI*2); xC.fill();
-    xC.fillStyle = '#333';
-    xC.beginPath(); xC.arc(-78, armY + 8, 3.5, 0, Math.PI*2); xC.fill();
-
-    // Przegub kulowy przy piaście
-    xC.fillStyle = '#cccccc';
-    xC.beginPath(); xC.arc(0, armY, 7, 0, Math.PI*2); xC.fill();
-    xC.fillStyle = '#333';
-    xC.beginPath(); xC.arc(0, armY, 3.5, 0, Math.PI*2); xC.fill();
-
-    // === OPONA — WIDOK Z PRZODU (prostokąt z zaokrąglonymi końcami = bieżnik) ===
-    // Czarna guma
-    xC.fillStyle = '#181818';
-    xC.beginPath();
-    xC.roundRect(-tireW/2, -tireH, tireW, tireH, tireW/2);
-    xC.fill();
-
-    // Podłużne rowki bieżnika
-    [-13, 0, 13].forEach(gx => {
-        xC.strokeStyle = 'rgba(0,0,0,0.65)';
-        xC.lineWidth = 2.5;
-        xC.beginPath();
-        xC.moveTo(gx, -tireH + 10);
-        xC.lineTo(gx, -10);
-        xC.stroke();
-    });
-
-    // Poprzeczne bloki bieżnika
-    const nBlocks = 7;
-    const blockUsable = tireH - 20;
-    for(let i=0; i<nBlocks; i++){
-        const ty = -tireH + 10 + (i + 0.5) * (blockUsable / nBlocks);
-        xC.fillStyle = 'rgba(48,48,48,0.9)';
-        xC.beginPath();
-        xC.roundRect(-tireW/2 + 4, ty - 4, tireW - 8, 8, 2);
-        xC.fill();
-    }
-
-    // Obrys ściany bocznej
-    xC.strokeStyle = 'rgba(90,90,90,0.55)';
-    xC.lineWidth = 1.5;
-    xC.beginPath();
-    xC.roundRect(-tireW/2, -tireH, tireW, tireH, tireW/2);
-    xC.stroke();
-
-    // Linia osi koła (przerywana)
-    xC.strokeStyle = 'rgba(255,255,255,0.12)';
-    xC.lineWidth = 1;
-    xC.setLineDash([3, 3]);
-    xC.beginPath();
-    xC.moveTo(-tireW/2 - 14, -tireH/2);
-    xC.lineTo(tireW/2 + 14, -tireH/2);
-    xC.stroke();
-    xC.setLineDash([]);
-
-    xC.restore();
-
-    // Elipsa kontaktu opony z nawierzchnią
-    const wearIntensity = Math.min(1, Math.abs(angleDeg)/3);
-    xC.globalAlpha = 0.5 + 0.4*wearIntensity;
-    xC.fillStyle = wearIntensity > 0.3 ? 'rgba(227,30,36,0.7)' : 'rgba(40,200,80,0.5)';
-    xC.beginPath();
-    xC.ellipse(cx, groundY, 26, 5, 0, 0, Math.PI*2);
-    xC.fill();
-    xC.globalAlpha = 1;
-
-    // Etykieta
-    xC.fillStyle = 'rgba(255,255,255,0.26)';
-    xC.font = '11px Segoe UI';
-    xC.textAlign = 'center';
-    xC.fillText('widok z przodu', cx, H-6);
+function gotoView(name, mark){
+    var v = VIEWS[name];
+    if(!v) return;
+    curView = name;
+    if(mark !== false) markCam(name);
+    if(RM){ cam.yaw = v.yaw; cam.pitch = v.pitch; cam.dist = v.dist; request(); return; }
+    var d = v.yaw - cam.yaw;
+    while(d >  Math.PI) d -= Math.PI*2;
+    while(d < -Math.PI) d += Math.PI*2;
+    camFrom = { yaw: cam.yaw, pitch: cam.pitch, dist: cam.dist };
+    camTo   = { yaw: cam.yaw + d, pitch: v.pitch, dist: v.dist };
+    camT = 0;
+    request();
+}
+function markCam(name){
+    var btns = sec.querySelectorAll('.cam-btn');
+    for(var i = 0; i < btns.length; i++) btns[i].classList.toggle('is-on', btns[i].dataset.cam === name);
 }
 
-function updateCamber(){
-    const v = parseInt(slC.value);
-    const deg = v/10;
-    document.getElementById('camber-badge').textContent = (deg >= 0 ? '+' : '') + deg.toFixed(1) + '°';
-    drawCamber(deg);
+/* ------------------------------------------------------- model zużycia --- */
+var NU = (window.innerWidth || 1024) < 700 ? 36 : 56;
+var loadU = new Array(NU);        /* rozkład nacisku po szerokości bieżnika  */
+var wearU = new Array(NU);        /* tempo ścierania (nacisk + tarcie boczne) */
+var MODEL = {};
 
-    // wear
-    const sections = document.querySelectorAll('#camber-wear .tire-section');
-    sections.forEach(s => s.className = 'tire-section');
-    if(deg > 2){
-        sections[0].classList.add('worn-heavy');
-        sections[1].classList.add('worn-med');
-        sections[2].classList.add('worn-light');
-    } else if(deg > 0.5){
-        sections[0].classList.add('worn-med');
-        sections[1].classList.add('worn-light');
-        sections[2].classList.add('ok');
-    } else if(deg < -2){
-        sections[4].classList.add('worn-heavy');
-        sections[3].classList.add('worn-med');
-        sections[2].classList.add('worn-light');
-    } else if(deg < -0.5){
-        sections[4].classList.add('worn-med');
-        sections[3].classList.add('worn-light');
-        sections[2].classList.add('ok');
-    } else {
-        sections.forEach(s => s.classList.add('ok'));
+function toeRad(){ return Math.atan((S.toe/2) / 400); }
+function toeDegPerWheel(){ return toeRad() * 180 / Math.PI; }
+
+function recompute(){
+    var infl = S.press - 2.2;
+    var i, u, sum = 0;
+    for(i = 0; i < NU; i++){
+        u = -1 + 2*(i + 0.5)/NU;                       /* -1 zewn., +1 wewn. */
+        var crown = 1 - 2*u*u;                          /* wybrzuszenie środka */
+        var p = (1 + 0.85*infl*crown) * (1 - 0.30*S.camber*u);
+        loadU[i] = p < 0.02 ? 0.02 : p;
+        sum += loadU[i];
+    }
+    /* Nacisk pionowy jest stały (ciężar auta), zmienia się tylko jego rozkład. */
+    var mean = sum / NU;
+    for(i = 0; i < NU; i++) loadU[i] /= mean;
+
+    /* Tarcie boczne od zbieżności: ściera całą szerokość, mocniej od strony
+       nabiegającej. Zbieżność dodatnia zjada krawędź zewnętrzną. */
+    var td = Math.abs(toeDegPerWheel());
+    var dir = S.toe > 0 ? 1 : -1;
+    var wmax = 0, wmin = 1e9;
+    for(i = 0; i < NU; i++){
+        u = -1 + 2*(i + 0.5)/NU;
+        var scrub = 2.4 * td * (1 - 0.7*dir*u);
+        wearU[i] = Math.pow(loadU[i], 1.3) + (scrub < 0 ? 0 : scrub);
+        if(wearU[i] > wmax) wmax = wearU[i];
+        if(wearU[i] < wmin) wmin = wearU[i];
     }
 
-    const facts = {
-        neg: 'Ujemny camber – stosowany sportowo. Poprawia przyczepność w zakrętach, ale przyspiesza zużycie wewnętrznej krawędzi opony.',
-        zero: 'Camber 0° – ustawienie standardowe. Opona pracuje całą szerokością, zużycie równomierne.',
-        pos: 'Dodatni camber – rzadko stosowany. Powoduje szybkie zużycie zewnętrznej krawędzi opony. Sygnał problemu z zawieszeniem.'
+    var life = clamp(100 / wmax, 4, 100);
+    var cs = Math.cos(S.caster * Math.PI/180);
+    MODEL = {
+        wmax: wmax,
+        wmin: wmin,
+        life: life,
+        kmLeft: 50000 * life/100,
+        toeDeg: toeDegPerWheel(),
+        trailMM: R_REAL_MM * Math.tan(S.caster * Math.PI/180),
+        stab: clamp(26 + S.caster*7.4 + S.toe*4.2 - Math.abs(S.camber)*3, 0, 100),
+        ret:  clamp(S.caster*11.2 - Math.abs(S.toe)*2, 0, 100),
+        agi:  clamp(52 - S.toe*8.5 - S.caster*2.2 + Math.max(0, -S.camber)*7, 0, 100),
+        eff:  clamp(14 + S.caster*7.2 + Math.abs(S.camber)*4 + (2.2 - S.press)*9, 0, 100),
+        cs: cs
     };
-    document.getElementById('camber-fact').innerHTML = '<i class="fas fa-lightbulb"></i> ' + (deg < -0.3 ? facts.neg : deg > 0.3 ? facts.pos : facts.zero);
 }
-slC.addEventListener('input', updateCamber);
-updateCamber();
 
-/* ============ TOE ============ */
-const cToe = document.getElementById('canvas-toe');
-const xT = cToe.getContext('2d');
-const slT = document.getElementById('slider-toe');
+/* ------------------------------------------------------------ transformy -- */
+var Mtot, kpDir, kpTop, kpBot, groundShift = 0, contact = [0,0,0], liftMM = 0;
 
-function drawToe(val){
-    const W = cToe.width, H = cToe.height;
-    clearCanvas(xT, W, H);
+function transform(){
+    var gam = -S.camber * EX_CAMBER * Math.PI/180;  /* camber: obrót wokół Z  */
+    var tau = -toeRad() * EX_TOE;                   /* zbieżność: obrót wokół Y */
+    var eps =  S.caster * Math.PI/180;        /* caster: pochylenie osi        */
+    var del = -S.steer * Math.PI/180;         /* skręt: obrót WOKÓŁ tej osi    */
 
-    const rad = (val/100) * 0.25;
-    const tireL = 84, tireW = 26;
-    const gap = 62;
+    /* Pion → pochylenie w tył o caster → pochylenie do wewnątrz o SAI. */
+    kpDir = [-Math.cos(eps) * Math.sin(SAI),
+              Math.cos(eps) * Math.cos(SAI),
+             -Math.sin(eps)];
+    var Mstatic = mmul(rotAxis(0,0,1, gam), rotAxis(0,1,0, tau));
+    Mtot = mmul(rotAxis(kpDir[0], kpDir[1], kpDir[2], del), Mstatic);
 
-    xT.save();
-    xT.translate(W/2, H/2);
-
-    // Linia osi pojazdu
-    xT.setLineDash([5,5]);
-    xT.strokeStyle = 'rgba(255,255,255,0.18)';
-    xT.lineWidth = 1;
-    xT.beginPath();
-    xT.moveTo(0, -H/2+20); xT.lineTo(0, H/2-20);
-    xT.stroke();
-    xT.setLineDash([]);
-
-    // Etykieta kierunku jazdy
-    xT.fillStyle = 'rgba(255,255,255,0.15)';
-    xT.font = '11px Segoe UI';
-    xT.textAlign = 'center';
-    xT.fillText('↑ kierunek jazdy', 0, -H/2+35);
-
-    // ---- MAGLOWNICA KIEROWNICZA ----
-    const rackY = 12;
-    const rackHW = 52;
-
-    xT.fillStyle = '#3c3c3c';
-    xT.beginPath();
-    xT.roundRect(-rackHW, rackY-5, rackHW*2, 10, 4);
-    xT.fill();
-    // Środkowa szczelina
-    xT.fillStyle = '#252525';
-    xT.fillRect(-rackHW+6, rackY-2, (rackHW-6)*2, 4);
-    // Wsporniki mocowania
-    [-16,16].forEach(x => {
-        xT.fillStyle = '#404040';
-        xT.fillRect(x-7, rackY-15, 14, 10);
-        xT.strokeStyle = '#505050';
-        xT.lineWidth = 2;
-        xT.beginPath();
-        xT.moveTo(x, rackY-5); xT.lineTo(x, rackY-15);
-        xT.stroke();
-    });
-    // Końce maglownicy (kulki przegubowe)
-    [-1,1].forEach(side => {
-        xT.fillStyle = '#888';
-        xT.beginPath();
-        xT.arc(side*rackHW, rackY, 7, 0, Math.PI*2);
-        xT.fill();
-        xT.fillStyle = '#444';
-        xT.beginPath();
-        xT.arc(side*rackHW, rackY, 3.5, 0, Math.PI*2);
-        xT.fill();
-    });
-
-    // ---- WAHACZE DOLNE (widok z góry, kształt V) ----
-    [-1,1].forEach(side => {
-        const wheelCX = side * gap;
-        const r = -side * rad;
-
-        // Tylny punkt piasty w układzie koła
-        const rearLX = 0, rearLY = tireL * 0.44;
-        const hubRearX = wheelCX + rearLX*Math.cos(r) - rearLY*Math.sin(r);
-        const hubRearY = rearLX*Math.sin(r) + rearLY*Math.cos(r);
-
-        // Przedni punkt piasty
-        const frontLY = -tireL * 0.28;
-        const hubFrontX = wheelCX - frontLY*Math.sin(r);
-        const hubFrontY = frontLY*Math.cos(r);
-
-        // Tulejka / punkt mocowania do podramienia
-        const bushX = side * 28;
-        const bushY = 62;
-
-        xT.strokeStyle = '#5e5e5e';
-        xT.lineWidth = 6;
-        xT.lineCap = 'round';
-        // Tylne ramię wahacza
-        xT.beginPath();
-        xT.moveTo(hubRearX, hubRearY);
-        xT.lineTo(bushX, bushY);
-        xT.stroke();
-        // Przednie ramię wahacza
-        xT.beginPath();
-        xT.moveTo(hubFrontX, hubFrontY);
-        xT.lineTo(bushX, bushY);
-        xT.stroke();
-
-        // Tulejka gumowa
-        xT.fillStyle = '#555';
-        xT.beginPath();
-        xT.arc(bushX, bushY, 7, 0, Math.PI*2);
-        xT.fill();
-        xT.fillStyle = '#2a2a2a';
-        xT.beginPath();
-        xT.arc(bushX, bushY, 3.5, 0, Math.PI*2);
-        xT.fill();
-    });
-
-    // ---- DRĄŻKI KIEROWNICZE ----
-    [-1,1].forEach(side => {
-        const rackEndX = side * rackHW;
-        const rackEndY = rackY;
-        const wheelCX = side * gap;
-        const r = -side * rad;
-
-        // Punkt przegubu na zwrotnicy (wewnętrzna strona koła, lekko z tyłu)
-        const knLX = -side * (tireW/2 + 4);
-        const knLY = tireL * 0.22;
-        const knX = wheelCX + knLX*Math.cos(r) - knLY*Math.sin(r);
-        const knY  = knLX*Math.sin(r) + knLY*Math.cos(r);
-
-        xT.strokeStyle = '#909090';
-        xT.lineWidth = 4;
-        xT.lineCap = 'round';
-        xT.beginPath();
-        xT.moveTo(rackEndX, rackEndY);
-        xT.lineTo(knX, knY);
-        xT.stroke();
-
-        // Kulka przegubu na zwrotnicy
-        xT.fillStyle = '#bbb';
-        xT.beginPath();
-        xT.arc(knX, knY, 5, 0, Math.PI*2);
-        xT.fill();
-    });
-
-    // ---- OPONY (widok z góry = prostokąty) ----
-    [-1,1].forEach(side => {
-        xT.save();
-        xT.translate(side * gap, 0);
-        xT.rotate(-side * rad);
-
-        // Boczna guma (sidewall)
-        xT.strokeStyle = '#111';
-        xT.lineWidth = 9;
-        xT.lineCap = 'round';
-        xT.beginPath();
-        xT.roundRect(-tireW/2-4, -tireL/2, tireW+8, tireL, 6);
-        xT.stroke();
-
-        // Bieżnik (tread surface)
-        const tGrad = xT.createLinearGradient(-tireW/2, 0, tireW/2, 0);
-        tGrad.addColorStop(0,'#1e1e1e'); tGrad.addColorStop(0.5,'#484848'); tGrad.addColorStop(1,'#1e1e1e');
-        xT.fillStyle = tGrad;
-        xT.beginPath();
-        xT.roundRect(-tireW/2, -tireL/2, tireW, tireL, 4);
-        xT.fill();
-
-        // Rowki bieżnika
-        xT.strokeStyle = 'rgba(255,255,255,0.1)';
-        xT.lineWidth = 1;
-        for(let i=-3;i<=3;i++){
-            xT.beginPath();
-            xT.moveTo(-tireW/2-4, i*12);
-            xT.lineTo(tireW/2+4, i*12);
-            xT.stroke();
+    var s, p, w, minY = 1e9;
+    for(s = 0; s < NS; s++){
+        for(p = 0; p < NP; p++){
+            w = mv(Mtot, MV[s][p], MW[s][p]);
+            w[1] += R;
+            if(PROF[p][2] !== 0 && w[1] < minY) minY = w[1];
         }
-
-        // Strzałka ścierania przy błędnym toe
-        if(Math.abs(val)>5){
-            const scrubDir = side * Math.sign(val);
-            xT.fillStyle = 'rgba(227,30,36,0.9)';
-            xT.font = 'bold 14px Segoe UI';
-            xT.textAlign = 'center';
-            xT.fillText(scrubDir > 0 ? '→' : '←', 0, 5);
+    }
+    /* Ile nadwozie idzie w gore przy skrecie: ta sama bryla, tylko bez skretu.
+       Roznica jest czysto efektem castera, nie przerysowania camberu. */
+    var base = minY;
+    if(S.steer !== 0){
+        base = 1e9;
+        var tmp = [0,0,0];
+        for(s = 0; s < NS; s++) for(p = 0; p < NP; p++){
+            if(PROF[p][2] === 0) continue;
+            mv(Mstatic, MV[s][p], tmp);
+            if(tmp[1] + R < base) base = tmp[1] + R;
         }
+    }
+    liftMM = (base - minY) * R_REAL_MM;
+    /* Koło stoi na jezdni: cała bryła schodzi tak, by najniższy punkt bieżnika
+       dotknął y=0. Różnica to realne podnoszenie nadwozia przy skręcie. */
+    groundShift = -minY;
+    var cx = 0, cz = 0, cn = 0;
+    for(s = 0; s < NS; s++) for(p = 0; p < NP; p++){
+        MW[s][p][1] += groundShift;
+        if(PROF[p][2] !== 0 && MW[s][p][1] < 0.02){ cx += MW[s][p][0]; cz += MW[s][p][2]; cn++; }
+    }
+    contact = cn ? [cx/cn, 0, cz/cn] : [0,0,0];
 
-        // Piasta (widok z góry)
-        xT.fillStyle = '#555';
-        xT.beginPath();
-        xT.arc(0, 0, 5, 0, Math.PI*2);
-        xT.fill();
+    kpTop = [ kpDir[0]*KP_TOP_T, R + groundShift + kpDir[1]*KP_TOP_T, kpDir[2]*KP_TOP_T];
+    kpBot = [-kpDir[0]*0.52, R + groundShift - kpDir[1]*0.52, -kpDir[2]*0.52];
+}
 
-        xT.restore();
+/* -------------------------------------------------------------- rzutnia --- */
+var VIEWM, VW = 0, VH = 0, FOC = 1, CX = 0, CY = 0;
+function setupView(w, h){
+    VW = w; VH = h;
+    VIEWM = mmul(rotAxis(1,0,0, cam.pitch), rotAxis(0,1,0, cam.yaw));
+    FOC = h * 1.30;
+    CX = w * 0.5;
+    CY = h * 0.672;                /* koło nisko: nad nim kolumna i opisy */
+}
+var _t = [0,0,0];
+function proj(p, o){
+    o = o || [0,0,0];
+    mv(VIEWM, [p[0], p[1] - R*0.52, p[2]], _t);
+    var d = cam.dist - _t[2];
+    if(d < 0.12) d = 0.12;
+    o[0] = CX + FOC * _t[0] / d;
+    o[1] = CY - FOC * _t[1] / d;
+    o[2] = d;
+    return o;
+}
+function camPos(){
+    /* pozycja obserwatora w świecie — do cullingu i cieniowania */
+    var inv = [VIEWM[0],VIEWM[3],VIEWM[6], VIEWM[1],VIEWM[4],VIEWM[7], VIEWM[2],VIEWM[5],VIEWM[8]];
+    var c = mv(inv, [0,0,cam.dist]);
+    return [c[0], c[1] + R*0.52, c[2]];
+}
+
+/* -------------------------------------------------------------- render --- */
+var LIGHT = norm([0.42, 0.86, 0.50]);
+var faces = [];
+function face(pts, col, z, bias){ faces.push({k:'q', p:pts, c:col, z:z + (bias||0)}); }
+/* Odcinek i kulka jako prymitywy sortowane razem ze scianami — dzieki temu
+   zawieszenie chowa sie za kolem SAMO, z glebokosci, a nie z kolejnosci wywolan
+   (ta klamala przy obrocie kamery na wewnetrzna strone auta). */
+function seg(a, b, w, col, bias){
+    var pa = proj(a), pb = proj(b);
+    faces.push({k:'l', p:[pa[0],pa[1],pb[0],pb[1]], c:col, w:w, z:(pa[2]+pb[2])/2 + (bias||0)});
+}
+function ball(p, r, col, bias){
+    var q = proj(p);
+    faces.push({k:'d', x:q[0], y:q[1], r:r, c:col, z:q[2] + (bias||0)});
+}
+
+function shade(n, base, spec){
+    var nd = dot(n, LIGHT);
+    if(nd < 0) nd = 0;
+    var k = 0.32 + 0.80*nd;
+    var c = [base[0]*k, base[1]*k, base[2]*k];
+    if(spec){
+        var h = norm([LIGHT[0], LIGHT[1] + 1.1, LIGHT[2] + 0.7]);
+        var sp = dot(n, h);
+        if(sp > 0){ sp = Math.pow(sp, 22) * spec * 210; c[0] += sp; c[1] += sp; c[2] += sp; }
+    }
+    return [clamp(c[0],0,255), clamp(c[1],0,255), clamp(c[2],0,255)];
+}
+
+var TIRE_GROOVE = [26, 24, 24];
+var TIRE_WALL   = [58, 54, 54];
+var METAL       = [146, 146, 150];
+
+function buildFaces(eye){
+    faces.length = 0;
+    var s, p, s2, a, b, c, d, n, mid, col, kind;
+
+    /* --- opona: pobocznice + bieżnik --- */
+    for(s = 0; s < NS; s++){
+        s2 = (s + 1) % NS;
+        for(p = 0; p < NP - 1; p++){
+            a = MW[s][p];   b = MW[s2][p];
+            c = MW[s2][p+1]; d = MW[s][p+1];
+            n = norm(cross(sub(b, a), sub(d, a)));
+            mid = [(a[0]+b[0]+c[0]+d[0])/4, (a[1]+b[1]+c[1]+d[1])/4, (a[2]+b[2]+c[2]+d[2])/4];
+            if(dot(n, sub(eye, mid)) <= 0) continue;          /* backface culling */
+
+            kind = (PROF[p][2] === 2 && PROF[p+1][2] === 2) ? 2 : (PROF[p][2] || PROF[p+1][2]);
+            if(kind === 2){ col = TIRE_GROOVE; }
+            else if(kind === 1){
+                /* klocki bieżnika: naprzemienne segmenty + poprzeczne nacięcia */
+                col = (s % 2) ? [92,88,86] : [78,74,73];
+                if(s % 5 === 0) col = [38,36,36];
+            } else {
+                col = TIRE_WALL;
+            }
+            var pa = proj(a), pb = proj(b), pc = proj(c), pd = proj(d);
+            var sc = shade(n, col, kind === 1 ? 0.10 : 0.18);
+            /* Swiatlo krawedziowe: bez niego czarna opona zlewa sie z ciemnym tlem. */
+            var vd = norm(sub(eye, mid));
+            var fr = Math.pow(1 - Math.min(1, Math.abs(dot(n, vd))), 3) * 38;
+            face([pa[0],pa[1], pb[0],pb[1], pc[0],pc[1], pd[0],pd[1]],
+                 rgb([sc[0]+fr*0.82, sc[1]+fr*0.88, sc[2]+fr]),
+                 (pa[2]+pb[2]+pc[2]+pd[2])/4);
+        }
+    }
+
+    /* --- felga: tarcza, ramiona, piasta --- */
+    var nWheel = norm(mv(Mtot, [1,0,0]));
+    var cen = [0, R + groundShift, 0];
+    function wheelPt(x, r, ang){
+        var q = mv(Mtot, [x, r*Math.cos(ang), r*Math.sin(ang)]);
+        return [q[0]+cen[0], q[1]+cen[1], q[2]+cen[2]];
+    }
+    var facing = dot(nWheel, sub(eye, cen)) > 0;
+    var spokes = 5, spokeHalf = 0.30;
+    /* Rant felgi konczy sie 0.638, czyli TROCHE za stopka opony (0.620) — inaczej
+       na styku dwoch sasiadujacych wielokatow zostaje wlosowa szczelina. */
+    var bands = [[0.0,0.13,'cap'], [0.13,0.30,'hub'], [0.30,0.545,'spoke'], [0.545,0.638,'lip']];
+    for(s = 0; s < NS; s++){
+        var a1 = s/NS*Math.PI*2, a2 = (s+1)/NS*Math.PI*2, am = (a1+a2)/2;
+        var onSpoke = false;
+        for(var k = 0; k < spokes; k++){
+            var da = am - k/spokes*Math.PI*2;
+            da = Math.atan2(Math.sin(da), Math.cos(da));
+            if(Math.abs(da) < spokeHalf) onSpoke = true;
+        }
+        for(var bI = 0; bI < bands.length; bI++){
+            var r0 = bands[bI][0], r1 = bands[bI][1], tag = bands[bI][2];
+            var xx = XR, base = METAL, spc = 0.55, bias = -0.004*(bI+1);
+            if(tag === 'spoke' && !onSpoke){ base = [27,26,28]; spc = 0.06; }
+            if(tag === 'lip'){ base = [178,178,182]; }
+            if(tag === 'hub'){ base = [120,120,124]; }
+            if(tag === 'cap'){ base = [86,86,90]; spc = 0.3; }
+            var q0 = wheelPt(xx, r0, a1), q1 = wheelPt(xx, r1, a1),
+                q2 = wheelPt(xx, r1, a2), q3 = wheelPt(xx, r0, a2);
+            var nn = facing ? nWheel : [-nWheel[0], -nWheel[1], -nWheel[2]];
+            var mm = [(q0[0]+q2[0])/2, (q0[1]+q2[1])/2, (q0[2]+q2[2])/2];
+            if(dot(nn, sub(eye, mm)) <= 0) continue;
+            var t0 = proj(q0), t1 = proj(q1), t2 = proj(q2), t3 = proj(q3);
+            /* lekki połysk zależny od kąta — metal ma kierunek */
+            var gl = (tag === 'spoke' || tag === 'lip') ? 0.82 + 0.34*Math.cos(am*2 + 0.7) : 1;
+            var cc = shade(nn, [base[0]*gl, base[1]*gl, base[2]*gl], spc);
+            face([t0[0],t0[1], t1[0],t1[1], t2[0],t2[1], t3[0],t3[1]],
+                 rgb(cc), (t0[2]+t1[2]+t2[2]+t3[2])/4 + bias);
+        }
+    }
+}
+
+function drawFaces(){
+    faces.sort(function(a, b){ return b.z - a.z; });
+    for(var i = 0; i < faces.length; i++){
+        var f = faces[i], p = f.p;
+        if(f.k === 'l'){
+            g.strokeStyle = f.c; g.lineWidth = f.w; g.lineCap = 'round';
+            g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.stroke();
+        } else if(f.k === 'd'){
+            g.fillStyle = f.c;
+            g.beginPath(); g.arc(f.x, f.y, f.r, 0, Math.PI*2); g.fill();
+        } else {
+            g.beginPath();
+            g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.lineTo(p[4], p[5]); g.lineTo(p[6], p[7]);
+            g.closePath();
+            g.fillStyle = f.c;
+            g.fill();
+        }
+    }
+}
+
+/* --------------------------------------------------------------- jezdnia -- */
+function drawGround(){
+    var ext = 2.4, step = 0.4, i, p1, p2;
+    g.save();
+    /* płyta */
+    var c0 = proj([-ext,0,-ext]), c1 = proj([ext,0,-ext]), c2 = proj([ext,0,ext]), c3 = proj([-ext,0,ext]);
+    g.beginPath(); g.moveTo(c0[0],c0[1]); g.lineTo(c1[0],c1[1]); g.lineTo(c2[0],c2[1]); g.lineTo(c3[0],c3[1]); g.closePath();
+    g.fillStyle = 'rgba(255,255,255,0.028)';
+    g.fill();
+    /* siatka */
+    g.lineWidth = 1;
+    for(i = -ext; i <= ext + 0.001; i += step){
+        var major = Math.abs(i) < 0.001;
+        g.strokeStyle = major ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.055)';
+        p1 = proj([i,0,-ext]); p2 = proj([i,0,ext]);
+        g.beginPath(); g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.stroke();
+        p1 = proj([-ext,0,i]); p2 = proj([ext,0,i]);
+        g.beginPath(); g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.stroke();
+    }
+    /* Miekka poswiata pod kolem: bez niej czarna opona wisi w czarnej pustce. */
+    var cPt = proj([0, 0, 0]);
+    var gr = g.createRadialGradient(cPt[0], cPt[1], 4, cPt[0], cPt[1], Math.max(60, VH*0.42));
+    gr.addColorStop(0, 'rgba(255,255,255,0.075)');
+    gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, VW, VH);
+    g.restore();
+}
+
+/* Odcisk opony: każdy pasek szerokości bieżnika dostaje długość proporcjonalną
+   do nacisku i kolor wg tempa ścierania. Przy camberze robi się z tego klin. */
+function drawPatch3D(over){
+    var i, u, half, xw, zc, q0, q1, q2, q3;
+    var base = 0.34;
+    for(i = 0; i < NU; i++){
+        u = -1 + 2*(i + 0.5)/NU;
+        var xt = -u * TW;
+        var w = mv(Mtot, [xt, -R, 0]);
+        xw = w[0]; zc = w[2];
+        half = base * clamp(loadU[i], 0, 2.4) / 2;
+        if(half < 0.004) continue;
+        var wu = TW/NU*1.05;
+        q0 = proj([xw - wu, 0.001, zc - half]);
+        q1 = proj([xw + wu, 0.001, zc - half]);
+        q2 = proj([xw + wu, 0.001, zc + half]);
+        q3 = proj([xw - wu, 0.001, zc + half]);
+        var t = clamp((wearU[i] - 0.85) / 1.5, 0, 1);
+        g.beginPath();
+        g.moveTo(q0[0],q0[1]); g.lineTo(q1[0],q1[1]); g.lineTo(q2[0],q2[1]); g.lineTo(q3[0],q3[1]);
+        g.closePath();
+        g.fillStyle = rgba(ramp(t), over ? (0.14 + 0.24*t) : (0.42 + 0.5*t));
+        g.fill();
+    }
+}
+
+/* ------------------------------------------------------------ zawieszenie -- */
+function tube(a, b, w, col){
+    var pa = proj(a), pb = proj(b);
+    g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(pa[0],pa[1]); g.lineTo(pb[0],pb[1]); g.stroke();
+}
+function knob(p, r, col){
+    var q = proj(p);
+    g.fillStyle = col;
+    g.beginPath(); g.arc(q[0], q[1], r, 0, Math.PI*2); g.fill();
+}
+function lerp3(a, b, t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+/* Punkt na osi sworznia oddalony o `t` od srodka kola. */
+function axisPt(t){ return [kpDir[0]*t, R + groundShift + kpDir[1]*t, kpDir[2]*t]; }
+function buildStrut(){
+    /* Oś sworznia zwrotnicy to prosta przez górne mocowanie kolumny i dolny
+       przegub kulowy — dlatego rysujemy oba, a nie samą kreskę w powietrzu. */
+    var i, y1 = R*0.24 + groundShift;
+    var a1 = [-1.06, y1, 0.56], a2 = [-1.06, y1, -0.42];
+    seg(a1, a2, 15, 'rgb(50,48,48)');            /* podramie */
+    seg(kpBot, a1, 8, 'rgb(96,93,93)');          /* wahacz: ramie przednie */
+    seg(kpBot, a2, 8, 'rgb(96,93,93)');          /* i tylne */
+    ball(a1, 5, 'rgb(70,68,68)');
+    ball(a2, 5, 'rgb(70,68,68)');
+
+    /* ⚠️ Kolumna MUSI zaczynać się dopiero NAD oponą. Oś sworznia przechodzi przez
+       środek koła, czyli przez płaszczyznę x=0, a opona tę płaszczyznę zajmuje.
+       Rysowana niżej kolumna (a zwłaszcza gruba sprężyna) jest WSPÓŁPŁASZCZYZNOWA
+       z gumą i sortowanie głębokością nie ma tam czego rozstrzygać: raz wychodzi
+       przed oponę, raz za nią. W prawdziwym aucie też widać tylko to, co wystaje
+       ponad koło, reszta siedzi w nadkolu. */
+    var dyz = Math.sqrt(kpDir[1]*kpDir[1] + kpDir[2]*kpDir[2]) || 1;
+    var base = axisPt((R - 0.02) / dyz);              /* korpus wychodzi zza opony */
+    var mid  = lerp3(base, kpTop, 0.34);
+    seg(base, mid, 14, 'rgb(76,73,73)');
+    seg(mid, kpTop, 5, 'rgb(160,157,157)');
+
+    /* ⚠️ Sprężyna NIE zaczyna się „ułamkiem drogi w górę" — zaczyna się tam, gdzie
+       jej ZWOJE mijają oponę. Zwój odchyla się od osi o `rad`, więc jego najniższy
+       punkt leży o ~0,34·rad bliżej opony niż sama oś; dochodzi zapas 0,09 R (≈29 mm),
+       żeby przy skrajnym camberze bark opony nie dotknął zwoju. Liczymy promieniowo
+       (stąd dzielenie przez `dyz`), bo opona to walec, a oś jest pochylona. */
+    var rad = 0.14, turns = 3, nSeg = 54, prev = null;
+    var s0 = axisPt((R + rad*0.34 + 0.09) / dyz);
+    var s1 = axisPt(KP_TOP_T - 0.07);
+    var d = norm(sub(kpTop, base));
+    var u = norm(cross(d, Math.abs(d[0]) < 0.9 ? [1,0,0] : [0,0,1]));
+    var v = cross(d, u);
+    for(i = 0; i <= nSeg; i++){
+        var t = i/nSeg, th = t*Math.PI*2*turns, ct = Math.cos(th), st = Math.sin(th);
+        var pC = lerp3(s0, s1, t);
+        var cur = [pC[0] + (u[0]*ct + v[0]*st)*rad,
+                   pC[1] + (u[1]*ct + v[1]*st)*rad,
+                   pC[2] + (u[2]*ct + v[2]*st)*rad];
+        if(prev) seg(prev, cur, 3.4, 'rgb(176,173,173)');
+        prev = cur;
+    }
+
+    ball(kpTop, 8, 'rgb(122,119,119)');
+    ball(kpBot, 6, 'rgb(206,206,208)');
+}
+
+/* -------------------------------------------------------------- adnotacje -- */
+function label(p, txt, col, dx, dy, align){
+    var q = proj(p);
+    g.font = '700 12px "Barlow Condensed", "Segoe UI", sans-serif';
+    g.textAlign = align || 'center';
+    g.textBaseline = 'middle';
+    var w = g.measureText(txt).width;
+    var x = q[0] + (dx||0), y = q[1] + (dy||0);
+    var bx = align === 'left' ? x - 4 : align === 'right' ? x - w - 4 : x - w/2 - 4;
+    g.fillStyle = 'rgba(14,13,13,0.78)';
+    g.fillRect(bx, y - 8, w + 8, 16);
+    g.fillStyle = col;
+    g.fillText(txt, x, y);
+}
+function dashLine(a, b, col){
+    var pa = proj(a), pb = proj(b);
+    g.save();
+    g.setLineDash([5,4]); g.strokeStyle = col; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(pa[0],pa[1]); g.lineTo(pb[0],pb[1]); g.stroke();
+    g.restore();
+}
+function arc2(centreW, aW, bW, col, txt){
+    /* Łuk między dwoma kierunkami rysujemy w 2D, między ich rzutami —
+       przy małych kątach to czytelniejsze niż uczciwy łuk w 3D. */
+    var c = proj(centreW), pa = proj(aW), pb = proj(bW);
+    var a1 = Math.atan2(pa[1]-c[1], pa[0]-c[0]);
+    var a2 = Math.atan2(pb[1]-c[1], pb[0]-c[0]);
+    var d = a2 - a1;
+    while(d >  Math.PI) d -= Math.PI*2;
+    while(d < -Math.PI) d += Math.PI*2;
+    var reach = Math.hypot(pa[0]-c[0], pa[1]-c[1]);
+    var L  = Math.min(190, Math.max(110, reach * 0.8));
+    var rr = L * 0.62;
+    g.fillStyle = rgba(RED, 0.2);
+    g.beginPath();
+    g.moveTo(c[0], c[1]);
+    g.lineTo(c[0] + Math.cos(a1)*L,     c[1] + Math.sin(a1)*L);
+    g.lineTo(c[0] + Math.cos(a1 + d)*L, c[1] + Math.sin(a1 + d)*L);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = col; g.lineWidth = 2;
+    g.beginPath(); g.arc(c[0], c[1], rr, a1, a1 + d, d < 0); g.stroke();
+    if(txt){
+        var am = a1 + d/2;
+        g.font = '900 13px "Barlow Condensed", "Segoe UI", sans-serif';
+        g.textAlign = 'center'; g.textBaseline = 'middle';
+        var lx = c[0] + Math.cos(am)*(rr + 26), ly = c[1] + Math.sin(am)*(rr + 26);
+        var w = g.measureText(txt).width;
+        g.fillStyle = 'rgba(14,13,13,0.85)';
+        g.fillRect(lx - w/2 - 5, ly - 9, w + 10, 18);
+        g.fillStyle = col;
+        g.fillText(txt, lx, ly);
+    }
+}
+
+function drawOverlay(){
+    var cen = [contact[0], R + groundShift, contact[2]];
+    var red = rgb(RED), redSoft = rgba(RED, 0.8);
+
+    if(active === 'camber'){
+        var up   = [contact[0], R*2.05 + groundShift, contact[2]];
+        var wAx  = mv(Mtot, [0, R*1.05, 0]);
+        var whUp = [contact[0] + wAx[0], R + groundShift + wAx[1], contact[2] + wAx[2]];
+        dashLine(contact, up, 'rgba(255,255,255,0.32)');
+        tube(contact, whUp, 2, redSoft);
+        arc2(contact, up, whUp, red, sf(S.camber, 1, '°'));
+        label(up, 'PION', 'rgba(255,255,255,0.5)', 0, -14);
+    } else if(active === 'toe'){
+        var fw  = [contact[0], 0.012, contact[2] + 1.75];
+        var wf0 = mv(Mtot, [0, 0, 1.75]);
+        var whFw = [contact[0] + wf0[0], 0.012, contact[2] + wf0[2]];
+        dashLine(contact, fw, 'rgba(255,255,255,0.32)');
+        tube(contact, whFw, 2, redSoft);
+        arc2(contact, fw, whFw, red, sf(S.toe, 1, ' mm'));
+        label(fw, 'KIERUNEK JAZDY', 'rgba(255,255,255,0.5)', 0, -13);
+    } else if(active === 'caster' || active === 'steer'){
+        var gy = R + groundShift;
+        var tt = gy / (kpDir[1] || 1);
+        var hit = [ -kpDir[0]*tt, 0.012, -kpDir[2]*tt ];
+        var top = [ kpDir[0]*1.42, gy + kpDir[1]*1.42, kpDir[2]*1.42 ];
+        tube(hit, top, 2.4, red);
+        knob(hit, 4, red);
+        dashLine([contact[0], 0.012, contact[2]], hit, rgba(RED, 0.55));
+        var vTop = [0, gy + 1.05, 0];
+        dashLine([0, 0.012, 0], vTop, 'rgba(255,255,255,0.3)');
+        if(S.caster > 0.4) arc2([0, gy, 0], vTop, top, red, nf(S.caster, 1) + '°');
+        label(top, 'OŚ SWORZNIA', red, 0, -14);
+        var midZ = [(contact[0]+hit[0])/2, 0.012, (contact[2]+hit[2])/2];
+        if(S.caster > 0.4) label(midZ, 'wyprzedzenie ' + Math.round(MODEL.trailMM) + ' mm', red, 0, 16);
+        var fwd = [contact[0], 0.012, contact[2] + 1.3];
+        dashLine([contact[0], 0.012, contact[2]], fwd, 'rgba(255,255,255,0.2)');
+        label(fwd, 'KIERUNEK JAZDY', 'rgba(255,255,255,0.5)', 0, -13);
+        if(Math.abs(S.steer) > 1){
+            label([contact[0], gy*1.72, contact[2]],
+                  (liftMM >= 0 ? 'podnosi nadwozie o ' : 'opuszcza nadwozie o ') + nf(Math.abs(liftMM), 1) + ' mm',
+                  Math.abs(liftMM) > 0.3 ? red : 'rgba(255,255,255,0.55)', 0, 0);
+        }
+    }
+
+    /* Która strona jest która — niezależnie od obrotu kamery. */
+    var o  = mv(Mtot, [ HW*2.9, -R*0.90, 0]);
+    var w2 = mv(Mtot, [-HW*2.9, -R*0.90, 0]);
+    var pO = [contact[0]+o[0],  R + groundShift + o[1],  contact[2]+o[2]];
+    var pW = [contact[0]+w2[0], R + groundShift + w2[1], contact[2]+w2[2]];
+    var qO = proj(pO), qW = proj(pW);
+    /* Patrzac wzdluz osi koła oba podpisy naloza sie na siebie — wtedy nic nie wnosza. */
+    if(Math.abs(qO[0] - qW[0]) > 64){
+        label(pO, 'ZEWN.', 'rgba(255,255,255,0.5)', 0, 0);
+        label(pW, 'WEWN.', 'rgba(255,255,255,0.5)', 0, 0);
+    }
+}
+
+/* ---------------------------------------------------------------- klatka -- */
+function sizeFor(c, ctx){
+    var r = c.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+    if(c.width !== Math.round(w*dpr) || c.height !== Math.round(h*dpr)){
+        c.width = Math.round(w*dpr); c.height = Math.round(h*dpr);
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    return [w, h];
+}
+
+function draw3D(){
+    var wh = sizeFor(cv, g);
+    setupView(wh[0], wh[1]);
+    transform();
+    var eye = camPos();
+    drawGround();
+    drawPatch3D(false);
+    buildFaces(eye);
+    /* Z góry patrzymy niemal wzdłuż osi kolumny: sprężyna rzutuje się wtedy na
+       kółka leżące dokładnie na bieżniku i zasłania to, po co się tu przyszło. */
+    if(cam.pitch < 1.15) buildStrut();
+    drawFaces();
+    drawPatch3D(true);      /* odcisk siedzi POD opona — bez tej warstwy nigdy go nie widac */
+    drawOverlay();
+}
+
+/* ------------------------------------------------- wykres odcisku (2D) --- */
+function drawPatchChart(){
+    var wh = sizeFor(pv, pg);
+    var W = wh[0], H = wh[1];
+    var padL = 6, padR = 6;
+    var bandH = Math.min(60, H * 0.42);
+    var bandY = H - bandH - 2;
+    var plotY = 8, plotH = bandY - plotY - 10;
+    var i, x, w = (W - padL - padR) / NU;
+
+    /* siatka wykresu nacisku */
+    pg.strokeStyle = 'rgba(255,255,255,0.07)';
+    pg.lineWidth = 1;
+    for(i = 0; i <= 2; i++){
+        var yy = plotY + plotH * i/2;
+        pg.beginPath(); pg.moveTo(padL, yy); pg.lineTo(W - padR, yy); pg.stroke();
+    }
+    /* linia nominalna 1,0 */
+    var yNom = plotY + plotH * (1 - 1/2.2);
+    pg.save();
+    pg.setLineDash([4,3]);
+    pg.strokeStyle = 'rgba(255,255,255,0.28)';
+    pg.beginPath(); pg.moveTo(padL, yNom); pg.lineTo(W - padR, yNom); pg.stroke();
+    pg.restore();
+    pg.font = '700 9px "Barlow Condensed", "Segoe UI", sans-serif';
+    pg.textAlign = 'left'; pg.textBaseline = 'bottom';
+    pg.fillStyle = 'rgba(255,255,255,0.34)';
+    pg.fillText('NACISK NOMINALNY', padL + 2, yNom - 2);
+
+    /* wypełnienie pod krzywą nacisku */
+    pg.beginPath();
+    pg.moveTo(padL, plotY + plotH);
+    for(i = 0; i < NU; i++){
+        x = padL + (i + 0.5) * w;
+        pg.lineTo(x, plotY + plotH * (1 - clamp(loadU[i], 0, 2.2)/2.2));
+    }
+    pg.lineTo(W - padR, plotY + plotH);
+    pg.closePath();
+    pg.fillStyle = rgba(RED, 0.14);
+    pg.fill();
+
+    pg.beginPath();
+    for(i = 0; i < NU; i++){
+        x = padL + (i + 0.5) * w;
+        var y = plotY + plotH * (1 - clamp(loadU[i], 0, 2.2)/2.2);
+        if(i === 0) pg.moveTo(x, y); else pg.lineTo(x, y);
+    }
+    pg.strokeStyle = rgb(INK); pg.lineWidth = 2; pg.lineJoin = 'round';
+    pg.stroke();
+
+    /* pas bieżnika */
+    var td = Math.abs(toeDegPerWheel());
+    for(i = 0; i < NU; i++){
+        x = padL + i * w;
+        var t = clamp((wearU[i] - 0.85) / 1.5, 0, 1);
+        pg.fillStyle = rgb(mix([46,44,44], ramp(t), 0.25 + 0.75*t));
+        pg.fillRect(x, bandY, w + 1, bandH);
+    }
+    /* rowki bieżnika */
+    pg.fillStyle = 'rgba(0,0,0,0.55)';
+    [0.22, 0.5, 0.78].forEach(function(f){
+        pg.fillRect(padL + (W - padL - padR)*f - 2, bandY, 4, bandH);
+    });
+    /* piłowanie: ukośne nacięcia, gdy zbieżność ściera bokiem */
+    if(td > 0.06){
+        pg.save();
+        pg.beginPath(); pg.rect(padL, bandY, W - padL - padR, bandH); pg.clip();
+        pg.strokeStyle = 'rgba(0,0,0,' + clamp(td*2.6, 0, 0.7) + ')';
+        pg.lineWidth = 2;
+        var dir = S.toe > 0 ? 1 : -1;
+        for(x = padL - bandH; x < W; x += 9){
+            pg.beginPath();
+            pg.moveTo(x, bandY + bandH);
+            pg.lineTo(x + dir*bandH*0.8, bandY);
+            pg.stroke();
+        }
+        pg.restore();
+    }
+    pg.strokeStyle = 'rgba(255,255,255,0.12)';
+    pg.lineWidth = 1;
+    pg.strokeRect(padL + 0.5, bandY + 0.5, W - padL - padR - 1, bandH - 1);
+}
+
+/* ------------------------------------------------------------- interfejs -- */
+var ids = { camber:'camber', toe:'toe', caster:'caster', steer:'steer', press:'press' };
+var inputs = {}, outs = {}, fills = {}, ctls = {};
+Object.keys(ids).forEach(function(k){
+    inputs[k] = document.getElementById('in-' + k);
+    outs[k]   = document.getElementById('out-' + k);
+    fills[k]  = document.getElementById('fill-' + k);
+    ctls[k]   = sec.querySelector('.ctl[data-p="' + k + '"]');
+});
+var hud = { camber:document.getElementById('hud-camber'), toe:document.getElementById('hud-toe'), caster:document.getElementById('hud-caster') };
+var verdict = document.getElementById('verdict');
+var hint = document.getElementById('lab-hint');
+
+function readInputs(){
+    S.camber = (+inputs.camber.value) / 10;
+    S.toe    = (+inputs.toe.value) / 10;
+    S.caster = (+inputs.caster.value) / 10;
+    S.steer  = (+inputs.steer.value);
+    S.press  = (+inputs.press.value) / 10;
+}
+
+function fillFor(k){
+    var el = inputs[k], f = fills[k];
+    if(!el || !f) return;
+    var min = +el.min, max = +el.max, v = +el.value;
+    var zero = (min < 0 && max > 0) ? 0 : min;
+    var pz = (zero - min) / (max - min) * 100;
+    var pv2 = (v - min) / (max - min) * 100;
+    f.style.left  = Math.min(pz, pv2) + '%';
+    f.style.width = Math.abs(pv2 - pz) + '%';
+}
+
+function outOfSpec(k){
+    var sp = SPEC[k];
+    if(!sp) return false;
+    return S[k] < sp[0] - 1e-9 || S[k] > sp[1] + 1e-9;
+}
+
+function verdictFor(){
+    var td = Math.abs(MODEL.toeDeg);
+    var list = [];
+    if(Math.abs(S.toe) > 0.6)
+        list.push({ w: td*22, tone:'bad',
+            t: '<b>Zbieżność poza normą.</b> Koło jest wleczone bokiem przy każdym metrze jazdy, bieżnik ściera się ukośnie i robi się z niego piła. Ten błąd niszczy opony szybciej niż jakikolwiek inny.' });
+    if(S.camber < -0.5)
+        list.push({ w: (Math.abs(S.camber)-0.5)*9, tone: S.camber < -1.5 ? 'bad' : 'warn',
+            t: '<b>Ujemny camber ponad normę.</b> Nacisk zbiera się na wewnętrznej krawędzi bieżnika. W zakręcie daje to przyczepność, na prostej zjada jeden pas opony, którego nie widać bez podniesienia auta.' });
+    if(S.camber > 0.5)
+        list.push({ w: (S.camber-0.5)*9, tone: S.camber > 1.5 ? 'bad' : 'warn',
+            t: '<b>Dodatni camber.</b> Pracuje zewnętrzna krawędź opony. Poza autami terenowymi to zwykle nie ustawienie, tylko zmęczone zawieszenie albo ślad po stłuczce.' });
+    if(S.press < 2.0)
+        list.push({ w: (2.0 - S.press)*12, tone: S.press < 1.8 ? 'bad' : 'warn',
+            t: '<b>Za niskie ciśnienie.</b> Opona ugina się w środku i przenosi obciążenie barkami. Rośnie opór toczenia, temperatura i spalanie, a bieżnik znika z obu krawędzi naraz.' });
+    if(S.press > 2.4)
+        list.push({ w: (S.press - 2.4)*12, tone: S.press > 2.8 ? 'bad' : 'warn',
+            t: '<b>Za wysokie ciśnienie.</b> Bieżnik wybrzusza się na środku i tylko ten pas dotyka drogi. Krótszy odcisk to dłuższa droga hamowania na mokrym.' });
+    if(S.caster < 3)
+        list.push({ w: (3 - S.caster)*4, tone:'warn',
+            t: '<b>Za mały caster.</b> Kierownica nie wraca sama do środka, auto pływa po pasie i wymaga ciągłego korygowania. Opony tego nie odczują, kierowca owszem.' });
+    if(S.caster > 8)
+        list.push({ w: (S.caster - 8)*4, tone:'warn',
+            t: '<b>Duży caster.</b> Stabilność na wprost wzorowa, ale kierownica robi się ciężka przy parkowaniu, a różnica między stronami ściąga auto w bok.' });
+
+    if(!list.length) return { tone:'ok',
+        t: 'Ustawienie w normie. Nacisk rozkłada się równomiernie na całej szerokości bieżnika, opona wypracuje pełny przebieg, a kierownica wraca sama.' };
+    list.sort(function(a,b){ return b.w - a.w; });
+    return list[0];
+}
+
+function setMeter(id, pct, text, col){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var bar = el.querySelector('.meter-bar i'), num = el.querySelector('b');
+    bar.style.transform = 'scaleX(' + clamp(pct,0,100)/100 + ')';
+    if(col) bar.style.background = col;
+    num.textContent = text;
+}
+
+function syncUI(){
+    outs.camber.textContent = sf(S.camber, 1, '°');
+    outs.toe.textContent    = sf(S.toe, 1, ' mm');
+    outs.caster.textContent = nf(S.caster, 1) + '°';
+    outs.steer.textContent  = S.steer === 0 ? '0°' : sf(S.steer, 0, '°');
+    outs.press.textContent  = nf(S.press, 1) + ' bar';
+
+    inputs.camber.setAttribute('aria-valuetext', sf(S.camber,1) + ' stopnia');
+    inputs.toe.setAttribute('aria-valuetext', sf(S.toe,1) + ' milimetra');
+    inputs.caster.setAttribute('aria-valuetext', nf(S.caster,1) + ' stopnia');
+    inputs.steer.setAttribute('aria-valuetext', sf(S.steer,0) + ' stopnia');
+    inputs.press.setAttribute('aria-valuetext', nf(S.press,1) + ' bara');
+
+    Object.keys(ids).forEach(function(k){
+        fillFor(k);
+        if(ctls[k]) ctls[k].classList.toggle('is-out', outOfSpec(k));
     });
 
-    // Łuki kąta zbieżności
-    if(Math.abs(val) > 3){
-        xT.strokeStyle = 'rgba(227,30,36,0.65)';
-        xT.lineWidth = 1.5;
-        [-1,1].forEach(side => {
-            xT.save();
-            xT.translate(side*gap, 0);
-            xT.beginPath();
-            xT.arc(0, -tireL/2, 44, -Math.PI/2, -Math.PI/2 - side*rad, side*rad > 0);
-            xT.stroke();
-            xT.restore();
+    hud.camber.textContent = sf(S.camber, 1, '°');
+    hud.toe.textContent    = sf(S.toe, 1, ' mm');
+    hud.caster.textContent = nf(S.caster, 1) + '°';
+    ['camber','toe','caster'].forEach(function(k){
+        var chip = sec.querySelector('.hud-chip[data-p="' + k + '"]');
+        if(!chip) return;
+        chip.classList.toggle('is-live', active === k);
+        chip.classList.toggle('is-off', outOfSpec(k));
+    });
+
+    var lifeCol = rgb(ramp(clamp((100 - MODEL.life) / 62, 0, 1)));
+    setMeter('m-life', MODEL.life, '≈ ' + km(MODEL.kmLeft) + ' km', lifeCol);
+    setMeter('m-stab', MODEL.stab, Math.round(MODEL.stab) + '%');
+    setMeter('m-ret',  MODEL.ret,  Math.round(MODEL.ret) + '%');
+    setMeter('m-agi',  MODEL.agi,  Math.round(MODEL.agi) + '%');
+    setMeter('m-eff',  MODEL.eff,  Math.round(MODEL.eff) + '%');
+
+    var v = verdictFor();
+    if(verdict.dataset.t !== v.t){
+        verdict.innerHTML = v.t;
+        verdict.dataset.t = v.t;
+    }
+    verdict.classList.toggle('is-warn', v.tone === 'warn');
+    verdict.classList.toggle('is-bad',  v.tone === 'bad');
+
+    cv.setAttribute('aria-label',
+        'Model 3D koła przedniego lewego. Camber ' + sf(S.camber,1) + ' stopnia, zbieżność ' +
+        sf(S.toe,1) + ' milimetra, caster ' + nf(S.caster,1) + ' stopnia, ciśnienie ' +
+        nf(S.press,1) + ' bara. Szacowana trwałość opony ' + Math.round(MODEL.life) + ' procent.');
+}
+
+/* ------------------------------------------------------------- pętla ----- */
+var pending = false;
+function request(){
+    if(pending) return;
+    pending = true;
+    requestAnimationFrame(frame);
+}
+function frame(){
+    pending = false;
+    if(camTo){
+        camT = Math.min(1, camT + (RM ? 1 : 0.075));
+        var e = 1 - Math.pow(1 - camT, 4);
+        cam.yaw   = camFrom.yaw   + (camTo.yaw   - camFrom.yaw)   * e;
+        cam.pitch = camFrom.pitch + (camTo.pitch - camFrom.pitch) * e;
+        cam.dist  = camFrom.dist  + (camTo.dist  - camFrom.dist)  * e;
+        if(camT >= 1) camTo = null; else request();
+    }
+    recompute();
+    draw3D();
+    drawPatchChart();
+}
+function update(){ readInputs(); recompute(); syncUI(); request(); }
+
+/* --------------------------------------------------------------- wejścia -- */
+Object.keys(ids).forEach(function(k){
+    var el = inputs[k];
+    if(!el) return;
+    function focusOn(){
+        if(hint) hint.classList.add('is-gone');
+        active = k;
+        var vn = VIEW_OF[k];
+        if(vn && curView !== vn) gotoView(vn);
+    }
+    el.addEventListener('input',       function(){ focusOn(); update(); });
+    el.addEventListener('pointerdown', function(){ focusOn(); update(); });
+    el.addEventListener('focus',       function(){ focusOn(); update(); });
+});
+
+sec.querySelectorAll('.cam-btn').forEach(function(b){
+    b.addEventListener('click', function(){ gotoView(b.dataset.cam); });
+});
+
+var reset = document.getElementById('lab-reset');
+if(reset) reset.addEventListener('click', function(){
+    animateTo({ camber:-3, toe:2, caster:45, press:22, steer:0 });
+});
+
+/* Wzorce zużycia sterują symulatorem: kliknięcie ustawia suwaki i przewija
+   widok do modelu, żeby od razu było widać, skąd bierze się dany bieżnik. */
+sec.querySelectorAll('.dx-sim').forEach(function(b){
+    b.addEventListener('click', function(){
+        var row = b.closest('.dx-row');
+        sec.querySelectorAll('.dx-row').forEach(function(r){ r.classList.toggle('is-picked', r === row); });
+        animateTo({
+            camber: +b.dataset.camber, toe: +b.dataset.toe,
+            caster: +b.dataset.caster, press: +b.dataset.press, steer: 0
         });
-    }
-
-    xT.restore();
-
-    // Etykieta stanu
-    const lbl = val < 0 ? 'Toe-out (rozbieżność)' : val > 0 ? 'Toe-in (zbieżność)' : 'Ustawienie neutralne';
-    xT.fillStyle = 'rgba(255,255,255,0.38)';
-    xT.font = '12px Segoe UI';
-    xT.textAlign = 'center';
-    xT.fillText(lbl, W/2, H-14);
-}
-
-function updateToe(){
-    const v = parseInt(slT.value);
-    const mm = (v/10).toFixed(1);
-    document.getElementById('toe-badge').textContent = (v >= 0 ? '+' : '') + mm + ' mm';
-    drawToe(v);
-
-    const sections = document.querySelectorAll('#toe-wear .tire-section');
-    sections.forEach(s => s.className = 'tire-section');
-    const abs = Math.abs(v);
-    if(abs > 30){
-        if(v > 0){ sections[0].classList.add('worn-heavy'); sections[1].classList.add('worn-med'); sections[2].classList.add('worn-light'); }
-        else     { sections[4].classList.add('worn-heavy'); sections[3].classList.add('worn-med'); sections[2].classList.add('worn-light'); }
-    } else if(abs > 15){
-        if(v > 0){ sections[0].classList.add('worn-med'); sections[1].classList.add('worn-light'); }
-        else     { sections[4].classList.add('worn-med'); sections[3].classList.add('worn-light'); }
-    } else {
-        sections.forEach(s => s.classList.add('ok'));
-    }
-
-    const facts = {
-        in: 'Zbieżność (toe-in): typowa dla osi tylnej aut FWD. Poprawia stabilność przy jeździe na wprost, ale przyspiesza zużycie zewnętrznych krawędzi.',
-        out: 'Rozbieżność (toe-out): stosowana sportowo na osi przedniej. Zwiększa zwrotność, ale pogarsza stabilność i ściera wewnętrzne krawędzie opon.',
-        zero: 'Neutralne ustawienie toe – idealne dla większości aut. Minimalne zużycie opon i optymalna stabilność.'
-    };
-    document.getElementById('toe-fact').innerHTML = '<i class="fas fa-lightbulb"></i> ' + (v > 5 ? facts.in : v < -5 ? facts.out : facts.zero);
-}
-slT.addEventListener('input', updateToe);
-updateToe();
-
-/* ============ CASTER ============ */
-const cCast = document.getElementById('canvas-caster');
-const xCast = cCast.getContext('2d');
-const slCast = document.getElementById('slider-caster');
-
-function drawCaster(pct){
-    const W = cCast.width, H = cCast.height;
-    clearCanvas(xCast, W, H);
-
-    const deg = pct / 10;
-    const rad = deg * Math.PI / 180;
-    const cx = W/2, groundY = H-30;
-    const tireR = 60, rimR = 44;
-
-    // Podłoże
-    xCast.fillStyle = 'rgba(255,255,255,0.06)';
-    xCast.fillRect(20, groundY, W-40, 8);
-    xCast.fillStyle = 'rgba(255,255,255,0.02)';
-    xCast.fillRect(20, groundY+8, W-40, 8);
-
-    const wx = 0, wy = -tireR;
-
-    xCast.save();
-    xCast.translate(cx, groundY);
-
-    // === ZAWIESZENIE (obraca się razem z osią sworznia) ===
-    xCast.save();
-    xCast.translate(0, wy);
-    xCast.rotate(-rad);
-    xCast.translate(0, -wy);
-
-    const chassisTopY = -(tireR*2 + 95);
-    const strutX = -5;
-    const strutBotY = -(tireR + 8);
-    const strutTopY = chassisTopY + 22;
-
-    // --- NADWOZIE ---
-    xCast.fillStyle = 'rgba(72,72,72,0.92)';
-    xCast.beginPath();
-    xCast.roundRect(-130, chassisTopY, 260, 20, 4);
-    xCast.fill();
-    xCast.strokeStyle = 'rgba(255,255,255,0.08)';
-    xCast.lineWidth = 1;
-    for(let xi = -120; xi < 130; xi += 13){
-        xCast.beginPath();
-        xCast.moveTo(xi, chassisTopY);
-        xCast.lineTo(xi - 9, chassisTopY + 20);
-        xCast.stroke();
-    }
-
-    // --- AMORTYZATOR ---
-    xCast.strokeStyle = '#4a4a4a';
-    xCast.lineWidth = 14;
-    xCast.lineCap = 'round';
-    xCast.beginPath();
-    xCast.moveTo(strutX, strutBotY);
-    xCast.lineTo(strutX, strutBotY - 52);
-    xCast.stroke();
-
-    xCast.strokeStyle = '#aaaaaa';
-    xCast.lineWidth = 5;
-    xCast.beginPath();
-    xCast.moveTo(strutX, strutBotY - 44);
-    xCast.lineTo(strutX, strutTopY + 8);
-    xCast.stroke();
-
-    const coilBot = strutBotY - 16;
-    const coilTop = strutTopY + 14;
-    const nCoils = 8;
-    xCast.strokeStyle = 'rgba(185,185,185,0.72)';
-    xCast.lineWidth = 2.5;
-    xCast.lineCap = 'butt';
-    xCast.beginPath();
-    for(let i=0; i<=nCoils; i++){
-        const t = i / nCoils;
-        const sy = coilBot + t*(coilTop - coilBot);
-        const sx = strutX + (i%2===0 ? -13 : 13);
-        if(i===0) xCast.moveTo(sx, sy); else xCast.lineTo(sx, sy);
-    }
-    xCast.stroke();
-
-    xCast.fillStyle = '#555';
-    xCast.beginPath();
-    xCast.roundRect(strutX-16, strutTopY-2, 32, 12, 3);
-    xCast.fill();
-
-    xCast.strokeStyle = '#555';
-    xCast.lineWidth = 5;
-    xCast.lineCap = 'round';
-    xCast.beginPath();
-    xCast.moveTo(strutX, strutBotY);
-    xCast.lineTo(0, -tireR);
-    xCast.stroke();
-
-    // --- WAHACZ ---
-    const bjX = -3, bjY = -(tireR - 16);
-    const bx1 = -78, by1 = -38;
-    const bx2 = -76, by2 = -18;
-
-    xCast.fillStyle = 'rgba(62,62,62,0.92)';
-    xCast.beginPath();
-    xCast.roundRect(-88, by2-4, 16, by1-by2+8, 3);
-    xCast.fill();
-
-    xCast.strokeStyle = '#6e6e6e';
-    xCast.lineWidth = 7;
-    xCast.lineCap = 'round';
-    xCast.beginPath();
-    xCast.moveTo(bjX, bjY); xCast.lineTo(bx1, by1);
-    xCast.stroke();
-    xCast.beginPath();
-    xCast.moveTo(bjX, bjY); xCast.lineTo(bx2, by2);
-    xCast.stroke();
-
-    xCast.fillStyle = '#cccccc';
-    xCast.beginPath(); xCast.arc(bjX, bjY, 7, 0, Math.PI*2); xCast.fill();
-    xCast.fillStyle = '#333';
-    xCast.beginPath(); xCast.arc(bjX, bjY, 3.5, 0, Math.PI*2); xCast.fill();
-
-    [[bx1,by1],[bx2,by2]].forEach(([bx,by]) => {
-        xCast.fillStyle = '#666';
-        xCast.beginPath(); xCast.arc(bx, by, 7, 0, Math.PI*2); xCast.fill();
-        xCast.fillStyle = '#333';
-        xCast.beginPath(); xCast.arc(bx, by, 3.5, 0, Math.PI*2); xCast.fill();
+        var pr = +b.dataset.press;
+        var target = (Math.abs(+b.dataset.toe) > 6 || pr < 20 || pr > 24) ? 'toe' : 'camber';
+        active = target; gotoView(target);
+        var top = sec.querySelector('.lab').getBoundingClientRect().top + window.pageYOffset - 150;
+        window.scrollTo({ top: top, behavior: RM ? 'auto' : 'smooth' });
     });
+});
 
-    xCast.restore(); // end suspension rotation
-
-    // --- OPONA (widok z boku = okrąg, nie obraca się) ---
-
-    xCast.strokeStyle = '#181818';
-    xCast.lineWidth = (tireR - rimR) * 2;
-    xCast.beginPath();
-    xCast.arc(wx, wy, rimR, 0, Math.PI*2);
-    xCast.stroke();
-
-    const rimGrad = xCast.createRadialGradient(wx-8, wy-10, 2, wx, wy, rimR);
-    rimGrad.addColorStop(0, '#909090');
-    rimGrad.addColorStop(0.35, '#585858');
-    rimGrad.addColorStop(1, '#2c2c2c');
-    xCast.fillStyle = rimGrad;
-    xCast.beginPath();
-    xCast.arc(wx, wy, rimR, 0, Math.PI*2);
-    xCast.fill();
-
-    for(let i=0; i<5; i++){
-        const a = (i/5)*Math.PI*2;
-        xCast.strokeStyle = '#666';
-        xCast.lineWidth = 4;
-        xCast.beginPath();
-        xCast.moveTo(wx, wy);
-        xCast.lineTo(wx + Math.cos(a)*(rimR-8), wy + Math.sin(a)*(rimR-8));
-        xCast.stroke();
+function animateTo(target){
+    var from = {}, keys = Object.keys(target);
+    keys.forEach(function(k){ from[k] = +inputs[k].value; });
+    if(RM){
+        keys.forEach(function(k){ inputs[k].value = target[k]; });
+        update(); return;
     }
-
-    xCast.strokeStyle = '#606060';
-    xCast.lineWidth = 2;
-    xCast.beginPath();
-    xCast.arc(wx, wy, rimR, 0, Math.PI*2);
-    xCast.stroke();
-
-    xCast.fillStyle = '#555';
-    xCast.beginPath(); xCast.arc(wx, wy, 12, 0, Math.PI*2); xCast.fill();
-    xCast.fillStyle = '#333';
-    xCast.beginPath(); xCast.arc(wx, wy, 5, 0, Math.PI*2); xCast.fill();
-
-    // === OŚ SWORZNIA ZWROTNICY (pochylona o kąt kastera) ===
-    const axisLen = 220;
-    const axTopX = wx - Math.sin(rad) * axisLen * 0.45;
-    const axTopY = wy - Math.cos(rad) * axisLen * 0.45;
-    const axBotX = wx + Math.sin(rad) * axisLen * 0.55;
-    const axBotY = wy + Math.cos(rad) * axisLen * 0.55;
-
-    xCast.strokeStyle = 'rgba(227,30,36,0.9)';
-    xCast.lineWidth = 3;
-    xCast.setLineDash([]);
-    xCast.beginPath();
-    xCast.moveTo(axTopX, axTopY);
-    xCast.lineTo(axBotX, axBotY);
-    xCast.stroke();
-
-    // Punkt przecięcia osi z podłożem
-    const tGround = -axTopY / Math.cos(rad);
-    const axisGroundX = axTopX + Math.sin(rad) * tGround;
-
-    // Mechaniczny ślad
-    if(deg > 0.5){
-        xCast.strokeStyle = 'rgba(227,30,36,0.4)';
-        xCast.lineWidth = 1.5;
-        xCast.setLineDash([4,4]);
-        xCast.beginPath();
-        xCast.moveTo(axisGroundX, 0);
-        xCast.lineTo(wx, 0);
-        xCast.stroke();
-        xCast.setLineDash([]);
-        xCast.fillStyle = 'rgba(227,30,36,0.8)';
-        xCast.font = '11px Segoe UI';
-        xCast.textAlign = 'center';
-        xCast.fillText('mechaniczny ślad', (axisGroundX + wx)/2, -10);
-    }
-    xCast.setLineDash([]);
-
-    // Łuk kąta kastera
-    if(deg > 0.3){
-        xCast.strokeStyle = 'rgba(255,255,255,0.3)';
-        xCast.lineWidth = 1.5;
-        xCast.beginPath();
-        xCast.moveTo(wx, wy - 50);
-        xCast.lineTo(wx, wy + 70);
-        xCast.stroke();
-
-        xCast.strokeStyle = 'rgba(227,30,36,0.7)';
-        xCast.lineWidth = 2;
-        xCast.beginPath();
-        xCast.arc(wx, wy, 50, -Math.PI/2 - rad, -Math.PI/2, false);
-        xCast.stroke();
-
-        xCast.fillStyle = 'rgba(227,30,36,0.9)';
-        xCast.font = 'bold 13px Segoe UI';
-        xCast.textAlign = 'center';
-        xCast.fillText(deg.toFixed(1)+'°', wx - 44, wy - 28);
-    }
-
-    xCast.restore();
-
-    // Strzałka kierunku jazdy
-    const arrowY = 36, arrowX2 = W - 12, arrowX1 = arrowX2 - 38;
-    xCast.strokeStyle = 'rgba(255,255,255,0.45)';
-    xCast.lineWidth = 2;
-    xCast.lineCap = 'round';
-    xCast.beginPath();
-    xCast.moveTo(arrowX1, arrowY); xCast.lineTo(arrowX2, arrowY);
-    xCast.moveTo(arrowX2 - 8, arrowY - 5); xCast.lineTo(arrowX2, arrowY); xCast.lineTo(arrowX2 - 8, arrowY + 5);
-    xCast.stroke();
-    xCast.fillStyle = 'rgba(255,255,255,0.42)';
-    xCast.font = '10px Segoe UI';
-    xCast.textAlign = 'right';
-    xCast.fillText('kierunek jazdy', arrowX2, arrowY - 7);
-
-    xCast.fillStyle = 'rgba(255,255,255,0.35)';
-    xCast.font = '11px Segoe UI';
-    xCast.textAlign = 'center';
-    xCast.fillText('widok z boku', W/2, 20);
-    xCast.fillStyle = 'rgba(227,30,36,0.7)';
-    xCast.fillText('oś sworznia zwrotnicy', W/2, H-8);
+    var t0 = performance.now(), dur = 520;
+    (function step(now){
+        var t = clamp((now - t0)/dur, 0, 1);
+        var e = 1 - Math.pow(1 - t, 4);
+        keys.forEach(function(k){ inputs[k].value = Math.round(from[k] + (target[k] - from[k])*e); });
+        update();
+        if(t < 1) requestAnimationFrame(step);
+    })(t0);
 }
 
-function updateCaster(){
-    const v = parseInt(slCast.value);
-    const deg = v/10;
-    document.getElementById('caster-badge').textContent = deg.toFixed(1)+'°';
-    drawCaster(v);
-
-    const pctStab = Math.min(100, v*1.1);
-    const pctReturn = Math.min(100, v*1.05);
-    const pctForce = Math.min(100, v*0.95);
-    document.getElementById('caster-stability').style.width = pctStab+'%';
-    document.getElementById('caster-return').style.width = pctReturn+'%';
-    document.getElementById('caster-force').style.width = pctForce+'%';
-
-    const facts = [
-        'Bardzo mały kąt caster – auto „pływa\", brak samoprostowania kierownicy. Utrudnione utrzymanie prostoliniowości.',
-        'Mały kąt caster – kierownica lekka, ale stabilność niewystarczająca. Może wymagać korekty.',
-        'Standardowy caster – kompromis między stabilnością a wygodą. Typowe ustawienie fabryczne.',
-        'Sportowy caster – bardzo dobra stabilność, wyraźne samoprostowanie. Kierownica może być nieco cięższa.',
-        'Bardzo duży caster – świetna stabilność przy prostoliniowej jeździe, ale ciężka kierownica i ograniczona zwrotność.'
-    ];
-    const fi = Math.min(4, Math.floor(v/22));
-    document.getElementById('caster-fact').innerHTML = '<i class="fas fa-lightbulb"></i> ' + facts[fi];
+/* orbita myszą/palcem */
+var drag = null;
+cv.addEventListener('pointerdown', function(e){
+    drag = { x:e.clientX, y:e.clientY, yaw:cam.yaw, pitch:cam.pitch };
+    cv.setPointerCapture(e.pointerId);
+    cv.classList.add('is-grabbed');
+    if(hint) hint.classList.add('is-gone');
+});
+cv.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    camTo = null;
+    cam.yaw   = drag.yaw   + (e.clientX - drag.x) * 0.009;
+    cam.pitch = clamp(drag.pitch + (e.clientY - drag.y) * 0.007, -0.25, 1.45);
+    markCam('');
+    request();
+});
+function endDrag(e){
+    if(!drag) return;
+    drag = null;
+    cv.classList.remove('is-grabbed');
+    try{ cv.releasePointerCapture(e.pointerId); }catch(err){}
 }
-slCast.addEventListener('input', updateCaster);
-updateCaster();
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
 
+/* ------------------------------------------------------------------ start -- */
+var ro = window.ResizeObserver ? new ResizeObserver(function(){ request(); }) : null;
+if(ro){ ro.observe(cv); ro.observe(pv); }
+else window.addEventListener('resize', request);
+
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(request);
+
+update();
+gotoView('iso');
 })();
 </script>
 
@@ -1558,7 +2151,7 @@ updateCaster();
         </a>
     </nav>
 </section>
-<div class="cta-section">
+<div class="cta-section" id="umow">
     <h3>Umów geometrię 3D</h3>
     <p>Dzwoń śmiało z pytaniami – opiszemy co należy zrobić w przypadku Twojego auta zanim jeszcze do nas przyjedziesz.</p>
     <div class="btn-group" style="animation:none; justify-content:center;">
@@ -1566,6 +2159,10 @@ updateCaster();
         <a href="cennik.html" class="btn btn-outline"><i class="fas fa-receipt"></i>&nbsp; Pełny cennik</a>
     </div>
 </div>
+
+<button class="to-top" type="button" aria-label="Wróć na górę strony" hidden>
+    <i class="fas fa-chevron-up" aria-hidden="true"></i>
+</button>
 
 <footer>
     <nav class="footer-nav" aria-label="Mapa serwisu">
@@ -1612,5 +2209,66 @@ updateCaster();
 </footer>
 <script src="js/nav.js?v=20260727a"></script>
 <script>initPage();</script>
+
+<script>
+/* ---- SPIS SEKCJI: podswietlanie aktywnej + powrot na gore ---- */
+(function(){
+    const list = document.querySelector('.secnav-list');
+    const btn  = document.querySelector('.to-top');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (list) {
+        const links = Array.from(list.querySelectorAll('a'));
+        const pairs = links
+            .map(a => ({ a, sec: document.querySelector(a.getAttribute('href')) }))
+            .filter(p => p.sec);
+
+        const setCurrent = link => {
+            links.forEach(a => {
+                const on = a === link;
+                a.classList.toggle('is-current', on);
+                if (on) { a.setAttribute('aria-current', 'true'); }
+                else { a.removeAttribute('aria-current'); }
+            });
+            /* na mobile pasek przewija sie poziomo - wciagamy aktywna pozycje w kadr */
+            if (link && list.scrollWidth > list.clientWidth) {
+                const r = link.getBoundingClientRect();
+                const lr = list.getBoundingClientRect();
+                if (r.left < lr.left + 8 || r.right > lr.right - 8) {
+                    list.scrollTo({
+                        left: list.scrollLeft + (r.left - lr.left) - 24,
+                        behavior: reduce ? 'auto' : 'smooth'
+                    });
+                }
+            }
+        };
+
+        if ('IntersectionObserver' in window) {
+            const seen = new Map();
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(e => seen.set(e.target, e.isIntersecting));
+                const hit = pairs.find(p => seen.get(p.sec));
+                if (hit) { setCurrent(hit.a); }
+            }, { rootMargin: '-170px 0px -55% 0px', threshold: 0 });
+            pairs.forEach(p => io.observe(p.sec));
+        }
+    }
+
+    if (btn) {
+        btn.hidden = false;
+        const toggle = () => btn.classList.toggle('is-visible', window.scrollY > 700);
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (ticking) { return; }
+            ticking = true;
+            requestAnimationFrame(() => { toggle(); ticking = false; });
+        }, { passive: true });
+        toggle();
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+        });
+    }
+})();
+</script>
 </body>
 </html>

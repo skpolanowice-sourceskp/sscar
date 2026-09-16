@@ -5,7 +5,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 „Utrzymanie tego pliku" na końcu). Szczegóły marki/designu są w `PRODUCT.md` i `DESIGN.md`
 — tu ich nie powtarzamy.
 
-> Daty w tym pliku są bezwzględne. Stan na: **2026-09-15**.
+> Daty w tym pliku są bezwzględne. Stan na: **2026-09-16**.
 
 ---
 
@@ -253,6 +253,190 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-16 (d)** — **`geometria-3d.html`: laboratorium geometrii przepisane od zera na
+  JEDEN model 3D. Stara sekcja (3 osobne canvasy 2D + 4 kafelki „wzorców zużycia") usunięta.**
+  **Dlaczego w ogóle:** poprzednia wersja rysowała camber, toe i caster jako **trzy niezależne
+  obrazki 2D**, więc nie dało się z niej odczytać tego, co w tych kątach najważniejsze: że to
+  **trzy obroty tej samej bryły** i że one na siebie działają. Pasek „zużycie opony" był pięcioma
+  `<div>`-ami przypisywanymi drabinką `if/else`, a kafelki wzorców — czerwonymi prostokątami,
+  których nikt nie rozszyfruje.
+  **Co jest teraz:** jedno koło w 3D (własny rasteryzator na `<canvas>`, bez bibliotek — zgodnie
+  z zasadą „bez zależności"), pięć suwaków (camber, zbieżność, caster, **skręt koła**,
+  **ciśnienie**), odczyt odcisku opony i pięć mierników skutków. Całość **inline w `geometria-3d.html`**
+  (precedens `dekoder.html`), więc `css/styles.css` NIETKNIĘTE — **żadnego bumpu `?v=` na 16 stronach**.
+
+  **⚠️ UKŁAD WSPÓŁRZĘDNYCH — przeczytaj przed jakąkolwiek zmianą w tym kodzie.**
+  Prawoskrętny: **X+ = na zewnątrz auta, Y+ = w górę, Z+ = kierunek jazdy**. Koło przednie lewe,
+  punkt styku w (0,0,0), środek koła w (0,R,0). Stąd wynikają znaki, które łatwo pomylić:
+  camber = `rotZ(-γ)`, zbieżność = `rotY(-τ)`, oś sworznia `d = [-cos ε·sin λ, cos ε·cos λ, -sin ε]`
+  (ε = caster, λ = SAI), skręt =
+  obrót **wokół tej osi** o `-δ`. Składanie: `M = Rskręt · Rcamber · Rtoe`. Dzięki temu przyrost
+  camberu i **podnoszenie nadwozia przy skręcaniu wychodzą same z macierzy** — nic tego nie udaje.
+  Podnoszenie liczymy jako różnicę najniższego punktu bieżnika względem tej samej bryły **bez
+  skrętu** (inaczej przerysowanie kątów zafałszowałoby milimetry).
+
+  **⚠️ KĄTY W MODELU SĄ PRZERYSOWANE, LICZBY NIE.** `EX_CAMBER = 2.6`, `EX_TOE = 28`.
+  Prawdziwy camber to 1–3°, a zbieżność 0,2° na koło — w bryle byłyby **niewidzialne** (pierwsza
+  wersja remastera nie miała przerysowania i koło wyglądało na idealnie proste). Mnożnik działa
+  **wyłącznie na macierz obrotu**; każdy odczyt (HUD, suwaki, werdykt, wyprzedzenie, przebieg)
+  liczony jest z wartości rzeczywistych. Jest o tym zdanie w panelu — nie usuwać go.
+
+  **Model zużycia (zastępuje drabinkę `if/else`):** rozkład nacisku po szerokości bieżnika
+  `load(u) = (1 + 0,85·Δbar·(1−2u²)) · (1 − 0,30·camber·u)`, **normalizowany do stałej sumy**
+  (ciężar auta się nie zmienia, zmienia się tylko jego rozkład), ścieranie `load^1,3` plus tarcie
+  boczne od zbieżności. Trwałość = `50 000 km / max(w)`, bo oponę wymienia się przez **najbardziej
+  zużyty pas**, nie przez średnią. Wychodzą liczby zgodne z praktyką: fabryka 44 000 km,
+  camber −2,4° → 25 000, zbieżność +4,2 mm → 24 000, ciśnienie 1,5 bar → 19 000.
+
+  **Lista wzorców bieżnika** (`.dx-list`) to numerowana lista ze zdjęciami, a nie siatka
+  identycznych kart (`DESIGN.md` tego zakazuje). Każda pozycja ma przycisk **„Odtwórz"**, który
+  **ustawia suwaki symulatora** — obie połowy sekcji są połączone, zamiast stać obok siebie.
+  Przy okazji zniknęło `border-left: 3px` z `.geo-fact` (zakazany pasek boczny) i `Segoe UI`
+  z etykiet canvasu (jest Barlow Condensed).
+
+  **⚠️ PUŁAPKI, KTÓRE KOSZTOWAŁY NAJWIĘCEJ CZASU — nie powtarzać:**
+  1. **⚠️ NAJDROŻSZY BŁĄD TEJ SEKCJI: felga musi być PEŁNĄ TARCZĄ w jednej płaszczyźnie.**
+     Prześwity między ramionami były najpierw udawane osobną płaszczyzną na innej głębokości
+     (stała `XD`), a ta płaszczyzna ich nie zakrywała — w kole były więc **prawdziwe dziury**
+     i przez nie było widać sprężynę kolumny stojącą ZA kołem (zgłoszone ze zrzutu z przeglądarki).
+     **Trop, który prowadzi donikąd:** sprężyna rysuje się WCZEŚNIEJ niż ściany (sprawdzone po
+     indeksach w `ops.json`), więc „kolejność rysowania jest dobra" i wygląda na to, że błędu nie ma.
+     Błąd nie siedzi w kolejności, tylko w SIATCE. **Test, który rozstrzyga to w 30 sekund:**
+     wyrenderuj **same ściany na jaskrawej magencie** — dziury widać natychmiast.
+     Teraz wszystkie pasma felgi (`cap`/`hub`/`spoke`/`lip`) leżą w jednej płaszczyźnie `XR`,
+     prześwit to wyłącznie ciemniejszy kolor, a rant sięga 0,638, czyli **za stopkę opony (0,620)**,
+     żeby na styku dwóch sąsiadujących wielokątów nie została włosowa szczelina.
+  2. **⚠️ DRUGI NAJDROŻSZY: kolumna McPhersona NIE MOŻE być rysowana niżej niż górna krawędź opony.**
+     Oś sworznia przechodzi przez środek koła, czyli leży w płaszczyźnie `x = 0` — a opona tę samą
+     płaszczyznę **zajmuje**. Kolumna (a zwłaszcza gruba sprężyna) rysowana na całej długości jest
+     więc **współpłaszczyznowa z gumą**: siedzi w środku opony i sortowanie głębokością nie ma tam
+     czego rozstrzygać, bo oba obiekty są w tym samym miejscu. Raz wychodzi przed oponę, raz za nią.
+     **Żadna poprawka w kolejności rysowania tego nie naprawi, bo to błąd GEOMETRII, nie renderingu.**
+     Rozwiązanie jest takie, jak w prawdziwym aucie: widać wyłącznie to, co wystaje **ponad koło**,
+     reszta siedzi w nadkolu. `buildStrut()` liczy więc punkt przebicia górą opony
+     (`tOut = (R - 0,02) / kpDir[1]`) i zaczyna rysować dopiero tam. Z tego samego powodu `kpBot`
+     (dolny przegub) musi zostać **w obrębie felgi** (0,52 od środka, przy 0,72 siedział w gumie).
+     W widoku z góry kolumna jest **chowana w całości** (`cam.pitch < 1.15`), bo patrzymy wtedy
+     wzdłuż jej osi i sprężyna rzutuje się na kółka leżące dokładnie na bieżniku.
+  3. **⚠️ TRZECI: sprężyna to nie oś — zwoje wracają w dół, ku oponie.**
+     Kolumna zaczynała się nad oponą (pułapka 2), ale sama **sprężyna** startowała
+     „12% drogi od korpusu do górnego mocowania" — ułamkiem, który nie wie nic o oponie.
+     Zwój odchyla się od osi o `rad`, więc jego najniższy punkt leży o ~0,34·`rad` bliżej
+     opony niż oś; przy 10-centymetrowym zapasie osi zostawało go **8 mm** dla zwoju
+     i w widoku z przodu sprężyna kładła się na górnej krawędzi bieżnika.
+     **Zapamiętaj: każdy element rysowany wokół osi liczy się od SWOJEJ obwiedni, nie od osi.**
+     Teraz start liczy `axisPt((R + rad*0.34 + 0.09) / dyz)` — promieniowo (`dyz` = rzut osi
+     na płaszczyznę koła), bo opona to walec, a oś jest pochylona o caster i SAI.
+     **Jak to sprawdzić bez przeglądarki (test niezależny od rendera):** przenieś punkty
+     sprężyny do układu KOŁA (`q = Mᵀ·(p − środek)`) i sprawdź walec `|q.x| ≤ 0,306`,
+     `√(q.y²+q.z²) ≤ 1,002`, przemiatając wszystkie suwaki. Dla obecnych wartości najmniejszy
+     luz wychodzi **+0,109 R ≈ 35 mm** (najgorzej: camber +2°, zbieżność −5 mm, skręt 17°);
+     przed poprawką było **+0,024 R ≈ 8 mm**, czyli formalnie „nie w oponie", a mimo to
+     w rzucie nie do odróżnienia od kolizji. **Sam brak przecięcia w 3D NIE wystarcza — liczy
+     się luz, który widać w rzucie.** Przy okazji: górne mocowanie poszło z `1,42` na
+     `KP_TOP_T = 1,52` (miejsce na sprężynę), a `CY` z `0,645·h` na `0,672·h`, bo przy 1,52
+     kulka mocowania wychodziła poza górną krawędź canvasu w widoku castera (zmierzone
+     na `ops.json`: y = −8,5 px).
+  4. **⚠️ CZWARTY: bez kąta pochylenia sworznia (SAI) kolumna stoi w złym miejscu.**
+     `SAI` było najpierw 0, „bo strona nie omawia tego kąta". Skutek: oś sworznia jest wtedy
+     pionowa, więc kolumna ze sprężyną ląduje **dokładnie nad środkiem koła**, a nie tam, gdzie
+     stoi w aucie. Zgłoszone przez właściciela słowami „sprężyna powinna być po stronie wahacza"
+     i to jest dokładnie ta diagnoza. W realnym McPhersonie oś jest pochylona do wewnątrz
+     o kilkanaście stopni i **dlatego** kolumna stoi nad wahaczem, po stronie wewnętrznej
+     (i dlatego wieżyczki są w środku komory silnika). Teraz `SAI = 15°`, stałe i nieregulowane.
+     **Nie psuje to żadnej nakładki dydaktycznej:** w widoku z boku (caster) SAI jest niewidoczny,
+     bo patrzymy wzdłuż osi poprzecznej, więc łuk dalej pokazuje czysty caster. Efekt uboczny
+     jest pożądany: podnoszenie nadwozia przy skręcie staje się **asymetryczne** dla lewego
+     i prawego wychylenia, bo caster i SAI raz się dodają, a raz odejmują. Tak jest w aucie.
+  5. **Zawieszenie trafia do tej samej listy co ściany, sortowanej głębokością** (`seg()` i `ball()`
+     obok `face()`), zamiast rysować się osobno przed nimi. Kolejność wywołań kłamie, gdy kamerą
+     obrócić się na wewnętrzną stronę auta — głębokość nie kłamie nigdy. Sprężyna jest rozbita
+     na pojedyncze odcinki, więc jej tylna połowa chowa się za przednią sama z siebie.
+     **To samo w sobie NIE naprawiło sprężyny w kole** — patrz punkt 2.
+  6. **Odcisk opony jest ZAWSZE zasłonięty przez oponę.** Z każdej kamery, z góry też, bo wtedy
+     zasłania go góra koła. Dlatego `drawPatch3D()` wołamy **dwa razy**: przed ścianami (pełne
+     krycie, to co wystaje na jezdnię) i po nich półprzezroczyście.
+  7. **Łuk kąta przy 2–5° jest nieczytelny** (sześciopikselowy ogryzek). `arc2()` rysuje więc
+     **klin** — długi wąski trójkąt — i dopiero na nim łuk z liczbą.
+  8. **Kamera musi śledzić aktywny suwak przez `curView`, nie przez `active`.** Przy starcie
+     `active = 'camber'`, a kamera stoi w izometrii; porównywanie do `active` powodowało, że
+     pierwsze dotknięcie suwaka camber nie przełączało widoku.
+  9. **Czerwień marki jest w `oklch()`** — `toRGB()` maluje ją na pikselu 1×1 i odczytuje
+     `getImageData`, zamiast zgadywać RGB. Nieobsługiwany format → alpha 0 → fallback.
+
+  **⚠️ JAK TO TESTOWAĆ BEZ PRZEGLĄDARKI (nowe narzędzia w `tools/`).** W tym środowisku nie ma ani
+  przeglądarki headless, ani `node-canvas`. Powstał komplet: `tools/canvas_extract.py` (wycina IIFE
+  ze strony), `tools/canvas_harness.js` (atrapa DOM + canvas, uruchamia **prawdziwy** kod, przemiata
+  wszystkie suwaki i przyciski, nagrywa operacje rysowania do `ops.json`), `tools/canvas_render.py`
+  (`ops.json` → PNG przez PIL). Złapało realne błędy (dziura w feldze, brak przerysowania kątów,
+  kamera nieśledząca suwaka) zanim cokolwiek poszło na serwer. **Zastrzeżenie:** kompozycja alfa
+  w rendererze potrafi wyciągnąć na wierzch element narysowany wcześniej — kolejność weryfikuj
+  **po indeksach w `ops.json`**, nie na oko z PNG.
+
+  **Zdjęcia bieżników:** 5 sztuk wygenerowanych przez kie.ai (`gpt-image-2`, 1K, 4:3), źródła
+  w `img/_src/wear/*.jpg` (JPEG q92 — PNG-i ważyły 2,5 MB sztuka), wyjście przez **nową listę
+  `THUMB_SOURCES` w `tools/optimize_images.py`** → po jednym `-800.webp` (łącznie 335 KB).
+  Warianty 1400/2200 byłyby balastem przy kolumnie 150 px. Dwa ujęcia trzeba było powtórzyć:
+  model nie rozumie „oba barki starte" ani „piłowanie" z ogólnego opisu — pomaga wymuszenie widoku
+  **prosto z góry na bieżnik** i rozpisanie wzorca na **numerowane strefy w poprzek szerokości**.
+
+  **Stan: NIEWDROŻONE** — zmiany tylko lokalnie. Do wgrania FTP: `geometria-3d.html` + 5 plików
+  `img/wear-*-800.webp`. Właściciel oglądał wersję roboczą w przeglądarce 2026-09-16
+  **cztery razy** i za każdym razem zgłaszał TO SAMO („sprężyna siedzi w kole"), ale przyczyna
+  była **za każdym razem inna**: (1) dziury w feldze, przez które widać było sprężynę stojącą
+  ZA kołem; (2) kolumna rysowana wewnątrz bryły opony; (3) sprężyna z za małym luzem nad
+  bieżnikiem; (4) brak SAI, przez co całość stała nad środkiem koła zamiast nad wahaczem.
+  Cztery niezależne przyczyny jednego objawu, więc każda kolejna poprawka usuwała go tylko
+  częściowo — i za każdym razem wyglądało to jak „nic się nie zmieniło". **Wniosek na przyszłość:**
+  przy tym symulatorze nie poprzestawać na pierwszym znalezionym powodzie i sprawdzać CZTERY
+  rzeczy osobno — SIATKĘ (test magentą), POŁOŻENIE elementów względem bryły opony, LUZ każdego
+  elementu liczony od jego własnej obwiedni (nie od osi) oraz ANATOMIĘ zawieszenia.
+  Reszta nadal **nie była oglądana w prawdziwej przeglądarce**: sprawdzić po deployu płynność
+  na telefonie i zachowanie `touch-action: pan-y`.
+- **2026-09-16 (c)** — **`geometria-3d.html`: pasek statystyk zastąpiony sticky spisem sekcji + „na górę".
+  Przy okazji: DWIE ikony Font Awesome PRO renderowały się jako puste miejsce.**
+  **⚠️ PUŁAPKA DO ZAPAMIĘTANIA: strona ładuje Font Awesome 6.0.0 w wersji FREE**
+  (`cdnjs.../font-awesome/6.0.0/css/all.min.css`), a w kodzie siedziały dwie ikony **Pro**:
+  `fa-steering-wheel` (`geometria-3d.html` „Prowadzenie auta" i `badania-powypadkowe.html`
+  „Układ kierowniczy") oraz `fa-tire` (`badania-powypadkowe.html`). Klasa Pro w buildzie Free
+  **nie daje żadnego błędu** — po prostu nie ma glifu, więc `<i>` zostaje pustym miejscem
+  i w siatce `.feature-item` widać dziurę w kolumnie ikon. Zamienione na Free:
+  `fa-road`, `fa-car-side`, `fa-dharmachakra`.
+  **Jak sprawdzić CAŁĄ stronę jednym poleceniem** (robić po każdym dodaniu ikony):
+  ```bash
+  curl -s -o fa.css https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css
+  for i in $(grep -rho 'fa-[a-z0-9-]*' *.html | sort -u); do grep -q "\.$i:" fa.css || echo "$i"; done
+  ```
+  (`fa-lg` i `fa-spin` w wyniku to fałszywe alarmy — klasy narzędziowe, definiowane bez `::before`.)
+  **Zmiana główna:** sekcja `.stats-row` (150 zł / 4 koła / 0,01°) na `geometria-3d.html` zastąpiona
+  **sticky spisem sekcji** `.secnav` — strona ma ~1600 linii i wielkie interaktywne laboratorium,
+  więc ruch „góra↔dół" był bolesny. Pasek klei się pod nagłówkiem (`top:100px`, mobile `80px`;
+  `z-index:900` < header 1000), ma 5 pozycji numerowanych `01–05` (Barlow Condensed, numer czerwony —
+  ten sam idiom co `.nav-index-item` z `DESIGN.md`) + wyróżniony „Umów termin" → `#umow`.
+  Aktywna sekcja podświetlana przez `IntersectionObserver` (`rootMargin: -170px 0px -55%`,
+  pierwsza przecinająca w kolejności dokumentu = aktywna). Na mobile lista przewija się poziomo
+  i sama wciąga aktywną pozycję w kadr. Doszedł dyskretny `.to-top` (fixed, prawy dolny róg,
+  pojawia się po 700 px scrolla). Nowe `id` na sekcjach: `#dlaczego`, `#kiedy`, `#jak-pracujemy`,
+  `#cennik` (+ istniejące `#geo-lab`) i `#umow` na `.cta-section`.
+  **⚠️ PUŁAPKA `position: sticky` W TYM PROJEKCIE:** `css/styles.css` ma `overflow-x: hidden`
+  **na `html` I na `body`** (linie 43 i 55). `overflow-x: hidden` wymusza `overflow-y: auto`,
+  co robi z elementu **kontener przewijania** — i `position: sticky` u potomków przestaje działać.
+  Dlatego blok inline zaczyna się od `html, body { overflow-x: clip; }` — `clip` przycina tak samo,
+  ale **nie tworzy kontenera przewijania**. Pamiętaj o tym przy każdym kolejnym sticky poza
+  `.rodo-index`/`.rez-summary` (te siedzą w gridzie i miały szczęście).
+  **Druga pułapka (własny błąd, złapany przed końcem):** `.to-top` ma w HTML atrybut `hidden`
+  (zdejmowany przez JS), ale autorska reguła `.to-top { display: grid }` **wygrywa z `[hidden]`
+  z arkusza UA** — bez JS zostałby niewidoczny, ale klikalny krążek 44 px w rogu. Trzeba jawnego
+  `.to-top[hidden] { display: none }`. To samo dotyczy każdego elementu łączącego `hidden` z `display`.
+  **CSS i JS są INLINE w `geometria-3d.html`** (precedens `dekoder.html`, prefiks `secnav-`) —
+  `css/styles.css` nietknięte, więc **żadnego bumpu `?v=` na 16 stronach**.
+  **Odstępstwo od `DESIGN.md`:** udokumentowany tam układ strony usługowej to
+  `breadcrumb → service-page-hero → stats-row → sekcje → cta-section → footer`. `geometria-3d.html`
+  ma teraz `secnav` zamiast `stats-row`; `.stats-row` dalej żyje na `badania-techniczne.html`,
+  `klimatyzacja.html` i `wulkanizacja.html` (CSS w `styles.css` bez zmian).
+  **Stan: NIEWDROŻONE** — zmiany tylko lokalnie, do wgrania FTP: `geometria-3d.html`,
+  `badania-powypadkowe.html`. Sticky i scroll-spy **nie były sprawdzone w przeglądarce**
+  (brak narzędzia headless w środowisku) — obejrzeć po deployu.
 - **2026-09-16 (b)** — **Blog w górnym menu na wszystkich stronach + brakujący breakpoint nagłówka.**
   **Błąd do protokołu:** przy dodawaniu bloga (2026-09-15 b) link trafił do stopki na 16 stronach,
   ale do **headera tylko na `o-nas.html`** — czyszczący `awk` dopasowywał `class="nav-link"`, a tam
