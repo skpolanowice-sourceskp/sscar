@@ -5,7 +5,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 „Utrzymanie tego pliku" na końcu). Szczegóły marki/designu są w `PRODUCT.md` i `DESIGN.md`
 — tu ich nie powtarzamy.
 
-> Daty w tym pliku są bezwzględne. Stan na: **2026-09-16**.
+> Daty w tym pliku są bezwzględne. Stan na: **2026-09-17**.
 
 ---
 
@@ -253,6 +253,25 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-17** — **Nowy model WebGL w `geometria-3d.html`**, zaakceptowany przez właściciela.
+  Proceduralne siatki: opona z przestrzennym bieżnikiem i napisami, dzielone ramiona felgi,
+  nawiercana tarcza hamulcowa, czerwony zacisk, amortyzator, sprężyna i wahacz. Materiały,
+  oświetlenie studyjne i mapa cieni; bez bibliotek, zewnętrznych modeli i tekstur.
+  `createWheelRenderer()` tworzy `.geo-webgl` pod oryginalnym canvasem adnotacji.
+  Suwaki, wykres, treści i model liczbowy zachowane; oryginalny profil `PROF` służy teraz
+  wyłącznie obliczeniom kontaktu/kinematyki. Kadrowanie mobilne uwzględnia pasek HUD.
+  Całość nadal inline; `css/styles.css` i `js/` bez zmian. Kopia robocza
+  `geometria-3d-laboratorium.html` usunięta po przeniesieniu zaakceptowanej wersji.
+  **Weryfikacja:** Chromium/WebGL, 320–1440 px, wszystkie suwaki i kamery, obrót,
+  5 przykładów zużycia, reset, klawiatura, reduced motion, utrata/odtworzenie kontekstu
+  WebGL i fallback bez WebGL. Wyniki liczbowe porównane z poprzednią wersją dla nastaw
+  minimalnych, maksymalnych i bazowych. Testy telefonu to emulacja viewportu, nie fizyczny telefon.
+  **Ważne:** poniższe historyczne obejścia rasteryzatora 2D (pełna tarcza felgi, sortowanie
+  prymitywów malarzem) nie dotyczą nowego renderera — przesłanianie rozstrzyga bufor głębokości.
+  Atrapa `tools/canvas_harness.js` nie weryfikuje nowej sceny WebGL; używać prawdziwej przeglądarki.
+  **Stan: WDROŻONE przez FTP 2026-09-17.** Odczyt FTP i publiczny HTML identyczne z plikiem
+  lokalnym; renderowanie produkcyjne sprawdzone w Chromium bez błędów JS/WebGL. Hosting może
+  zwracać klientom HTTP stronę „Weryfikacja” — weryfikacja w przeglądarce przeszła poprawnie.
 - **2026-09-16 (d)** — **`geometria-3d.html`: laboratorium geometrii przepisane od zera na
   JEDEN model 3D. Stara sekcja (3 osobne canvasy 2D + 4 kafelki „wzorców zużycia") usunięta.**
   **Dlaczego w ogóle:** poprzednia wersja rysowała camber, toe i caster jako **trzy niezależne

@@ -1090,6 +1090,15 @@ html, body { overflow-x: clip; }
 @media (prefers-reduced-motion: reduce) {
     .to-top { transition: none; }
 }
+/* New model only: original page layout and controls are unchanged. */
+.lab-viewport { isolation: isolate; min-height: 420px; }
+.geo-webgl { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 48% 43%, #2d3038 0%, #17191f 48%, #0c0d10 100%); }
+#geo-canvas { position: absolute; inset: 0; height: 100%; aspect-ratio: auto; z-index: 1; }
+.lab-hud, .lab-hint { z-index: 2; }
+@media (max-width: 1024px) { .lab-viewport { height: min(80vw, 540px); min-height: 0; flex: none; } }
+@media (max-width: 620px) { .lab-viewport { height: min(100vw, 480px); } }
+
 </style>
 
 <script>
@@ -1188,7 +1197,8 @@ var TW = 0.22;                    /* połowa szerokości samego bieżnika */
    Wyprzedzenie od castera zostaje nietknięte — przesuwamy oś tylko w osi X. */
 var KP_OFF = Math.tan(SAI);       /* = R·tan(SAI), R = 1 */
 
-/* Profil opony: [x (× HW), r, rodzaj] — 0 ścianka, 1 bieżnik, 2 rowek. */
+/* Profil kontaktowy do obliczeń kinematyki, niezależny od nowej siatki WebGL.
+   [x (× HW), r, rodzaj] — 0 ścianka, 1 bieżnik, 2 rowek. */
 var PROF = [
     [-0.70, 0.620, 0], [-1.02, 0.820, 0], [-0.99, 0.940, 0],
     [-0.88, 0.992, 1], [-0.66, 0.999, 1],
@@ -1201,7 +1211,7 @@ var PROF = [
     [ 0.99, 0.940, 0], [ 1.02, 0.820, 0], [ 0.70, 0.620, 0]
 ];
 var NP = PROF.length;
-var NS = (window.innerWidth || 1024) < 700 ? 22 : 30;   /* segmentów obwodowych */
+var NS = 96;   /* segmentów obwodowych */
 var XR = 0.74 * HW;               /* płaszczyzna tarczy felgi */
 
 var MV = [];                      /* wierzchołki opony w układzie koła */
@@ -1401,9 +1411,10 @@ var VIEWM, VW = 0, VH = 0, FOC = 1, CX = 0, CY = 0;
 function setupView(w, h){
     VW = w; VH = h;
     VIEWM = mmul(rotAxis(1,0,0, cam.pitch), rotAxis(0,1,0, cam.yaw));
-    FOC = h * 1.30;
+    var topInset = window.innerWidth <= 620 ? 58 : 0;
+    FOC = Math.min((h - topInset) * 1.22, w * 1.42);
     CX = w * 0.5;
-    CY = h * 0.672;                /* koło nisko: nad nim kolumna i opisy */
+    CY = topInset + (h - topInset) * 0.672;                /* koło nisko: nad nim kolumna i opisy */
 }
 var _t = [0,0,0];
 function proj(p, o){
@@ -1423,206 +1434,502 @@ function camPos(){
     return [c[0], c[1] + R*0.52, c[2]];
 }
 
-/* -------------------------------------------------------------- render --- */
-var LIGHT = norm([0.42, 0.86, 0.50]);
-var faces = [];
-function face(pts, col, z, bias){ faces.push({k:'q', p:pts, c:col, z:z + (bias||0)}); }
-/* Odcinek i kulka jako prymitywy sortowane razem ze scianami — dzieki temu
-   zawieszenie chowa sie za kolem SAMO, z glebokosci, a nie z kolejnosci wywolan
-   (ta klamala przy obrocie kamery na wewnetrzna strone auta). */
-function seg(a, b, w, col, bias){
+function tube(a, b, w, col){
     var pa = proj(a), pb = proj(b);
-    faces.push({k:'l', p:[pa[0],pa[1],pb[0],pb[1]], c:col, w:w, z:(pa[2]+pb[2])/2 + (bias||0)});
+    g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(pa[0],pa[1]); g.lineTo(pb[0],pb[1]); g.stroke();
 }
-function ball(p, r, col, bias){
+function knob(p, r, col){
     var q = proj(p);
-    faces.push({k:'d', x:q[0], y:q[1], r:r, c:col, z:q[2] + (bias||0)});
+    g.fillStyle = col;
+    g.beginPath(); g.arc(q[0], q[1], r, 0, Math.PI*2); g.fill();
 }
-
-/* ⚠️ Wnętrze koła patrzy w cień nadkola, więc `n·L` jest tam ujemne i zwykłe
-   `shade()` maluje metal na czarno — a czarna dziura czyta się jak dziura
-   w oponie, czyli dokładnie jak usterka, którą naprawiamy. Dla ścian
-   odwróconych od światła bierzemy |n·L|: to światło wypełniające, odbite
-   od jezdni i nadkola. */
-function shadeInner(n, base){
-    var k = 0.30 + 0.62*Math.abs(dot(n, LIGHT));
-    return [clamp(base[0]*k,0,255), clamp(base[1]*k,0,255), clamp(base[2]*k,0,255)];
+function lerp3(a, b, t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+/* Punkt na osi sworznia: `t` liczone od wysokości piasty, oś odsunięta o KP_OFF. */
+function axisPt(t){
+    return [-KP_OFF + kpDir[0]*t, R + groundShift + kpDir[1]*t, kpDir[2]*t];
 }
-function shade(n, base, spec){
-    var nd = dot(n, LIGHT);
-    if(nd < 0) nd = 0;
-    var k = 0.32 + 0.80*nd;
-    var c = [base[0]*k, base[1]*k, base[2]*k];
-    if(spec){
-        var h = norm([LIGHT[0], LIGHT[1] + 1.1, LIGHT[2] + 0.7]);
-        var sp = dot(n, h);
-        if(sp > 0){ sp = Math.pow(sp, 22) * spec * 210; c[0] += sp; c[1] += sp; c[2] += sp; }
-    }
-    return [clamp(c[0],0,255), clamp(c[1],0,255), clamp(c[2],0,255)];
-}
+/* New procedural WebGL model. No libraries, CDN, downloaded models or textures.
+   Units: tyre radius = 1. Wheel axis X; up Y; vehicle forward Z.
+   GPU depth testing replaces the old painter's algorithm. All meshes are built
+   once; steering/camber/caster share the original simulator's kinematics. */
+function createWheelRenderer(overlay){
+    var canvas = document.createElement('canvas');
+    canvas.className = 'geo-webgl';
+    canvas.setAttribute('aria-hidden', 'true');
+    overlay.parentNode.insertBefore(canvas, overlay);
+    var gl = canvas.getContext('webgl', {alpha:true, antialias:true, premultipliedAlpha:false});
+    if(!gl){ canvas.remove(); return null; }
+    var lost = false;
+    canvas.addEventListener('webglcontextlost', function(e){ e.preventDefault(); lost=true; request(); });
+    canvas.addEventListener('webglcontextrestored', function(){
+        canvas.remove(); studio = createWheelRenderer(overlay); request();
+    });
 
-var TIRE_GROOVE = [26, 24, 24];
-var TIRE_WALL   = [58, 54, 54];
-var METAL       = [146, 146, 150];
-
-function buildFaces(eye){
-    faces.length = 0;
-    var s, p, s2, a, b, c, d, n, mid, col, kind;
-
-    /* --- opona: pobocznice + bieżnik --- */
-    for(s = 0; s < NS; s++){
-        s2 = (s + 1) % NS;
-        for(p = 0; p < NP - 1; p++){
-            a = MW[s][p];   b = MW[s2][p];
-            c = MW[s2][p+1]; d = MW[s][p+1];
-            n = norm(cross(sub(b, a), sub(d, a)));
-            mid = [(a[0]+b[0]+c[0]+d[0])/4, (a[1]+b[1]+c[1]+d[1])/4, (a[2]+b[2]+c[2]+d[2])/4];
-            if(dot(n, sub(eye, mid)) <= 0) continue;          /* backface culling */
-
-            kind = (PROF[p][2] === 2 && PROF[p+1][2] === 2) ? 2 : (PROF[p][2] || PROF[p+1][2]);
-            if(kind === 2){ col = TIRE_GROOVE; }
-            else if(kind === 1){
-                /* klocki bieżnika: naprzemienne segmenty + poprzeczne nacięcia */
-                col = (s % 2) ? [92,88,86] : [78,74,73];
-                if(s % 5 === 0) col = [38,36,36];
-            } else {
-                col = TIRE_WALL;
+    var VS = `
+        attribute vec3 position;
+        attribute vec3 normal;
+        uniform mat4 model, projection, lightMatrix;
+        varying vec3 vWorld, vNormal, vLocal, vLocalNormal;
+        varying vec4 vShadow;
+        void main(){
+            vec4 p = model * vec4(position, 1.0);
+            vWorld = p.xyz;
+            vNormal = normalize(mat3(model) * normal);
+            vLocal = position; vLocalNormal = normal;
+            vShadow = lightMatrix * p;
+            gl_Position = projection * p;
+        }`;
+    var FS = `
+        precision highp float;
+        varying vec3 vWorld, vNormal, vLocal, vLocalNormal;
+        varying vec4 vShadow;
+        uniform vec3 color, eye, wheelCenter;
+        uniform float roughness, metallic, kind, shadowTexel;
+        uniform mat3 wheelInverse;
+        uniform sampler2D sidewall, shadowMap, emblem;
+        const float PI = 3.14159265;
+        float noise(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,45.164)))*43758.5453);}
+        float unpackDepth(vec4 v){return dot(v,vec4(1.0/(256.0*256.0*256.0),1.0/(256.0*256.0),1.0/256.0,1.0));}
+        float shadow(){
+            vec3 p = vShadow.xyz / vShadow.w * 0.5 + 0.5;
+            if(p.x<0.0 || p.x>1.0 || p.y<0.0 || p.y>1.0 || p.z>1.0) return 1.0;
+            float lit = 0.0;
+            for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++){
+                float d=unpackDepth(texture2D(shadowMap,p.xy+vec2(float(i),float(j))*shadowTexel*1.5));
+                lit += p.z-0.0025 <= d ? 1.0 : 0.0;
             }
-            var pa = proj(a), pb = proj(b), pc = proj(c), pd = proj(d);
-            var sc = shade(n, col, kind === 1 ? 0.10 : 0.18);
-            /* Swiatlo krawedziowe: bez niego czarna opona zlewa sie z ciemnym tlem. */
-            var vd = norm(sub(eye, mid));
-            var fr = Math.pow(1 - Math.min(1, Math.abs(dot(n, vd))), 3) * 38;
-            face([pa[0],pa[1], pb[0],pb[1], pc[0],pc[1], pd[0],pd[1]],
-                 rgb([sc[0]+fr*0.82, sc[1]+fr*0.88, sc[2]+fr]),
-                 (pa[2]+pb[2]+pc[2]+pd[2])/4);
+            return lit/9.0;
+        }
+        vec3 fresnel(float c,vec3 f){return f+(1.0-f)*pow(1.0-c,5.0);}
+        vec3 lamp(vec3 n,vec3 v,vec3 l,vec3 radiance,vec3 base,float metal,float rough){
+            vec3 h=normalize(v+l);
+            float nl=max(dot(n,l),0.0), nv=max(dot(n,v),0.001), nh=max(dot(n,h),0.0);
+            float a=rough*rough, a2=a*a;
+            float den=nh*nh*(a2-1.0)+1.0;
+            float D=a2/(PI*den*den+0.0001);
+            float k=(rough+1.0)*(rough+1.0)/8.0;
+            float G=nv/(nv*(1.0-k)+k)*nl/(nl*(1.0-k)+k);
+            vec3 F=fresnel(max(dot(h,v),0.0),mix(vec3(0.04),base,metal));
+            vec3 spec=D*G*F/max(4.0*nv*nl,0.001);
+            return ((1.0-F)*(1.0-metal)*base/PI+spec)*radiance*nl;
+        }
+        vec3 environment(vec3 r,float rough){
+            vec3 env=mix(vec3(0.055,0.06,0.075),vec3(0.24,0.27,0.31),smoothstep(-0.3,0.9,r.y));
+            // Broad studio softboxes reflected in machined metal.
+            float a=pow(max(dot(r,normalize(vec3(0.8,0.8,0.4))),0.0),mix(80.0,6.0,rough));
+            float b=pow(max(dot(r,normalize(vec3(-0.7,0.6,-0.7))),0.0),mix(110.0,9.0,rough));
+            float c=pow(max(dot(r,normalize(vec3(0.1,0.3,-1.0))),0.0),mix(65.0,5.0,rough));
+            return env+vec3(2.8,2.6,2.35)*a+vec3(1.3,1.6,2.0)*b+vec3(0.9,0.95,1.1)*c;
+        }
+        void main(){
+            vec3 n=normalize(vNormal), v=normalize(eye-vWorld);
+            if(!gl_FrontFacing) n=-n;
+            vec3 base=pow(color,vec3(2.2));
+            float rough=roughness, metal=metallic;
+            float radius=length(vLocal.yz);
+            if(kind>0.5 && kind<1.5){
+                float grain=noise(floor(vLocal*1500.0));
+                base*=0.91+grain*0.18;
+                if(abs(vLocalNormal.x)>0.45){
+                    vec2 uv=vec2(-vLocal.z*sign(vLocal.x),vLocal.y)*0.5+0.5;
+                    float lettering=texture2D(sidewall,uv).a;
+                    base=mix(base,vec3(0.058,0.060,0.065),lettering*0.85);
+                    rough=mix(rough,0.52,lettering);
+                }
+            }
+            if(kind>1.5 && kind<2.5 && abs(vLocalNormal.x)>0.7){
+                float angle=atan(vLocal.z,vLocal.y);
+                float nearest=1.0;
+                for(int i=0;i<3;i++){
+                    float ring=0.335+float(i)*0.062;
+                    float a=angle+float(i)*0.085;
+                    float da=(fract(a/(2.0*PI)*24.0+0.5)-0.5)*2.0*PI/24.0;
+                    nearest=min(nearest,length(vec2(radius-ring,da*ring)));
+                }
+                if(nearest<0.009) discard;
+                base*=mix(0.24,1.0,smoothstep(0.009,0.014,nearest));
+                base*=0.98+0.02*sin(radius*1400.0);
+            }
+            if(kind>2.5 && kind<3.5){
+                vec4 decal=texture2D(emblem,vec2(-vLocal.z/0.23+0.5,vLocal.y/0.23+0.5));
+                base=mix(base,pow(decal.rgb,vec3(2.2)),decal.a);
+            }
+            float sh=shadow();
+            if(kind>3.5){
+                vec3 q=wheelInverse*(vWorld-wheelCenter);
+                float contact=exp(-pow(q.x/0.40,2.0)-pow(q.z/0.52,2.0));
+                float broad=exp(-pow(q.x/0.85,2.0)-pow(q.z/1.1,2.0));
+                vec2 grid=abs(fract(vWorld.xz/0.4+0.5)-0.5);
+                float line=1.0-smoothstep(0.003,0.015,min(grid.x,grid.y));
+                float edge=1.0-smoothstep(1.5,3.6,length(vWorld.xz));
+                vec3 floorCol=vec3(0.034,0.036,0.042)+line*0.012*edge;
+                floorCol*=1.0-0.48*contact-0.13*broad;
+                floorCol*=0.56+0.44*sh;
+                gl_FragColor=vec4(pow(floorCol,vec3(1.0/2.2)),edge*0.96);
+                return;
+            }
+            vec3 light=lamp(n,v,normalize(vec3(0.7,1.0,0.65)),vec3(4.2,3.95,3.65),base,metal,rough)*(0.35+0.65*sh);
+            light+=lamp(n,v,normalize(vec3(-0.8,0.65,-0.7)),vec3(2.15,2.55,3.2),base,metal,rough);
+            light+=lamp(n,v,normalize(vec3(0.4,0.2,-1.0)),vec3(1.2,1.3,1.5),base,metal,rough);
+            vec3 f=fresnel(max(dot(n,v),0.0),mix(vec3(0.04),base,metal));
+            float reflectionWeight=(kind>0.5 && kind<1.5) ? 0.14 : (0.9-rough*0.3);
+            light+=environment(reflect(-v,n),rough)*f*reflectionWeight;
+            light+=base*(1.0-metal)*vec3(0.22,0.24,0.28)*(0.7+0.3*n.y);
+            // Small-scale cavity darkening keeps the inside of the barrel legible.
+            light*=0.80+0.20*smoothstep(0.0,1.1,vWorld.y);
+            light=light/(light+vec3(0.8));
+            gl_FragColor=vec4(pow(light,vec3(1.0/2.2)),1.0);
+        }`;
+    var DEPTH_VS='attribute vec3 position; uniform mat4 model, projection; void main(){gl_Position=projection*model*vec4(position,1.0);}';
+    var DEPTH_FS=`precision highp float; void main(){
+        vec4 e=fract(gl_FragCoord.z*vec4(256.0*256.0*256.0,256.0*256.0,256.0,1.0));
+        e-=e.xxyz*vec4(0.0,1.0/256.0,1.0/256.0,1.0/256.0);
+        gl_FragColor=e;
+    }`;
+    function shader(type,src){
+        var sh=gl.createShader(type); gl.shaderSource(sh,src); gl.compileShader(sh);
+        if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+        return sh;
+    }
+    function program(vs,fs){
+        var p=gl.createProgram(), v=shader(gl.VERTEX_SHADER,vs), f=shader(gl.FRAGMENT_SHADER,fs);
+        gl.attachShader(p,v); gl.attachShader(p,f); gl.linkProgram(p);
+        gl.deleteShader(v); gl.deleteShader(f);
+        if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+        var out={p:p,a:{},u:{}};
+        ['position','normal'].forEach(function(k){out.a[k]=gl.getAttribLocation(p,k);});
+        ['model','projection','lightMatrix','color','eye','roughness','metallic','kind','sidewall','emblem','shadowMap','shadowTexel','wheelCenter','wheelInverse'].forEach(function(k){out.u[k]=gl.getUniformLocation(p,k);});
+        return out;
+    }
+    var main=program(VS,FS), depth=program(DEPTH_VS,DEPTH_FS);
+    function identity(){return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];}
+    function matrixMultiply(a,b){
+        var o=new Array(16);
+        for(var col=0;col<4;col++)for(var row=0;row<4;row++){
+            o[col*4+row]=0;for(var k=0;k<4;k++)o[col*4+row]+=a[k*4+row]*b[col*4+k];
+        }return o;
+    }
+    function frameMatrix(x,y,z,p){return [x[0],x[1],x[2],0,y[0],y[1],y[2],0,z[0],z[1],z[2],0,p[0],p[1],p[2],1];}
+    function scaleVector(v,s){return [v[0]*s,v[1]*s,v[2]*s];}
+    function localPoint(m,p){return [m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14]];}
+    function directionMatrix(a,b,r){
+        var d=sub(b,a), length=Math.hypot(d[0],d[1],d[2]), y=norm(d);
+        var x=norm(cross(y,Math.abs(y[0])<0.9?[1,0,0]:[0,0,1])), z=cross(x,y);
+        return frameMatrix(scaleVector(x,r),scaleVector(y,length),scaleVector(z,r),a);
+    }
+    var materials={
+        rubber:{color:[0.135,0.145,0.158],rough:.73,metal:0,kind:1},
+        tread:{color:[0.16,0.17,0.18],rough:.84,metal:0,kind:1},
+        silver:{color:[0.79,0.82,0.86],rough:.24,metal:.92,kind:0},
+        machined:{color:[0.88,0.90,0.94],rough:.18,metal:.97,kind:0},
+        graphite:{color:[0.25,0.28,0.33],rough:.3,metal:.86,kind:0},
+        steel:{color:[0.54,0.57,0.61],rough:.38,metal:.82,kind:0},
+        disc:{color:[0.62,0.64,0.67],rough:.36,metal:.9,kind:2},
+        red:{color:[0.66,0.035,0.028],rough:.27,metal:.25,kind:0},
+        black:{color:[0.11,0.12,0.14],rough:.38,metal:.5,kind:0},
+        cap:{color:[0.13,0.15,0.18],rough:.26,metal:.55,kind:3},
+        floor:{color:[0.2,0.2,0.2],rough:1,metal:0,kind:4}
+    };
+    function builder(){return {groups:{}};}
+    function vertex(b,key,p,n){
+        var a=b.groups[key]||(b.groups[key]=[]);
+        a.push(p[0],p[1],p[2],n[0],n[1],n[2]);
+    }
+    function triangle(b,key,a,c,d,na,nc,nd){
+        var n=na||norm(cross(sub(c,a),sub(d,a)));
+        // Smooth normals must agree with triangle winding. Otherwise the
+        // two-sided shader would invert the lighting on tread blocks and coils.
+        if(na && dot(cross(sub(c,a),sub(d,a)),na)<0){
+            var swap=c;c=d;d=swap;swap=nc;nc=nd;nd=swap;
+        }
+        vertex(b,key,a,n);vertex(b,key,c,nc||n);vertex(b,key,d,nd||n);
+    }
+    function quad(b,key,a,c,d,e,na,nc,nd,ne){
+        triangle(b,key,a,c,d,na,nc,nd);triangle(b,key,a,d,e,na,nd,ne);
+    }
+    function bake(b){
+        return Object.keys(b.groups).map(function(key){
+            var data=new Float32Array(b.groups[key]), buffer=gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+            return {buffer:buffer,count:data.length/6,material:materials[key]};
+        });
+    }
+    function polar(x,r,a){return [x,r*Math.cos(a),r*Math.sin(a)];}
+    // Surface of revolution around the wheel axle, with optional smooth profile normals.
+    function lathe(b,key,profile,segments,smooth,start,extent){
+        start=start||0;extent=extent===undefined?Math.PI*2:extent;
+        for(var p=0;p<profile.length-1;p++){
+            function normalAt(j,a){
+                var lo=smooth?Math.max(0,j-1):p,hi=smooth?Math.min(profile.length-1,j+1):p+1;
+                var dx=profile[hi][0]-profile[lo][0],dr=profile[hi][1]-profile[lo][1];
+                return norm([dr,-dx*Math.cos(a),-dx*Math.sin(a)]);
+            }
+            for(var i=0;i<segments;i++){
+                var a=start+extent*i/segments,c=start+extent*(i+1)/segments;
+                var p0=polar(profile[p][0],profile[p][1],a),p1=polar(profile[p+1][0],profile[p+1][1],a);
+                var p2=polar(profile[p+1][0],profile[p+1][1],c),p3=polar(profile[p][0],profile[p][1],c);
+                quad(b,key,p0,p1,p2,p3,normalAt(p,a),normalAt(p+1,a),normalAt(p+1,c),normalAt(p,c));
+            }
+        }
+    }
+    function ring(b,key,x,r,t){
+        var profile=[];
+        for(var i=0;i<=12;i++){var a=i/12*Math.PI*2;profile.push([x+Math.cos(a)*t,r+Math.sin(a)*t]);}
+        lathe(b,key,profile,144,true);
+    }
+    function transformed(b,m,fn){
+        var temp=builder();fn(temp);
+        Object.keys(temp.groups).forEach(function(key){
+            var a=temp.groups[key];for(var i=0;i<a.length;i+=6){
+                var p=localPoint(m,a.slice(i,i+3));
+                var n=norm([m[0]*a[i+3]+m[4]*a[i+4]+m[8]*a[i+5],m[1]*a[i+3]+m[5]*a[i+4]+m[9]*a[i+5],m[2]*a[i+3]+m[6]*a[i+4]+m[10]*a[i+5]]);
+                vertex(b,key,p,n);
+            }
+        });
+    }
+    function cylinder(b,key,a,c,r,segments){
+        var m=directionMatrix(a,c,r);
+        // Remap the X lathe axis onto local Y.
+        var remap=[0,1,0,0,1,0,0,0,0,0,-1,0,0,0,0,1];
+        transformed(b,matrixMultiply(m,remap),function(t){lathe(t,key,[[0,0],[0,1],[1,1],[1,0]],segments||24,false);});
+    }
+    function tubePath(b,key,points,r,sides){
+        var rings=[],normals=[];
+        for(var i=0;i<points.length;i++){
+            var tangent=norm(sub(points[Math.min(points.length-1,i+1)],points[Math.max(0,i-1)]));
+            var u=norm(cross(tangent,[0,1,0])),v=cross(tangent,u),row=[],nr=[];
+            for(var j=0;j<sides;j++){
+                var a=j/sides*Math.PI*2,n=[u[0]*Math.cos(a)+v[0]*Math.sin(a),u[1]*Math.cos(a)+v[1]*Math.sin(a),u[2]*Math.cos(a)+v[2]*Math.sin(a)];
+                row.push([points[i][0]+n[0]*r,points[i][1]+n[1]*r,points[i][2]+n[2]*r]);nr.push(n);
+            }rings.push(row);normals.push(nr);
+        }
+        for(var k=0;k<rings.length-1;k++)for(var j=0;j<sides;j++){
+            var next=(j+1)%sides;
+            quad(b,key,rings[k][j],rings[k+1][j],rings[k+1][next],rings[k][next],normals[k][j],normals[k+1][j],normals[k+1][next],normals[k][next]);
         }
     }
 
-    /* --- felga: tarcza, ramiona, piasta --- */
-    var nWheel = norm(mv(Mtot, [1,0,0]));
-    var cen = [kpT[0], R + groundShift + kpT[1], kpT[2]];
-    function wheelPt(x, r, ang){
-        var q = mv(Mtot, [x, r*Math.cos(ang), r*Math.sin(ang)]);
-        return [q[0]+cen[0], q[1]+cen[1], q[2]+cen[2]];
-    }
-    var facing = dot(nWheel, sub(eye, cen)) > 0;
-    var spokes = 5, spokeHalf = 0.30;
-    /* Rant felgi konczy sie 0.638, czyli TROCHE za stopka opony (0.620) — inaczej
-       na styku dwoch sasiadujacych wielokatow zostaje wlosowa szczelina. */
-    var bands = [[0.0,0.13,'cap'], [0.13,0.30,'hub'], [0.30,0.545,'spoke'], [0.545,0.638,'lip']];
-    for(s = 0; s < NS; s++){
-        var a1 = s/NS*Math.PI*2, a2 = (s+1)/NS*Math.PI*2, am = (a1+a2)/2;
-        var onSpoke = false;
-        for(var k = 0; k < spokes; k++){
-            var da = am - k/spokes*Math.PI*2;
-            da = Math.atan2(Math.sin(da), Math.cos(da));
-            if(Math.abs(da) < spokeHalf) onSpoke = true;
+    var wheel=builder();
+    // Continuous rounded carcass. Raised blocks sit over it, leaving real channels.
+    var profile=[[-.26,.635],[-.286,.67],[-.319,.72],[-.336,.79],[-.338,.84],[-.326,.89],[-.304,.936],[-.274,.968],[-.242,.976],[.242,.976],[.274,.968],[.304,.936],[.326,.89],[.338,.84],[.336,.79],[.319,.72],[.286,.67],[.26,.635]];
+    lathe(wheel,'rubber',profile,160,true);
+    [-1,1].forEach(function(side){
+        ring(wheel,'rubber',side*.327,.752,.003);
+        ring(wheel,'rubber',side*.339,.825,.002);
+        ring(wheel,'rubber',side*.294,.942,.0025);
+        ring(wheel,'rubber',side*.283,.674,.006);
+    });
+    function treadBlock(x0,x1,a0,a1,shift){
+        var slices=4,bevel=.003;
+        function pt(x,a,inset){var r=.999-.024*Math.pow(x/.29,4)-inset;return polar(x,r,a+shift*x);}
+        for(var i=0;i<slices;i++){
+            var a=a0+(a1-a0)*i/slices,c=a0+(a1-a0)*(i+1)/slices;
+            var q0=pt(x0+bevel,a,0),q1=pt(x1-bevel,a,0),q2=pt(x1-bevel,c,0),q3=pt(x0+bevel,c,0);
+            quad(wheel,'tread',q0,q1,q2,q3,[0,Math.cos(a),Math.sin(a)],[0,Math.cos(a),Math.sin(a)],[0,Math.cos(c),Math.sin(c)],[0,Math.cos(c),Math.sin(c)]);
+            quad(wheel,'rubber',pt(x0,a,.019),pt(x0,c,.019),q3,q0);
+            quad(wheel,'rubber',q1,q2,pt(x1,c,.019),pt(x1,a,.019));
         }
-        for(var bI = 0; bI < bands.length; bI++){
-            var r0 = bands[bI][0], r1 = bands[bI][1], tag = bands[bI][2];
-            var xx = XR, base = METAL, spc = 0.55, bias = -0.004*(bI+1);
-            /* Prześwit między ramionami jest CIEMNY tylko od zewnątrz. Od środka
-               auta w tym miejscu widać wewnętrzny bęben felgi, czyli metal —
-               czarne kliny robiły tam dziury w kole. */
-            if(tag === 'spoke' && !onSpoke){ base = facing ? [27,26,28] : [84,82,82]; spc = 0.06; }
-            if(tag === 'lip'){ base = [178,178,182]; }
-            if(tag === 'hub'){ base = [120,120,124]; }
-            if(tag === 'cap'){ base = [86,86,90]; spc = 0.3; }
-            var q0 = wheelPt(xx, r0, a1), q1 = wheelPt(xx, r1, a1),
-                q2 = wheelPt(xx, r1, a2), q3 = wheelPt(xx, r0, a2);
-            var nn = facing ? nWheel : [-nWheel[0], -nWheel[1], -nWheel[2]];
-            var mm = [(q0[0]+q2[0])/2, (q0[1]+q2[1])/2, (q0[2]+q2[2])/2];
-            if(dot(nn, sub(eye, mm)) <= 0) continue;
-            var t0 = proj(q0), t1 = proj(q1), t2 = proj(q2), t3 = proj(q3);
-            /* lekki połysk zależny od kąta — metal ma kierunek */
-            var gl = (tag === 'spoke' || tag === 'lip') ? 0.82 + 0.34*Math.cos(am*2 + 0.7) : 1;
-            var lb = [base[0]*gl, base[1]*gl, base[2]*gl];
-            var cc = facing ? shade(nn, lb, spc) : shadeInner(nn, lb);
-            face([t0[0],t0[1], t1[0],t1[1], t2[0],t2[1], t3[0],t3[1]],
-                 rgb(cc), (t0[2]+t1[2]+t2[2]+t3[2])/4 + bias);
-        }
+        quad(wheel,'rubber',pt(x0,a0,.019),pt(x1,a0,.019),pt(x1-bevel,a0,0),pt(x0+bevel,a0,0));
+        quad(wheel,'rubber',pt(x0+bevel,a1,0),pt(x1-bevel,a1,0),pt(x1,a1,.019),pt(x0,a1,.019));
     }
+    var ribs=[[-.284,-.191],[-.170,-.069],[-.049,.049],[.069,.170],[.191,.284]];
+    ribs.forEach(function(rib,row){
+        for(var i=0;i<64;i++){
+            var start=(i+row*.32)/64*Math.PI*2,gap=.009;
+            var end=start+Math.PI*2/64-gap,mid=(start+end)/2;
+            treadBlock(rib[0],rib[1],start,mid-.0014,row<2?.22:-.22);
+            treadBlock(rib[0],rib[1],mid+.0014,end,row<2?.22:-.22);
+        }
+    });
+    // Hollow barrel, rolled inner lip, diamond-cut outer lip: all have thickness.
+    lathe(wheel,'graphite',[[-.278,.635],[-.28,.664],[-.24,.678],[.229,.678],[.245,.655],[.22,.626],[-.245,.621],[-.278,.635]],144,false);
+    lathe(wheel,'machined',[[.215,.627],[.264,.634],[.278,.65],[.264,.676],[.246,.68],[.239,.664],[.249,.65],[.235,.64],[.215,.627]],160,true);
+    ring(wheel,'silver',-.278,.647,.013);
+    // A five-pair, concave forged wheel. Each branch is a bevelled solid prism.
+    function spoke(a,r0,r1,offset,w0,w1){
+        var p0=[r0*Math.cos(a),r0*Math.sin(a)],p1=[r1*Math.cos(a+offset),r1*Math.sin(a+offset)];
+        var d=norm([0,p1[0]-p0[0],p1[1]-p0[1]]),perp=[-d[2],d[1]];
+        var outline=[[p0[0]+perp[0]*w0,p0[1]+perp[1]*w0],[p1[0]+perp[0]*w1,p1[1]+perp[1]*w1],[p1[0]-perp[0]*w1,p1[1]-perp[1]*w1],[p0[0]-perp[0]*w0,p0[1]-perp[1]*w0]];
+        var cy=(p0[0]+p1[0])/2,cz=(p0[1]+p1[1])/2,front=[],edge=[],back=[];
+        outline.forEach(function(p){
+            var rad=Math.hypot(p[0],p[1]),x=.10+.16*Math.pow(rad/.66,1.4);
+            edge.push([x-.008,p[0],p[1]]);back.push([x-.07,p[0],p[1]]);
+            front.push([x,cy+(p[0]-cy)*.94,cz+(p[1]-cz)*.88]);
+        });
+        quad(wheel,'silver',front[0],front[1],front[2],front[3]);
+        quad(wheel,'graphite',back[3],back[2],back[1],back[0]);
+        for(var i=0;i<4;i++){var j=(i+1)%4;quad(wheel,'machined',edge[i],edge[j],front[j],front[i]);quad(wheel,'graphite',back[i],back[j],edge[j],edge[i]);}
+    }
+    for(var i=0;i<5;i++){
+        var a=i/5*Math.PI*2+.12;
+        spoke(a,.13,.34,0,.057,.043);
+        spoke(a,.29,.664,-.15,.028,.032);
+        spoke(a,.29,.664,.15,.028,.032);
+    }
+    lathe(wheel,'graphite',[[.035,0],[.035,.176],[.10,.19],[.16,.166],[.174,.106],[.174,0]],96,true);
+    lathe(wheel,'cap',[[.177,0],[.177,.093]],96,false);
+    ring(wheel,'machined',.176,.096,.005);
+    for(var i=0;i<5;i++){
+        var a=i/5*Math.PI*2+.12+Math.PI/5,loc=polar(0,.143,a);
+        transformed(wheel,frameMatrix([1,0,0],[0,1,0],[0,0,1],loc),function(t){
+            lathe(t,'black',[[.143,0],[.143,.03],[.162,.03],[.162,0]],32,false);
+            lathe(t,'machined',[[.16,0],[.16,.019],[.178,.019],[.183,.014],[.183,0]],6,false);
+        });
+    }
+    // Cross-drilled, vented brake disc. Perforations are cut by the material shader.
+    lathe(wheel,'disc',[[-.045,.235],[-.045,.513],[-.039,.524],[-.023,.524],[-.023,.506],[-.012,.506],[-.012,.524],[.003,.524],[.01,.513],[.01,.235],[-.045,.235]],144,false);
+    lathe(wheel,'graphite',[[-.09,0],[-.09,.23],[.004,.25],[.018,.23],[.045,.17],[.045,0]],96,false);
+    for(var i=0;i<10;i++){
+        var pt=polar(0,.218,i/10*Math.PI*2);
+        cylinder(wheel,'steel',[.018,pt[1],pt[2]],[.028,pt[1],pt[2]],.013,8);
+    }
+    // Red four-piston caliper wraps the disc; it remains behind the spoke backs.
+    lathe(wheel,'red',[[-.105,.382],[-.122,.40],[-.122,.523],[-.10,.55],[.062,.55],[.09,.523],[.09,.412],[.065,.382],[-.105,.382]],36,true,.92,1.30);
+    [.92,2.22].forEach(function(a){
+        quad(wheel,'red',polar(-.105,.39,a),polar(.062,.39,a),polar(.062,.54,a),polar(-.105,.54,a));
+    });
+    for(var i=0;i<3;i++){
+        var a=1.19+i*.35,pt=polar(0,.47,a);
+        cylinder(wheel,'red',[.085,pt[1],pt[2]],[.103,pt[1],pt[2]],.047,24);
+    }
+    // Valve stem and tiny metal cap on the inner edge of the outer lip.
+    cylinder(wheel,'black',polar(.235,.575,2.45),polar(.30,.605,2.45),.012,14);
+    cylinder(wheel,'steel',polar(.30,.605,2.45),polar(.315,.613,2.45),.013,12);
+    var wheelMesh=bake(wheel);
 
-    /* --- tarcza hamulcowa i piasta -----------------------------------------
-       ⚠️ Bez nich koło jest PUSTĄ RURĄ: opona to skorupa otwarta przy stopkach,
-       więc patrząc od wewnątrz auta widać przez nią na wylot, a amortyzator
-       z wahaczem kończą się w powietrzu. Tarcza leży o `XD` do wewnątrz od
-       płaszczyzny felgi — zasłania wnętrze od środka, a od zewnątrz sama chowa
-       się za felgą (jest dalej, więc malarz rysuje ją wcześniej). */
-    /* Tarcza 16" ma ~140 mm promienia przy 320 mm promienia koła — stąd 0.46,
-       a nie „na całą felgę". Pierścień między tarczą a rantem zasłania tylna
-       ściana felgi, też rozjaśniona światłem wypełniającym. */
-    var XD = -0.06, dBands = [[0.0,0.10,'nave'], [0.10,0.165,'bolt'], [0.165,0.46,'disc']];
-    for(s = 0; s < NS; s++){
-        var e1 = s/NS*Math.PI*2, e2 = (s+1)/NS*Math.PI*2, em = (e1+e2)/2;
-        for(var dI = 0; dI < dBands.length; dI++){
-            var d0 = dBands[dI][0], d1 = dBands[dI][1], dtag = dBands[dI][2];
-            var dBase = [172,167,161];
-            if(dtag === 'nave'){ dBase = [198,195,196]; }
-            else if(dtag === 'bolt'){ dBase = (s % 3 === 0) ? [216,213,214] : [120,117,116]; }
-            var w0 = wheelPt(XD, d0, e1), w1 = wheelPt(XD, d1, e1),
-                w2 = wheelPt(XD, d1, e2), w3 = wheelPt(XD, d0, e2);
-            var dn = facing ? nWheel : [-nWheel[0], -nWheel[1], -nWheel[2]];
-            var dm = [(w0[0]+w2[0])/2, (w0[1]+w2[1])/2, (w0[2]+w2[2])/2];
-            if(dot(dn, sub(eye, dm)) <= 0) continue;
-            var u0 = proj(w0), u1 = proj(w1), u2 = proj(w2), u3 = proj(w3);
-            var dgl = dtag === 'disc' ? 0.93 + 0.11*Math.cos(em*2 - 0.4) : 1;
-            face([u0[0],u0[1], u1[0],u1[1], u2[0],u2[1], u3[0],u3[1]],
-                 rgb(shadeInner(dn, [dBase[0]*dgl, dBase[1]*dgl, dBase[2]*dgl])),
-                 (u0[2]+u1[2]+u2[2]+u3[2])/4 - 0.004*(dI+1));
-        }
+    var suspension=builder();
+    cylinder(suspension,'graphite',[0,.03,0],[0,1.16,0],.06,40);
+    cylinder(suspension,'machined',[0,1.04,0],[0,1.52,0],.024,32);
+    cylinder(suspension,'red',[0,.87,0],[0,1.03,0],.064,40);
+    cylinder(suspension,'black',[0,1.07,0],[0,1.11,0],.174,48);
+    cylinder(suspension,'steel',[0,1.10,0],[0,1.125,0],.157,48);
+    cylinder(suspension,'black',[0,1.45,0],[0,1.49,0],.164,48);
+    cylinder(suspension,'graphite',[0,1.49,0],[0,1.53,0],.19,48);
+    var coil=[];
+    for(var i=0;i<=320;i++){
+        var t=i/320,angle=t*Math.PI*2*4.5;
+        coil.push([Math.cos(angle)*.14,1.135+t*.30,Math.sin(angle)*.14]);
     }
+    tubePath(suspension,'red',coil,.018,10);
+    for(var i=0;i<3;i++){
+        var a=i/3*Math.PI*2;
+        cylinder(suspension,'machined',[Math.cos(a)*.125,1.53,Math.sin(a)*.125],[Math.cos(a)*.125,1.557,Math.sin(a)*.125],.019,6);
+    }
+    // Cast upright ends in the ball joint and joins the wheel hub.
+    cylinder(suspension,'steel',[0,-.48,0],[0,.15,0],.073,24);
+    cylinder(suspension,'black',[0,-.54,0],[0,-.45,0],.092,24);
+    var suspensionMesh=bake(suspension);
+    var unit=builder();cylinder(unit,'steel',[0,0,0],[0,1,0],1,24);var armMesh=bake(unit);
+    var joint=builder();cylinder(joint,'black',[0,0,0],[0,1,0],1,32);var jointMesh=bake(joint);
+    var floor=builder();quad(floor,'floor',[-4,-.025,-4],[-4,-.025,4],[4,-.025,4],[4,-.025,-4],[0,1,0],[0,1,0],[0,1,0],[0,1,0]);var floorMesh=bake(floor);
+
+    function texture(source){
+        var t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+        gl.generateMipmap(gl.TEXTURE_2D);return t;
+    }
+    var texCanvas=document.createElement('canvas');texCanvas.width=texCanvas.height=1024;
+    var tx=texCanvas.getContext('2d');tx.fillStyle='#b8bdc7';
+    function arcText(text,radius,center,size){
+        tx.font='700 '+size+'px Arial, sans-serif';
+        var widths=Array.from(text).map(function(ch){return tx.measureText(ch).width+3;}),total=widths.reduce(function(a,b){return a+b;},0);
+        var angle=center-total/radius/2;
+        Array.from(text).forEach(function(ch,i){
+            var half=widths[i]/radius/2;angle+=half;
+            tx.save();tx.translate(512+Math.sin(angle)*radius,512-Math.cos(angle)*radius);tx.rotate(angle);
+            tx.textAlign='center';tx.textBaseline='middle';tx.fillText(ch,0,0);tx.restore();angle+=half;
+        });
+    }
+    arcText('SSCAR  PERFORMANCE',423,0,30);
+    arcText('205/55 R16  ·  RADIAL TUBELESS',421,Math.PI,17);
+    arcText('ROTATION  ›',457,1.60,13);
+    arcText('SPORT CONTACT',387,-1.62,13);
+    for(var i=0;i<72;i++){
+        var a=i/72*Math.PI*2;
+        tx.save();tx.translate(512,512);tx.rotate(a);tx.fillRect(-1,-469,2,8);tx.restore();
+    }
+    var tireTexture=texture(texCanvas);
+    var logo=document.createElement('canvas');logo.width=logo.height=256;var lg=logo.getContext('2d');
+    lg.fillStyle='#e5e9ef';lg.font='italic 900 74px Arial';lg.textAlign='center';lg.textBaseline='middle';lg.fillText('SS',128,116);
+    lg.fillStyle='#db3028';lg.fillRect(72,162,112,8);var logoTexture=texture(logo);
+
+    var shadowSize=1024, shadowTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,shadowTexture);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,shadowSize,shadowSize,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    var shadowFB=gl.createFramebuffer(),shadowDepth=gl.createRenderbuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,shadowFB);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,shadowTexture,0);
+    gl.bindRenderbuffer(gl.RENDERBUFFER,shadowDepth);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,shadowSize,shadowSize);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,shadowDepth);
+    if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw new Error('Shadow framebuffer unavailable');
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    var lightEye=[3.5,6,3.25],lightTarget=[-.25,1,0],lz=norm(sub(lightEye,lightTarget)),lx=norm(cross([0,1,0],lz)),ly=cross(lz,lx);
+    var lightView=[lx[0],ly[0],lz[0],0,lx[1],ly[1],lz[1],0,lx[2],ly[2],lz[2],0,-dot(lx,lightEye),-dot(ly,lightEye),-dot(lz,lightEye),1];
+    var lightProjection=[1/2.6,0,0,0,0,1/2.6,0,0,0,0,-2/12,0,0,0,-1,1];
+    var lightMatrix=matrixMultiply(lightProjection,lightView);
+    function draw(mesh,m,p){
+        gl.uniformMatrix4fv(p.u.model,false,new Float32Array(m));
+        mesh.forEach(function(part){
+            gl.bindBuffer(gl.ARRAY_BUFFER,part.buffer);
+            gl.enableVertexAttribArray(p.a.position);gl.vertexAttribPointer(p.a.position,3,gl.FLOAT,false,24,0);
+            if(p.a.normal>=0){gl.enableVertexAttribArray(p.a.normal);gl.vertexAttribPointer(p.a.normal,3,gl.FLOAT,false,24,12);}
+            if(p===main){
+                var mat=part.material;gl.uniform3fv(p.u.color,mat.color);gl.uniform1f(p.u.roughness,mat.rough);gl.uniform1f(p.u.metallic,mat.metal);gl.uniform1f(p.u.kind,mat.kind);
+            }
+            gl.drawArrays(gl.TRIANGLES,0,part.count);
+        });
+    }
+    function render(w,h){
+        if(lost)return false;
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){
+            canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+        }
+        canvas.style.width=w+'px';canvas.style.height=h+'px';
+        // Exactly the same perspective as proj(), so the original angle overlays align.
+        var perspective=[2*FOC/w,0,0,0,0,2*FOC/h,0,0,1-2*CX/w,2*CY/h-1,-(30+.1)/(30-.1),-1,0,0,-2*30*.1/(30-.1),0];
+        var offset=mv(VIEWM,[0,-R*.52,0]);
+        var view=[VIEWM[0],VIEWM[3],VIEWM[6],0,VIEWM[1],VIEWM[4],VIEWM[7],0,VIEWM[2],VIEWM[5],VIEWM[8],0,offset[0],offset[1],offset[2]-cam.dist,1];
+        var vp=matrixMultiply(perspective,view);
+        var center=[kpT[0],R+groundShift+kpT[1],kpT[2]];
+        var wheelMatrix=[Mtot[0],Mtot[3],Mtot[6],0,Mtot[1],Mtot[4],Mtot[7],0,Mtot[2],Mtot[5],Mtot[8],0,center[0],center[1],center[2],1];
+        var up=kpDir,right=norm(cross(up,[0,0,1])),back=cross(right,up);
+        var strutMatrix=frameMatrix(right,up,back,axisPt(0));
+        var a1=[-1.38,kpBot[1]+.04,.55],a2=[-1.38,kpBot[1]+.04,-.48];
+        var hub=localPoint(wheelMatrix,[-.12,0,0]);
+        var pieces=[{mesh:wheelMesh,m:wheelMatrix}];
+        if(cam.pitch<1.15)pieces.push({mesh:suspensionMesh,m:strutMatrix});
+        [[kpBot,a1,.057],[kpBot,a2,.062],[a1,a2,.065],[axisPt(0),hub,.098]].forEach(function(v){pieces.push({mesh:armMesh,m:directionMatrix(v[0],v[1],v[2])});});
+        [a1,a2].forEach(function(p){pieces.push({mesh:jointMesh,m:directionMatrix([p[0],p[1],p[2]-.055],[p[0],p[1],p[2]+.055],.095)});});
+        gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,shadowFB);gl.viewport(0,0,shadowSize,shadowSize);
+        gl.clearColor(1,1,1,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(depth.p);
+        gl.uniformMatrix4fv(depth.u.projection,false,new Float32Array(lightMatrix));
+        pieces.forEach(function(p){draw(p.mesh,p.m,depth);});
+        gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,canvas.width,canvas.height);
+        gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(main.p);
+        gl.uniformMatrix4fv(main.u.projection,false,new Float32Array(vp));gl.uniformMatrix4fv(main.u.lightMatrix,false,new Float32Array(lightMatrix));
+        gl.uniform3fv(main.u.eye,camPos());gl.uniform3fv(main.u.wheelCenter,center);
+        gl.uniformMatrix3fv(main.u.wheelInverse,false,new Float32Array(Mtot));
+        gl.uniform1f(main.u.shadowTexel,1/shadowSize);
+        gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tireTexture);gl.uniform1i(main.u.sidewall,0);
+        gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,shadowTexture);gl.uniform1i(main.u.shadowMap,1);
+        gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,logoTexture);gl.uniform1i(main.u.emblem,2);
+        gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);draw(floorMesh,identity(),main);gl.disable(gl.BLEND);
+        pieces.forEach(function(p){draw(p.mesh,p.m,main);});
+        return true;
+    }
+    return {render:render};
 }
-
-function drawFaces(){
-    faces.sort(function(a, b){ return b.z - a.z; });
-    for(var i = 0; i < faces.length; i++){
-        var f = faces[i], p = f.p;
-        if(f.k === 'l'){
-            g.strokeStyle = f.c; g.lineWidth = f.w; g.lineCap = 'round';
-            g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.stroke();
-        } else if(f.k === 'd'){
-            g.fillStyle = f.c;
-            g.beginPath(); g.arc(f.x, f.y, f.r, 0, Math.PI*2); g.fill();
-        } else {
-            g.beginPath();
-            g.moveTo(p[0], p[1]); g.lineTo(p[2], p[3]); g.lineTo(p[4], p[5]); g.lineTo(p[6], p[7]);
-            g.closePath();
-            g.fillStyle = f.c;
-            g.fill();
-        }
-    }
-}
-
-/* --------------------------------------------------------------- jezdnia -- */
-function drawGround(){
-    var ext = 2.4, step = 0.4, i, p1, p2;
-    g.save();
-    /* płyta */
-    var c0 = proj([-ext,0,-ext]), c1 = proj([ext,0,-ext]), c2 = proj([ext,0,ext]), c3 = proj([-ext,0,ext]);
-    g.beginPath(); g.moveTo(c0[0],c0[1]); g.lineTo(c1[0],c1[1]); g.lineTo(c2[0],c2[1]); g.lineTo(c3[0],c3[1]); g.closePath();
-    g.fillStyle = 'rgba(255,255,255,0.028)';
-    g.fill();
-    /* siatka */
-    g.lineWidth = 1;
-    for(i = -ext; i <= ext + 0.001; i += step){
-        var major = Math.abs(i) < 0.001;
-        g.strokeStyle = major ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.055)';
-        p1 = proj([i,0,-ext]); p2 = proj([i,0,ext]);
-        g.beginPath(); g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.stroke();
-        p1 = proj([-ext,0,i]); p2 = proj([ext,0,i]);
-        g.beginPath(); g.moveTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.stroke();
-    }
-    /* Miekka poswiata pod kolem: bez niej czarna opona wisi w czarnej pustce. */
-    var cPt = proj([0, 0, 0]);
-    var gr = g.createRadialGradient(cPt[0], cPt[1], 4, cPt[0], cPt[1], Math.max(60, VH*0.42));
-    gr.addColorStop(0, 'rgba(255,255,255,0.075)');
-    gr.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = gr;
-    g.fillRect(0, 0, VW, VH);
-    g.restore();
-}
+var studio;
+try { studio=createWheelRenderer(cv); }
+catch(error){ console.error('Nie można uruchomić modelu 3D:',error); studio=null; }
 
 /* Odcisk opony: każdy pasek szerokości bieżnika dostaje długość proporcjonalną
    do nacisku i kolor wg tempa ścierania. Przy camberze robi się z tego klin. */
@@ -1648,92 +1955,6 @@ function drawPatch3D(over){
         g.fillStyle = rgba(ramp(t), over ? (0.14 + 0.24*t) : (0.42 + 0.5*t));
         g.fill();
     }
-}
-
-/* ------------------------------------------------------------ zawieszenie -- */
-function tube(a, b, w, col){
-    var pa = proj(a), pb = proj(b);
-    g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round';
-    g.beginPath(); g.moveTo(pa[0],pa[1]); g.lineTo(pb[0],pb[1]); g.stroke();
-}
-function knob(p, r, col){
-    var q = proj(p);
-    g.fillStyle = col;
-    g.beginPath(); g.arc(q[0], q[1], r, 0, Math.PI*2); g.fill();
-}
-function lerp3(a, b, t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
-/* Punkt na osi sworznia: `t` liczone od wysokości piasty, oś odsunięta o KP_OFF. */
-function axisPt(t){
-    return [-KP_OFF + kpDir[0]*t, R + groundShift + kpDir[1]*t, kpDir[2]*t];
-}
-function buildStrut(){
-    /* Oś sworznia zwrotnicy to prosta przez górne mocowanie kolumny i dolny
-       przegub kulowy — dlatego rysujemy oba, a nie samą kreskę w powietrzu. */
-    /* Wahacz jest POZIOMY: mocowania na podramiu siedzą na wysokości przegubu
-       kulowego (tak stoi auto na kołach). Wcześniej `y1` było ułamkiem promienia
-       i ramiona nurkowały ku ziemi, jakby auto stało na zderzaku. */
-    var i, y1 = kpBot[1] + 0.04;
-    /* Ramiona sięgają dalej do środka auta niż sylwetka koła — inaczej poziomy
-       wahacz chowa się za oponą w całości i z domyślnej kamery go nie widać. */
-    var a1 = [-1.35, y1, 0.56], a2 = [-1.35, y1, -0.42];
-    seg(a1, a2, 15, 'rgb(50,48,48)');            /* podramie */
-    seg(kpBot, a1, 8, 'rgb(96,93,93)');          /* wahacz: ramie przednie */
-    seg(kpBot, a2, 8, 'rgb(96,93,93)');          /* i tylne */
-    ball(a1, 5, 'rgb(70,68,68)');
-    ball(a2, 5, 'rgb(70,68,68)');
-
-    /* ⚠️ Kolumna MUSI zaczynać się dopiero NAD oponą. Oś sworznia przechodzi przez
-       środek koła, czyli przez płaszczyznę x=0, a opona tę płaszczyznę zajmuje.
-       Rysowana niżej kolumna (a zwłaszcza gruba sprężyna) jest WSPÓŁPŁASZCZYZNOWA
-       z gumą i sortowanie głębokością nie ma tam czego rozstrzygać: raz wychodzi
-       przed oponę, raz za nią. W prawdziwym aucie też widać tylko to, co wystaje
-       ponad koło, reszta siedzi w nadkolu. */
-    var dyz = Math.sqrt(kpDir[1]*kpDir[1] + kpDir[2]*kpDir[2]) || 1;
-    var rad = 0.14, turns = 3, nSeg = 54, prev = null;
-    /* ⚠️ Sprężyna NIE zaczyna się „ułamkiem drogi w górę" — zaczyna się tam, gdzie
-       jej ZWOJE mijają oponę. Zwój odchyla się od osi o `rad`, więc jego najniższy
-       punkt leży o ~0,34·rad bliżej opony niż sama oś; dochodzi zapas 0,09 R (≈29 mm),
-       żeby przy skrajnym camberze bark opony nie dotknął zwoju. Liczymy promieniowo
-       (stąd dzielenie przez `dyz`), bo opona to walec, a oś jest pochylona. */
-    var tSpr = (R + rad*0.34 + 0.09) / dyz;
-    /* Korpus urywa się tam, gdzie oś przebija WEWNĘTRZNĄ ŚCIANKĘ opony — niżej
-       schowałby się w gumie (pułapka 2), wyżej wisiałby w powietrzu. Kulka na końcu
-       to wspornik do zwrotnicy: bez niego rura kończy się „uciętym" zaokrągleniem. */
-    var base = axisPt((KP_OFF - HW*1.02) / (kpDir[0] || -1));
-    /* Gruby korpus sięga aż pod dolną miseczkę sprężyny, dalej idzie samo tłoczysko
-       (wcześniej korpus kończył się na 34% drogi, więc po odsunięciu osi cała
-       widoczna część kolumny była cienkim patykiem). */
-    var mid  = axisPt(tSpr - 0.06);
-    seg(base, mid, 14, 'rgb(76,73,73)');
-    seg(mid, kpTop, 5, 'rgb(160,157,157)');
-    ball(base, 7, 'rgb(62,60,60)');
-
-    /* Zwrotnica: kawałek żeliwa, który trzyma piastę, dolny przegub i kolumnę.
-       Siedzi w całości do wewnątrz od tarczy hamulcowej, więc od zewnątrz jest
-       schowana za kołem, a od środka auta widać ją przed tarczą — tak jak w aucie. */
-    seg(base, kpBot, 12, 'rgb(84,82,82)');
-    var hubIn = mv(Mtot, [-0.13, 0, 0]);
-    hubIn = [hubIn[0] + kpT[0], hubIn[1] + R + groundShift + kpT[1], hubIn[2] + kpT[2]];
-    seg(axisPt(-0.02), hubIn, 15, 'rgb(94,92,92)');
-    ball(hubIn, 8, 'rgb(128,126,126)');
-
-    var s0 = axisPt(tSpr);
-    var s1 = axisPt(KP_TOP_T - 0.07);
-    var d = norm(sub(kpTop, base));
-    var u = norm(cross(d, Math.abs(d[0]) < 0.9 ? [1,0,0] : [0,0,1]));
-    var v = cross(d, u);
-    for(i = 0; i <= nSeg; i++){
-        var t = i/nSeg, th = t*Math.PI*2*turns, ct = Math.cos(th), st = Math.sin(th);
-        var pC = lerp3(s0, s1, t);
-        var cur = [pC[0] + (u[0]*ct + v[0]*st)*rad,
-                   pC[1] + (u[1]*ct + v[1]*st)*rad,
-                   pC[2] + (u[2]*ct + v[2]*st)*rad];
-        if(prev) seg(prev, cur, 3.4, 'rgb(176,173,173)');
-        prev = cur;
-    }
-
-    ball(kpTop, 8, 'rgb(122,119,119)');
-    ball(kpBot, 6, 'rgb(206,206,208)');
 }
 
 /* -------------------------------------------------------------- adnotacje -- */
@@ -1866,16 +2087,19 @@ function draw3D(){
     var wh = sizeFor(cv, g);
     setupView(wh[0], wh[1]);
     transform();
-    var eye = camPos();
-    drawGround();
-    drawPatch3D(false);
-    buildFaces(eye);
-    /* Z góry patrzymy niemal wzdłuż osi kolumny: sprężyna rzutuje się wtedy na
-       kółka leżące dokładnie na bieżniku i zasłania to, po co się tu przyszło. */
-    if(cam.pitch < 1.15) buildStrut();
-    drawFaces();
-    drawPatch3D(true);      /* odcisk siedzi POD opona — bez tej warstwy nigdy go nie widac */
-    drawOverlay();
+    if(studio && studio.render(wh[0], wh[1])){
+        drawPatch3D(true);
+        // The overview presents the complete assembly; measurement views retain
+        // the original angle guides and numeric annotations.
+        if(curView !== 'iso' || active === 'steer') drawOverlay();
+    } else {
+        g.fillStyle = '#c5bdbc';
+        g.font = '16px Barlow, sans-serif';
+        g.textAlign = 'center';
+        g.fillText('Model 3D wymaga dostępnego WebGL.', wh[0]/2, wh[1]/2);
+        g.font = '13px Barlow, sans-serif';
+        g.fillText('Suwaki i wykres nacisku pozostają aktywne.', wh[0]/2, wh[1]/2 + 26);
+    }
 }
 
 /* ------------------------------------------------- wykres odcisku (2D) --- */
@@ -2127,7 +2351,7 @@ Object.keys(ids).forEach(function(k){
 });
 
 sec.querySelectorAll('.cam-btn').forEach(function(b){
-    b.addEventListener('click', function(){ gotoView(b.dataset.cam); });
+    b.addEventListener('click', function(){ if(b.dataset.cam !== 'iso') active = b.dataset.cam; gotoView(b.dataset.cam); syncUI(); });
 });
 
 var reset = document.getElementById('lab-reset');
