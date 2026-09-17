@@ -1180,6 +1180,13 @@ var active = 'camber';
 var R  = 1.0;                     /* promień opony */
 var HW = 0.30;                    /* połowa szerokości opony */
 var TW = 0.22;                    /* połowa szerokości samego bieżnika */
+/* ⚠️ Oś sworznia NIE przechodzi przez środek koła — w aucie mija go od wewnątrz.
+   Przesunięcie `R·tan(SAI)` ustawia ją tak, by trafiała w jezdnię dokładnie
+   w punkcie styku (zerowy promień zataczania — tak robią dzisiejsze auta).
+   Dwie rzeczy wychodzą z tego same: kolumna ze sprężyną staje NAD WAHACZEM
+   (86 mm do środka), a koło skręca się „w miejscu", zamiast zamiatać bokiem.
+   Wyprzedzenie od castera zostaje nietknięte — przesuwamy oś tylko w osi X. */
+var KP_OFF = Math.tan(SAI);       /* = R·tan(SAI), R = 1 */
 
 /* Profil opony: [x (× HW), r, rodzaj] — 0 ścianka, 1 bieżnik, 2 rowek. */
 var PROF = [
@@ -1329,6 +1336,10 @@ function recompute(){
 
 /* ------------------------------------------------------------ transformy -- */
 var Mtot, kpDir, kpTop, kpBot, groundShift = 0, contact = [0,0,0], liftMM = 0;
+/* Przesunięcie bryły koła przy skręcie wokół PRZESUNIĘTEJ osi sworznia.
+   ⚠️ Wszystko, co rysujemy „w układzie koła" (felga, tarcza, piasta), musi je
+   dodać — inaczej przy pełnym skręcie felga zostaje 46 mm za oponą. */
+var kpT = [0, 0, 0];
 
 function transform(){
     var gam = -S.camber * EX_CAMBER * Math.PI/180;  /* camber: obrót wokół Z  */
@@ -1343,11 +1354,18 @@ function transform(){
     var Mstatic = mmul(rotAxis(0,0,1, gam), rotAxis(0,1,0, tau));
     Mtot = mmul(rotAxis(kpDir[0], kpDir[1], kpDir[2], del), Mstatic);
 
+    /* Skręt obraca koło wokół osi, która mija środek o KP_OFF — trzeba więc
+       obrócić je wokół PROSTEJ, nie wokół punktu. Stąd dodatkowe przesunięcie
+       T = A − Rskręt·A dla punktu A = (−KP_OFF, 0, 0) leżącego na osi. */
+    var Rst = rotAxis(kpDir[0], kpDir[1], kpDir[2], del);
+    var Tx = KP_OFF*(Rst[0] - 1), Ty = KP_OFF*Rst[3], Tz = KP_OFF*Rst[6];
+    kpT[0] = Tx; kpT[1] = Ty; kpT[2] = Tz;
+
     var s, p, w, minY = 1e9;
     for(s = 0; s < NS; s++){
         for(p = 0; p < NP; p++){
             w = mv(Mtot, MV[s][p], MW[s][p]);
-            w[1] += R;
+            w[0] += Tx; w[1] += R + Ty; w[2] += Tz;
             if(PROF[p][2] !== 0 && w[1] < minY) minY = w[1];
         }
     }
@@ -1374,8 +1392,8 @@ function transform(){
     }
     contact = cn ? [cx/cn, 0, cz/cn] : [0,0,0];
 
-    kpTop = [ kpDir[0]*KP_TOP_T, R + groundShift + kpDir[1]*KP_TOP_T, kpDir[2]*KP_TOP_T];
-    kpBot = [-kpDir[0]*0.52, R + groundShift - kpDir[1]*0.52, -kpDir[2]*0.52];
+    kpTop = axisPt( KP_TOP_T);
+    kpBot = axisPt(-0.52);
 }
 
 /* -------------------------------------------------------------- rzutnia --- */
@@ -1421,6 +1439,15 @@ function ball(p, r, col, bias){
     faces.push({k:'d', x:q[0], y:q[1], r:r, c:col, z:q[2] + (bias||0)});
 }
 
+/* ⚠️ Wnętrze koła patrzy w cień nadkola, więc `n·L` jest tam ujemne i zwykłe
+   `shade()` maluje metal na czarno — a czarna dziura czyta się jak dziura
+   w oponie, czyli dokładnie jak usterka, którą naprawiamy. Dla ścian
+   odwróconych od światła bierzemy |n·L|: to światło wypełniające, odbite
+   od jezdni i nadkola. */
+function shadeInner(n, base){
+    var k = 0.30 + 0.62*Math.abs(dot(n, LIGHT));
+    return [clamp(base[0]*k,0,255), clamp(base[1]*k,0,255), clamp(base[2]*k,0,255)];
+}
 function shade(n, base, spec){
     var nd = dot(n, LIGHT);
     if(nd < 0) nd = 0;
@@ -1474,7 +1501,7 @@ function buildFaces(eye){
 
     /* --- felga: tarcza, ramiona, piasta --- */
     var nWheel = norm(mv(Mtot, [1,0,0]));
-    var cen = [0, R + groundShift, 0];
+    var cen = [kpT[0], R + groundShift + kpT[1], kpT[2]];
     function wheelPt(x, r, ang){
         var q = mv(Mtot, [x, r*Math.cos(ang), r*Math.sin(ang)]);
         return [q[0]+cen[0], q[1]+cen[1], q[2]+cen[2]];
@@ -1495,7 +1522,10 @@ function buildFaces(eye){
         for(var bI = 0; bI < bands.length; bI++){
             var r0 = bands[bI][0], r1 = bands[bI][1], tag = bands[bI][2];
             var xx = XR, base = METAL, spc = 0.55, bias = -0.004*(bI+1);
-            if(tag === 'spoke' && !onSpoke){ base = [27,26,28]; spc = 0.06; }
+            /* Prześwit między ramionami jest CIEMNY tylko od zewnątrz. Od środka
+               auta w tym miejscu widać wewnętrzny bęben felgi, czyli metal —
+               czarne kliny robiły tam dziury w kole. */
+            if(tag === 'spoke' && !onSpoke){ base = facing ? [27,26,28] : [84,82,82]; spc = 0.06; }
             if(tag === 'lip'){ base = [178,178,182]; }
             if(tag === 'hub'){ base = [120,120,124]; }
             if(tag === 'cap'){ base = [86,86,90]; spc = 0.3; }
@@ -1507,9 +1537,40 @@ function buildFaces(eye){
             var t0 = proj(q0), t1 = proj(q1), t2 = proj(q2), t3 = proj(q3);
             /* lekki połysk zależny od kąta — metal ma kierunek */
             var gl = (tag === 'spoke' || tag === 'lip') ? 0.82 + 0.34*Math.cos(am*2 + 0.7) : 1;
-            var cc = shade(nn, [base[0]*gl, base[1]*gl, base[2]*gl], spc);
+            var lb = [base[0]*gl, base[1]*gl, base[2]*gl];
+            var cc = facing ? shade(nn, lb, spc) : shadeInner(nn, lb);
             face([t0[0],t0[1], t1[0],t1[1], t2[0],t2[1], t3[0],t3[1]],
                  rgb(cc), (t0[2]+t1[2]+t2[2]+t3[2])/4 + bias);
+        }
+    }
+
+    /* --- tarcza hamulcowa i piasta -----------------------------------------
+       ⚠️ Bez nich koło jest PUSTĄ RURĄ: opona to skorupa otwarta przy stopkach,
+       więc patrząc od wewnątrz auta widać przez nią na wylot, a amortyzator
+       z wahaczem kończą się w powietrzu. Tarcza leży o `XD` do wewnątrz od
+       płaszczyzny felgi — zasłania wnętrze od środka, a od zewnątrz sama chowa
+       się za felgą (jest dalej, więc malarz rysuje ją wcześniej). */
+    /* Tarcza 16" ma ~140 mm promienia przy 320 mm promienia koła — stąd 0.46,
+       a nie „na całą felgę". Pierścień między tarczą a rantem zasłania tylna
+       ściana felgi, też rozjaśniona światłem wypełniającym. */
+    var XD = -0.06, dBands = [[0.0,0.10,'nave'], [0.10,0.165,'bolt'], [0.165,0.46,'disc']];
+    for(s = 0; s < NS; s++){
+        var e1 = s/NS*Math.PI*2, e2 = (s+1)/NS*Math.PI*2, em = (e1+e2)/2;
+        for(var dI = 0; dI < dBands.length; dI++){
+            var d0 = dBands[dI][0], d1 = dBands[dI][1], dtag = dBands[dI][2];
+            var dBase = [172,167,161];
+            if(dtag === 'nave'){ dBase = [198,195,196]; }
+            else if(dtag === 'bolt'){ dBase = (s % 3 === 0) ? [216,213,214] : [120,117,116]; }
+            var w0 = wheelPt(XD, d0, e1), w1 = wheelPt(XD, d1, e1),
+                w2 = wheelPt(XD, d1, e2), w3 = wheelPt(XD, d0, e2);
+            var dn = facing ? nWheel : [-nWheel[0], -nWheel[1], -nWheel[2]];
+            var dm = [(w0[0]+w2[0])/2, (w0[1]+w2[1])/2, (w0[2]+w2[2])/2];
+            if(dot(dn, sub(eye, dm)) <= 0) continue;
+            var u0 = proj(w0), u1 = proj(w1), u2 = proj(w2), u3 = proj(w3);
+            var dgl = dtag === 'disc' ? 0.93 + 0.11*Math.cos(em*2 - 0.4) : 1;
+            face([u0[0],u0[1], u1[0],u1[1], u2[0],u2[1], u3[0],u3[1]],
+                 rgb(shadeInner(dn, [dBase[0]*dgl, dBase[1]*dgl, dBase[2]*dgl])),
+                 (u0[2]+u1[2]+u2[2]+u3[2])/4 - 0.004*(dI+1));
         }
     }
 }
@@ -1601,13 +1662,20 @@ function knob(p, r, col){
     g.beginPath(); g.arc(q[0], q[1], r, 0, Math.PI*2); g.fill();
 }
 function lerp3(a, b, t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
-/* Punkt na osi sworznia oddalony o `t` od srodka kola. */
-function axisPt(t){ return [kpDir[0]*t, R + groundShift + kpDir[1]*t, kpDir[2]*t]; }
+/* Punkt na osi sworznia: `t` liczone od wysokości piasty, oś odsunięta o KP_OFF. */
+function axisPt(t){
+    return [-KP_OFF + kpDir[0]*t, R + groundShift + kpDir[1]*t, kpDir[2]*t];
+}
 function buildStrut(){
     /* Oś sworznia zwrotnicy to prosta przez górne mocowanie kolumny i dolny
        przegub kulowy — dlatego rysujemy oba, a nie samą kreskę w powietrzu. */
-    var i, y1 = R*0.24 + groundShift;
-    var a1 = [-1.06, y1, 0.56], a2 = [-1.06, y1, -0.42];
+    /* Wahacz jest POZIOMY: mocowania na podramiu siedzą na wysokości przegubu
+       kulowego (tak stoi auto na kołach). Wcześniej `y1` było ułamkiem promienia
+       i ramiona nurkowały ku ziemi, jakby auto stało na zderzaku. */
+    var i, y1 = kpBot[1] + 0.04;
+    /* Ramiona sięgają dalej do środka auta niż sylwetka koła — inaczej poziomy
+       wahacz chowa się za oponą w całości i z domyślnej kamery go nie widać. */
+    var a1 = [-1.35, y1, 0.56], a2 = [-1.35, y1, -0.42];
     seg(a1, a2, 15, 'rgb(50,48,48)');            /* podramie */
     seg(kpBot, a1, 8, 'rgb(96,93,93)');          /* wahacz: ramie przednie */
     seg(kpBot, a2, 8, 'rgb(96,93,93)');          /* i tylne */
@@ -1621,18 +1689,35 @@ function buildStrut(){
        przed oponę, raz za nią. W prawdziwym aucie też widać tylko to, co wystaje
        ponad koło, reszta siedzi w nadkolu. */
     var dyz = Math.sqrt(kpDir[1]*kpDir[1] + kpDir[2]*kpDir[2]) || 1;
-    var base = axisPt((R - 0.02) / dyz);              /* korpus wychodzi zza opony */
-    var mid  = lerp3(base, kpTop, 0.34);
-    seg(base, mid, 14, 'rgb(76,73,73)');
-    seg(mid, kpTop, 5, 'rgb(160,157,157)');
-
+    var rad = 0.14, turns = 3, nSeg = 54, prev = null;
     /* ⚠️ Sprężyna NIE zaczyna się „ułamkiem drogi w górę" — zaczyna się tam, gdzie
        jej ZWOJE mijają oponę. Zwój odchyla się od osi o `rad`, więc jego najniższy
        punkt leży o ~0,34·rad bliżej opony niż sama oś; dochodzi zapas 0,09 R (≈29 mm),
        żeby przy skrajnym camberze bark opony nie dotknął zwoju. Liczymy promieniowo
        (stąd dzielenie przez `dyz`), bo opona to walec, a oś jest pochylona. */
-    var rad = 0.14, turns = 3, nSeg = 54, prev = null;
-    var s0 = axisPt((R + rad*0.34 + 0.09) / dyz);
+    var tSpr = (R + rad*0.34 + 0.09) / dyz;
+    /* Korpus urywa się tam, gdzie oś przebija WEWNĘTRZNĄ ŚCIANKĘ opony — niżej
+       schowałby się w gumie (pułapka 2), wyżej wisiałby w powietrzu. Kulka na końcu
+       to wspornik do zwrotnicy: bez niego rura kończy się „uciętym" zaokrągleniem. */
+    var base = axisPt((KP_OFF - HW*1.02) / (kpDir[0] || -1));
+    /* Gruby korpus sięga aż pod dolną miseczkę sprężyny, dalej idzie samo tłoczysko
+       (wcześniej korpus kończył się na 34% drogi, więc po odsunięciu osi cała
+       widoczna część kolumny była cienkim patykiem). */
+    var mid  = axisPt(tSpr - 0.06);
+    seg(base, mid, 14, 'rgb(76,73,73)');
+    seg(mid, kpTop, 5, 'rgb(160,157,157)');
+    ball(base, 7, 'rgb(62,60,60)');
+
+    /* Zwrotnica: kawałek żeliwa, który trzyma piastę, dolny przegub i kolumnę.
+       Siedzi w całości do wewnątrz od tarczy hamulcowej, więc od zewnątrz jest
+       schowana za kołem, a od środka auta widać ją przed tarczą — tak jak w aucie. */
+    seg(base, kpBot, 12, 'rgb(84,82,82)');
+    var hubIn = mv(Mtot, [-0.13, 0, 0]);
+    hubIn = [hubIn[0] + kpT[0], hubIn[1] + R + groundShift + kpT[1], hubIn[2] + kpT[2]];
+    seg(axisPt(-0.02), hubIn, 15, 'rgb(94,92,92)');
+    ball(hubIn, 8, 'rgb(128,126,126)');
+
+    var s0 = axisPt(tSpr);
     var s1 = axisPt(KP_TOP_T - 0.07);
     var d = norm(sub(kpTop, base));
     var u = norm(cross(d, Math.abs(d[0]) < 0.9 ? [1,0,0] : [0,0,1]));
@@ -1729,14 +1814,15 @@ function drawOverlay(){
     } else if(active === 'caster' || active === 'steer'){
         var gy = R + groundShift;
         var tt = gy / (kpDir[1] || 1);
-        var hit = [ -kpDir[0]*tt, 0.012, -kpDir[2]*tt ];
-        var top = [ kpDir[0]*1.42, gy + kpDir[1]*1.42, kpDir[2]*1.42 ];
+        var hit = axisPt(-tt); hit[1] = 0.012;     /* oś trafia w punkt styku */
+        var top = axisPt(1.42);
+        var hub = axisPt(0);                       /* wierzchołek kąta castera */
         tube(hit, top, 2.4, red);
         knob(hit, 4, red);
         dashLine([contact[0], 0.012, contact[2]], hit, rgba(RED, 0.55));
-        var vTop = [0, gy + 1.05, 0];
-        dashLine([0, 0.012, 0], vTop, 'rgba(255,255,255,0.3)');
-        if(S.caster > 0.4) arc2([0, gy, 0], vTop, top, red, nf(S.caster, 1) + '°');
+        var vTop = [hub[0], gy + 1.05, hub[2]];
+        dashLine([hub[0], 0.012, hub[2]], vTop, 'rgba(255,255,255,0.3)');
+        if(S.caster > 0.4) arc2(hub, vTop, top, red, nf(S.caster, 1) + '°');
         label(top, 'OŚ SWORZNIA', red, 0, -14);
         var midZ = [(contact[0]+hit[0])/2, 0.012, (contact[2]+hit[2])/2];
         if(S.caster > 0.4) label(midZ, 'wyprzedzenie ' + Math.round(MODEL.trailMM) + ' mm', red, 0, 16);

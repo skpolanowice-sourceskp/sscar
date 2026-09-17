@@ -269,7 +269,11 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
   Prawoskrętny: **X+ = na zewnątrz auta, Y+ = w górę, Z+ = kierunek jazdy**. Koło przednie lewe,
   punkt styku w (0,0,0), środek koła w (0,R,0). Stąd wynikają znaki, które łatwo pomylić:
   camber = `rotZ(-γ)`, zbieżność = `rotY(-τ)`, oś sworznia `d = [-cos ε·sin λ, cos ε·cos λ, -sin ε]`
-  (ε = caster, λ = SAI), skręt =
+  (ε = caster, λ = SAI). **⚠️ Oś sworznia NIE przechodzi przez środek koła** — mija go od wewnątrz
+  o `KP_OFF = R·tan(SAI)` (86 mm), czyli tyle, żeby trafiała w jezdnię **w punkcie styku**
+  (zerowy promień zataczania, jak w dzisiejszych autach). Dlatego skręt obraca koło wokół
+  **PROSTEJ, nie wokół punktu**: do macierzy dochodzi przesunięcie `T = A − Rskręt·A` dla
+  `A = (−KP_OFF, 0, 0)`. Skręt =
   obrót **wokół tej osi** o `-δ`. Składanie: `M = Rskręt · Rcamber · Rtoe`. Dzięki temu przyrost
   camberu i **podnoszenie nadwozia przy skręcaniu wychodzą same z macierzy** — nic tego nie udaje.
   Podnoszenie liczymy jako różnicę najniższego punktu bieżnika względem tej samej bryły **bez
@@ -348,20 +352,67 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
      bo patrzymy wzdłuż osi poprzecznej, więc łuk dalej pokazuje czysty caster. Efekt uboczny
      jest pożądany: podnoszenie nadwozia przy skręcie staje się **asymetryczne** dla lewego
      i prawego wychylenia, bo caster i SAI raz się dodają, a raz odejmują. Tak jest w aucie.
-  5. **Zawieszenie trafia do tej samej listy co ściany, sortowanej głębokością** (`seg()` i `ball()`
+
+     **⚠️ CIĄG DALSZY (piąta runda): sam kąt SAI to za mało — trzeba PRZESUNĄĆ oś.**
+     Zgłoszenie brzmiało „daj sprężynę jeszcze trochę w stronę wahacza". Odruch („podkręcę SAI")
+     **nie działa** i da się to policzyć: przy osi przechodzącej przez środek koła nawet
+     **SAI = 26°** zostawia najbliższy zwój **22 mm WEWNĄTRZ** szerokości opony, a taki kąt
+     jest już nierealny. Przyczyna jest inna: oś **nie ma prawa** przechodzić przez środek koła.
+     W aucie mija go od wewnątrz i trafia w jezdnię w punkcie styku — to **zerowy promień
+     zataczania**. Stąd `KP_OFF = R·tan(SAI)`: cała kolumna przesuwa się o **86 mm** do środka,
+     nad wahacz, przy SAI dalej równym realnym 15°. Poprzednia wersja miała przy okazji
+     **86 mm promienia zataczania** (oś schodziła na zewnątrz punktu styku) — nikt tego nie
+     widział, ale to była wada konstrukcyjna modelu, nie tylko grafiki.
+     **Co jeszcze z tego wynika (sprawdzić przy każdej zmianie tych stałych):**
+     (a) skręt musi obracać koło wokół **prostej** (`T = A − Rskręt·A`), inaczej koło zamiata
+     bokiem zamiast kręcić się w miejscu; (b) `hit` i wierzchołek łuku castera liczymy z `axisPt`,
+     nie od środka koła — inaczej czerwona oś rozjeżdża się z narysowaną kolumną w widoku skrętu;
+     (c) odczyt podnoszenia nadwozia **zmienił się z „+1,3 mm" na „−2,2 mm"** przy pełnym skręcie
+     i tak ma być: przy zerowym promieniu zataczania znika składowa od SAI, zostaje sama od castera;
+     (d) korpus amortyzatora musi sięgać **pod dolną miseczkę sprężyny** (`axisPt(tSpr − 0.06)`),
+     bo po odsunięciu osi stary podział „34% drogi do góry" zostawiał widoczne samo tłoczysko.
+
+     **⚠️ Przy okazji: wahacz nurkował do ziemi, bo `y1` było ułamkiem promienia (`R*0.24`),
+     a nie wysokością przegubu.** Mocowania na podramiu siedziały 77 mm nad jezdnią, czyli
+     100 mm niżej niż przegub kulowy — auto wyglądało, jakby stało na zderzaku. Teraz
+     `y1 = kpBot[1] + 0.04`, czyli wahacz jest **poziomy** i sam podąża za przegubem.
+     Ramiona sięgają do `x = −1,35` (było `−1,06`), bo poziomy wahacz **chowa się w całości
+     za sylwetką opony** — zmierzone atrapą: przy `−1,06` w widoku izometrycznym widać **0%**
+     ramienia, w widoku z przodu 79%. Test widoczności (wart powtórzenia przy każdej zmianie
+     zawieszenia): zrasteryzuj z `ops.json` wszystkie wypełnienia rysowane PO danym odcinku
+     i policz, ile jego punktów zostaje odkrytych.
+  5. **⚠️ PIĄTY: koło jest SKORUPĄ — od środka auta widać przez nie na wylot.**
+     Opona to powłoka otwarta przy stopkach, a felga ma tarczę tylko po stronie zewnętrznej,
+     więc linia wzroku z kamery ustawionej od wewnątrz wchodzi otworem przy stopce i wychodzi
+     drugą stroną. Przy okazji amortyzator i wahacz kończyły się w powietrzu, bo między nimi
+     nie było żadnej piasty. Dołożone: **tarcza hamulcowa** (`dBands`, promień 0,46 R — realne
+     ~140 mm przy kole 320 mm, nie „na całą felgę") w płaszczyźnie `XD = −0,06`, **zwrotnica**
+     (`base → kpBot`) i **piasta**. Wszystko leży DO WEWNĄTRZ od tarczy, więc z zewnątrz chowa
+     się za kołem samo — z głębokości, nie z kolejności.
+     **⚠️ Pułapka w pułapce: sama geometria NIE wystarczyła.** Po dodaniu tarczy koło dalej
+     wyglądało na przezroczyste, bo `shade()` maluje ściany odwrócone od światła prawie na
+     czarno (`n·L < 0` → zostaje samo `k = 0,32`), a czarna plama czyta się dokładnie jak dziura.
+     Stąd `shadeInner()` liczące **|n·L|** (światło wypełniające, odbite od jezdni i nadkola) —
+     używane też dla **tylnej ściany felgi** i dla **prześwitów między ramionami**: od środka
+     auta widać w nich wewnętrzny bęben felgi, czyli metal, a nie czerń.
+     Weryfikacja jak w pułapce 1: **wyrenderuj tarczę na magencie** i sprawdź, czy zakrywa otwór.
+     **Złapane przy okazji:** `buildFaces` liczyło środek koła jako `[0, R+groundShift, 0]`,
+     czyli **bez `kpT`** — przy pełnym skręcie felga zostawała **46 mm za oponą**. Wszystko,
+     co rysujemy „w układzie koła", musi dodać `kpT`.
+  6. **Zawieszenie trafia do tej samej listy co ściany, sortowanej głębokością** (`seg()` i `ball()`
      obok `face()`), zamiast rysować się osobno przed nimi. Kolejność wywołań kłamie, gdy kamerą
      obrócić się na wewnętrzną stronę auta — głębokość nie kłamie nigdy. Sprężyna jest rozbita
      na pojedyncze odcinki, więc jej tylna połowa chowa się za przednią sama z siebie.
      **To samo w sobie NIE naprawiło sprężyny w kole** — patrz punkt 2.
-  6. **Odcisk opony jest ZAWSZE zasłonięty przez oponę.** Z każdej kamery, z góry też, bo wtedy
+  7. **Odcisk opony jest ZAWSZE zasłonięty przez oponę.** Z każdej kamery, z góry też, bo wtedy
      zasłania go góra koła. Dlatego `drawPatch3D()` wołamy **dwa razy**: przed ścianami (pełne
      krycie, to co wystaje na jezdnię) i po nich półprzezroczyście.
-  7. **Łuk kąta przy 2–5° jest nieczytelny** (sześciopikselowy ogryzek). `arc2()` rysuje więc
+  8. **Łuk kąta przy 2–5° jest nieczytelny** (sześciopikselowy ogryzek). `arc2()` rysuje więc
      **klin** — długi wąski trójkąt — i dopiero na nim łuk z liczbą.
-  8. **Kamera musi śledzić aktywny suwak przez `curView`, nie przez `active`.** Przy starcie
+  9. **Kamera musi śledzić aktywny suwak przez `curView`, nie przez `active`.** Przy starcie
      `active = 'camber'`, a kamera stoi w izometrii; porównywanie do `active` powodowało, że
      pierwsze dotknięcie suwaka camber nie przełączało widoku.
-  9. **Czerwień marki jest w `oklch()`** — `toRGB()` maluje ją na pikselu 1×1 i odczytuje
+  10. **Czerwień marki jest w `oklch()`** — `toRGB()` maluje ją na pikselu 1×1 i odczytuje
      `getImageData`, zamiast zgadywać RGB. Nieobsługiwany format → alpha 0 → fallback.
 
   **⚠️ JAK TO TESTOWAĆ BEZ PRZEGLĄDARKI (nowe narzędzia w `tools/`).** W tym środowisku nie ma ani
@@ -380,17 +431,19 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
   model nie rozumie „oba barki starte" ani „piłowanie" z ogólnego opisu — pomaga wymuszenie widoku
   **prosto z góry na bieżnik** i rozpisanie wzorca na **numerowane strefy w poprzek szerokości**.
 
-  **Stan: NIEWDROŻONE** — zmiany tylko lokalnie. Do wgrania FTP: `geometria-3d.html` + 5 plików
-  `img/wear-*-800.webp`. Właściciel oglądał wersję roboczą w przeglądarce 2026-09-16
-  **cztery razy** i za każdym razem zgłaszał TO SAMO („sprężyna siedzi w kole"), ale przyczyna
+  **Stan: WDROŻONE 2026-09-17** (FTP: `geometria-3d.html`, `badania-powypadkowe.html`
+  + 5 plików `img/wear-*-800.webp`). Właściciel oglądał wersję roboczą w przeglądarce 2026-09-16
+  **pięć razy** i za każdym razem zgłaszał TO SAMO („sprężyna siedzi w kole"), ale przyczyna
   była **za każdym razem inna**: (1) dziury w feldze, przez które widać było sprężynę stojącą
   ZA kołem; (2) kolumna rysowana wewnątrz bryły opony; (3) sprężyna z za małym luzem nad
-  bieżnikiem; (4) brak SAI, przez co całość stała nad środkiem koła zamiast nad wahaczem.
-  Cztery niezależne przyczyny jednego objawu, więc każda kolejna poprawka usuwała go tylko
+  bieżnikiem; (4) SAI = 0, przez co całość stała nad środkiem koła; (5) oś sworznia przechodząca
+  przez środek koła — dopiero jej przesunięcie o `R·tan(SAI)` postawiło kolumnę nad wahaczem.
+  Pięć niezależnych przyczyn jednego objawu, więc każda kolejna poprawka usuwała go tylko
   częściowo — i za każdym razem wyglądało to jak „nic się nie zmieniło". **Wniosek na przyszłość:**
-  przy tym symulatorze nie poprzestawać na pierwszym znalezionym powodzie i sprawdzać CZTERY
+  przy tym symulatorze nie poprzestawać na pierwszym znalezionym powodzie i sprawdzać PIĘĆ
   rzeczy osobno — SIATKĘ (test magentą), POŁOŻENIE elementów względem bryły opony, LUZ każdego
-  elementu liczony od jego własnej obwiedni (nie od osi) oraz ANATOMIĘ zawieszenia.
+  elementu liczony od jego własnej obwiedni (nie od osi), ANATOMIĘ zawieszenia oraz UMIEJSCOWIENIE
+  osi obrotu (nie każdy „kąt" da się naprawić kątem — czasem trzeba przesunąć całą oś).
   Reszta nadal **nie była oglądana w prawdziwej przeglądarce**: sprawdzić po deployu płynność
   na telefonie i zachowanie `touch-action: pan-y`.
 - **2026-09-16 (c)** — **`geometria-3d.html`: pasek statystyk zastąpiony sticky spisem sekcji + „na górę".
