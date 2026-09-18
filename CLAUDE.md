@@ -270,6 +270,8 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
   240 → **160 px** (mobile: **88 px obok tekstu**, zamiast pełnej szerokości 16:9), `align-items: center`,
   mniejszy padding. Zrzut symulatora ma w kafelku `object-position: 0% 50%` (w kadrze zostaje koło,
   nie suwaki). Cache: `styles.css?v=20260918a` na 17 stronach + szablon wpisu.
+  **Stan: WDROŻONE 2026-09-18** (FTP 18 plików, MD5 18/18, produkcja po HTTP serwuje nowy CSS);
+  commit `12745e9` wypchnięty na `origin/main` razem z przeniesieniem bloga z 2026-09-17 (b).
 - **2026-09-17 (b)** — **Blog przeniesiony do katalogu `blog/`, zdjęcia do `img/blog/`
   + nowy wpis o symulatorze geometrii.**
   **Zmiana konwencji z 2026-09-15 (b) i 2026-09-16.** Tamte wpisy mówiły „wpisy PŁASKO
