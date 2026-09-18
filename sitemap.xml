@@ -80,12 +80,18 @@
   </url>
   <url>
     <loc>https://www.sscar.pl/blog.html</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.sscar.pl/blog-geometria-kol-na-golej-ramie.html</loc>
+    <loc>https://www.sscar.pl/blog/symulator-geometrii-kol-3d.html</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.sscar.pl/blog/geometria-kol-na-golej-ramie.html</loc>
     <lastmod>2026-09-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>

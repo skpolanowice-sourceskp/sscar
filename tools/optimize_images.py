@@ -15,6 +15,9 @@ Nowe zdjęcia (portrety, hala, kolejne auta): wrzuć plik do img/_src/ i dopisz
 wpis do listy SOURCES poniżej — albo uruchom z flagą --auto, żeby przerobić
 wszystko z img/_src/ ze slugiem z nazwy pliku.
 
+Slug może zawierać podkatalog ("blog/<slug>") — katalog powstanie sam.
+Tak trzymamy zdjęcia wpisów bloga: img/_src/blog/ -> img/blog/.
+
 Skrypt leży w tools/, a czyta i pisze do katalogów w korzeniu projektu
 (img/_src/ -> img/), więc ścieżki liczone są od katalogu nadrzędnego.
 """
@@ -48,9 +51,22 @@ SOURCES = [
     ("stacja-sscar.png", "hero-stacja"),
     # Blog: geometria na golej ramie (wpis z 2026-09-04). Zdjecia z hali,
     # 1. poziome 2048x1536, 2. pionowe 1536x2048 - wariant 2200 sie pominie.
-    ("blog-geometria-kol-na-golej-ramie.png", "blog-geometria-kol-na-golej-ramie"),
-    ("blog-geometria-kol-na-golej-ramie-2.png", "blog-geometria-kol-na-golej-ramie-2"),
+    ("blog/geometria-kol-na-golej-ramie.png", "blog/geometria-kol-na-golej-ramie"),
+    ("blog/geometria-kol-na-golej-ramie-2.png", "blog/geometria-kol-na-golej-ramie-2"),
 ]
+
+# Zrzuty ekranu (blog o symulatorze geometrii). Osobny tryb, bo zwykle
+# variants() produkuje fallback .jpg WYLACZNIE przy wariancie 1400 — a zrzut
+# z przegladarki ma ~1200 px szerokosci, wiec wariant 1400 sie pomija i wpis
+# zostalby bez zadnego .jpg. A .jpg jest tu potrzebny na og:image (podglad
+# linku na Facebooku). Stad wlasna para szerokosci z fallbackiem na 1200.
+SCREEN_SOURCES = [
+    ("blog/symulator-geometrii-kol-3d.png", "blog/symulator-geometrii-kol-3d"),
+    ("blog/symulator-geometrii-kol-3d-2.png", "blog/symulator-geometrii-kol-3d-2"),
+]
+
+SCREEN_WIDTHS = [800, 1200]
+SCREEN_FALLBACK_WIDTH = 1200
 
 # Warianty hero: (plik źródłowy, slug, ile procent wysokości zostawić od góry).
 # Zdjęcia mają wypalony w dolnym pasie podpis (marka, rocznik, moc + logo SKP).
@@ -73,6 +89,13 @@ THUMB_SOURCES = [
     ("wear/wear-srodek.jpg", "wear-srodek"),
 ]
 THUMB_WIDTH = 800
+
+
+def out_path(name):
+    """Ścieżka w img/ + utworzenie podkatalogu (slug bywa "blog/<slug>")."""
+    path = os.path.join(OUT_DIR, name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    return path
 
 
 def slugify(name):
@@ -104,12 +127,12 @@ def variants(src_path, slug):
             target_h = round(img.height * target_w / img.width)
             resized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-            webp_path = os.path.join(OUT_DIR, f"{slug}-{width}.webp")
+            webp_path = out_path(f"{slug}-{width}.webp")
             resized.save(webp_path, "WEBP", quality=WEBP_QUALITY, method=6)
             written += os.path.getsize(webp_path)
 
             if width == FALLBACK_WIDTH:
-                jpg_path = os.path.join(OUT_DIR, f"{slug}-{width}.jpg")
+                jpg_path = out_path(f"{slug}-{width}.jpg")
                 resized.save(jpg_path, "JPEG", quality=JPEG_QUALITY,
                              optimize=True, progressive=True)
                 written += os.path.getsize(jpg_path)
@@ -127,9 +150,35 @@ def thumb_variants(src_path, slug):
         target_h = round(img.height * target_w / img.width)
         resized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-        out = os.path.join(OUT_DIR, f"{slug}-{THUMB_WIDTH}.webp")
+        out = out_path(f"{slug}-{THUMB_WIDTH}.webp")
         resized.save(out, "WEBP", quality=WEBP_QUALITY, method=6)
         return os.path.getsize(out)
+
+
+def screen_variants(src_path, slug):
+    """Zrzut ekranu: warianty SCREEN_WIDTHS + fallback .jpg. Zwraca bajty."""
+    written = 0
+
+    with Image.open(src_path) as img:
+        if img.mode in ("RGBA", "P", "LA"):
+            img = img.convert("RGB")
+
+        for width in SCREEN_WIDTHS:
+            target_w = min(width, img.width)
+            target_h = round(img.height * target_w / img.width)
+            resized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+
+            webp_path = out_path(f"{slug}-{width}.webp")
+            resized.save(webp_path, "WEBP", quality=WEBP_QUALITY, method=6)
+            written += os.path.getsize(webp_path)
+
+            if width == SCREEN_FALLBACK_WIDTH:
+                jpg_path = out_path(f"{slug}-{width}.jpg")
+                resized.save(jpg_path, "JPEG", quality=JPEG_QUALITY,
+                             optimize=True, progressive=True)
+                written += os.path.getsize(jpg_path)
+
+    return written
 
 
 def hero_variants(src_path, slug, keep_top):
@@ -147,12 +196,12 @@ def hero_variants(src_path, slug, keep_top):
             target_h = round(cropped.height * target_w / cropped.width)
             resized = cropped.resize((target_w, target_h), Image.Resampling.LANCZOS)
 
-            webp_path = os.path.join(OUT_DIR, f"{slug}-{width}.webp")
+            webp_path = out_path(f"{slug}-{width}.webp")
             resized.save(webp_path, "WEBP", quality=WEBP_QUALITY, method=6)
             written += os.path.getsize(webp_path)
 
             if width == HERO_WIDTHS[1]:
-                jpg_path = os.path.join(OUT_DIR, f"{slug}-{width}.jpg")
+                jpg_path = out_path(f"{slug}-{width}.jpg")
                 resized.save(jpg_path, "JPEG", quality=JPEG_QUALITY,
                              optimize=True, progressive=True)
                 written += os.path.getsize(jpg_path)
@@ -184,6 +233,7 @@ def collect():
         handled = {stem(name) for name, _ in SOURCES}
         handled |= {stem(name) for name, _, _ in HERO_SOURCES}
         handled |= {stem(name) for name, _ in THUMB_SOURCES}
+        handled |= {stem(name) for name, _ in SCREEN_SOURCES}
         for filename in sorted(os.listdir(SRC_DIR)):
             if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
                 continue
@@ -238,6 +288,19 @@ def main():
         total_out += written
         print(f"  {filename} -> {slug}-*  kadr {w}x{h}"
               f" (górne {keep_top:.0%})  {written/1024/1024:.2f}MB")
+
+    for filename, slug in SCREEN_SOURCES:
+        src_path = os.path.join(SRC_DIR, filename)
+        if not os.path.exists(src_path):
+            print(f"  pominieto zrzut (brak pliku): {filename}")
+            continue
+        try:
+            written = screen_variants(src_path, slug)
+        except Exception as exc:
+            print(f"  BLAD zrzutu {filename}: {exc}")
+            continue
+        total_out += written
+        print(f"  {filename} -> {slug}-*  {written/1024:.0f}KB")
 
     for filename, slug in THUMB_SOURCES:
         src_path = os.path.join(SRC_DIR, filename)

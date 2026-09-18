@@ -3471,10 +3471,10 @@ h2.table-title::after { content: none; display: none; }
 
 .blog-card {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    gap: 1.75rem;
-    align-items: start;
-    padding: 1.5rem;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.1rem;
     background: var(--surface-1);
     border: 1px solid var(--border-subtle);
     border-radius: 6px;
@@ -3490,10 +3490,14 @@ h2.table-title::after { content: none; display: none; }
     transform: translateY(-2px);
 }
 
+/* height:auto jest konieczne: atrybut height="..." na <img> dziala jak
+   height w px i bez tego aspect-ratio jest ignorowane (miniatura rozciagala
+   sie na ~580 px wysokosci). */
 .blog-card-media {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 10;
+    height: auto;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 4px;
     background: var(--surface-2);
@@ -3701,11 +3705,11 @@ h2.table-title::after { content: none; display: none; }
 
 @media (max-width: 680px) {
     .blog-card {
-        grid-template-columns: 1fr;
-        gap: 1.1rem;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+        padding: 0.9rem;
     }
-
-    .blog-card-media { aspect-ratio: 16 / 9; }
 
     .post-wrap { padding: 0 1.1rem; }
 

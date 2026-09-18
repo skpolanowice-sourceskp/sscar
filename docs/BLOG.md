@@ -1,6 +1,6 @@
 # Blog SSCAR — jak dodać wpis
 
-> Stan na: **2026-09-16**. Blog prowadzimy **ręcznie**, świadomie — patrz „Dlaczego nie automat".
+> Stan na: **2026-09-17**. Blog prowadzimy **ręcznie**, świadomie — patrz „Dlaczego nie automat".
 
 ---
 
@@ -23,19 +23,51 @@ Wniosek: surowy post z FB to **materiał źródłowy**, nie gotowa treść.
 
 | Co | Gdzie |
 |---|---|
-| Hub (lista wpisów) | `blog.html` w korzeniu |
-| Wpis | `blog-<slug>.html` w korzeniu |
-| Zdjęcia wpisu | `img/blog-<slug>-800.webp`, `-1400.webp`, `-1400.jpg` |
-| Oryginał zdjęcia | `img/_src/blog-<slug>.jpg` (nie trafia na FTP) |
+| Hub (lista wpisów) | `blog.html` **w korzeniu** |
+| Wpis | `blog/<slug>.html` |
+| Zaślepka katalogu | `blog/index.html` (przekierowanie na huba) |
+| Zdjęcia wpisu | `img/blog/<slug>-800.webp`, `-1400.webp`, `-1400.jpg` |
+| Oryginał zdjęcia | `img/_src/blog/<slug>.png` (nie trafia na FTP) |
 | Szablon wpisu | `docs/blog-post-template.html` (nie trafia na FTP) |
 
-**Dlaczego płasko w korzeniu, a nie w katalogu `blog/`:** na serwerze **nie ma `.htaccess`**
-(patrz CLAUDE.md, wpis 2026-08-04 c), więc katalog `blog/` bez `index.html` mógłby wystawić
-listing plików, a dodanie tam `index.html` zdublowałoby hub. Płasko = zero ryzyka.
-W Google Search Console filtruj raporty po URL zawierającym `blog-`.
+**Wpisy siedzą w katalogu `blog/` (od 2026-09-17).** Wcześniej leżały płasko w korzeniu
+z prefiksem `blog-`, bo na serwerze nie ma `.htaccess` i baliśmy się listingu plików.
+Właściciel potwierdził, że na innym serwisie na tym samym hostingu katalogi działają, więc
+konwencja została zmieniona — i **sprawdziło się to na produkcji 2026-09-17**:
+`http://www.sscar.pl/blog/` zwraca `blog/index.html`, a nie „Index of /blog".
+Listing katalogu blokuje właśnie **`blog/index.html`** — zaślepka z `meta refresh` na huba
+i `canonical` na `blog.html`, żeby `/blog/` nie konkurowało z hubem w wynikach wyszukiwania.
+**Nie usuwaj tego pliku.**
+
+**⚠️ To NIE znaczy, że można przenosić dowolne strony do katalogów.** Listing okazał się
+niegroźny, ale drugi powód nadal obowiązuje: bez `.htaccess` nie ma jak wystawić **301**.
+Przenosimy więc tylko adresy świeże albo niezaindeksowane, a zaindeksowane zostawiają
+po sobie zaślepkę z `meta refresh` + `canonical`. Podstrony usługowe z korzenia
+(`geometria-3d.html`, `cennik.html`, …) siedzą w indeksie od sierpnia — **tych nie ruszamy**.
+
+**Hub zostaje w korzeniu** (`blog.html`) — jest zaindeksowany i linkowany z nagłówka oraz
+stopki na każdej podstronie. Przeniesienie go do `blog/index.html` zerwałoby te linki
+bez żadnego zysku.
+
+> **⚠️ Plik wpisu leży o poziom niżej, więc KAŻDA ścieżka względna potrzebuje `../`.**
+> Dotyczy `css/styles.css`, `js/nav.js`, `favicon.png`, `Logo-SSCAR.png`, zdjęć oraz
+> wszystkich linków do podstron (menu, breadcrumb, stopka, treść). Szablon
+> `docs/blog-post-template.html` ma to już wpisane — jeśli kopiujesz istniejący wpis
+> zamiast szablonu, sprawdź to jako pierwsze. Kontrola (nie powinna nic wypisać):
+> ```bash
+> grep -oh '\(href\|src\)="[^"]*"' blog/*.html | grep -v '="\(\.\./\|https\?:\|tel:\|mailto:\|#\)'
+> ```
+
+**Stary adres wpisu z września:** `blog-geometria-kol-na-golej-ramie.html` został w korzeniu
+jako przekierowanie (`meta refresh` + `canonical`), bo zdążył pójść do GSC z prośbą
+o zaindeksowanie. Bez `.htaccess` nie ma jak wystawić prawdziwego 301. Plik można skasować,
+gdy GSC potwierdzi zaindeksowanie nowego adresu.
+
+W Google Search Console filtruj raporty po URL zawierającym `/blog/`.
 
 **Slug:** małe litery, bez polskich znaków, myślniki, 3–5 słów, ze słowem kluczowym.
-Dobrze: `blog-co-zabrac-na-badanie-techniczne.html`. Źle: `blog-post-1.html`.
+Prefiks `blog-` w nazwie pliku jest już niepotrzebny — daje go katalog.
+Dobrze: `blog/co-zabrac-na-badanie-techniczne.html`. Źle: `blog/post-1.html`.
 
 ---
 
@@ -60,9 +92,14 @@ Post z FB rozwijamy do **minimum 400 słów**. Reguły:
   podejście, co na `o-nas.html`.
 
 ### Krok 3 — zdjęcia
-1. Oryginał wrzuć do `img/_src/` pod nazwą `blog-<slug>.jpg`.
-2. Dopisz wpis do `SOURCES` w `tools/optimize_images.py` (**nie** do `HERO_SOURCES` —
-   tamten tryb przycina dolny pas kadru).
+1. Oryginał wrzuć do `img/_src/blog/` pod nazwą `<slug>.jpg` (lub `-2`, `-3` dla kolejnych).
+2. Dopisz wpis do `SOURCES` w `tools/optimize_images.py`, ze slugiem **z prefiksem katalogu**:
+   `("blog/<slug>.jpg", "blog/<slug>")`. Podkatalog w `img/` powstanie sam.
+   **Nie** dopisuj do `HERO_SOURCES` — tamten tryb przycina dolny pas kadru.
+   **Zrzut ekranu** (screenshot z przeglądarki) idzie do `SCREEN_SOURCES`, nie do `SOURCES`:
+   zrzuty mają ~1200 px szerokości, więc `variants()` pomija wariant 1400 — a fallback `.jpg`
+   powstaje **wyłącznie** przy 1400 i wpis zostałby bez żadnego `.jpg` na `og:image`.
+   `SCREEN_SOURCES` robi parę 800/1200 z fallbackiem na 1200.
 3. Z korzenia repo: `python tools/optimize_images.py`
 4. **Zdjęcie pionowe** (3:4) dostaje `<figure class="post-figure is-portrait">` — bez tej klasy
    rozpycha się na ~1000 px wysokości w kolumnie tekstu.
@@ -70,9 +107,11 @@ Post z FB rozwijamy do **minimum 400 słów**. Reguły:
 6. `width`/`height` w `<img>` zostaw — bez nich strona skacze przy ładowaniu (CLS).
 
 ### Krok 4 — plik wpisu
-1. Skopiuj `docs/blog-post-template.html` → `blog-<slug>.html` **do korzenia**.
+1. Skopiuj `docs/blog-post-template.html` → `blog/<slug>.html`.
 2. Podmień wszystkie `{{PLACEHOLDERY}}`.
-3. Kontrola: `grep -o "{{[A-Z_]*}}" blog-<slug>.html` — **musi nie zwrócić nic**.
+3. Kontrola: `grep -o "{{[A-Z_]*}}" blog/<slug>.html` — **musi nie zwrócić nic**.
+4. Kontrola ścieżek (patrz sekcja 2): żaden `href`/`src` poza `http`, `tel:`, `mailto:`
+   i `#` nie może zaczynać się od litery — wszystkie potrzebują `../`.
 
 ### Krok 5 — podpięcie wpisu (NAJWAŻNIEJSZE dla indeksacji)
 1. W `blog.html` odkomentuj wzorzec kafelka, uzupełnij i wstaw **na górze** listy
@@ -86,10 +125,10 @@ Post z FB rozwijamy do **minimum 400 słów**. Reguły:
 
 ### Krok 6 — deploy (FTP)
 Wgraj, zachowując ścieżki:
-- `blog-<slug>.html`
+- `blog/<slug>.html`
 - `blog.html`
 - `sitemap.xml`
-- `img/blog-<slug>-*` (wszystkie warianty)
+- `img/blog/<slug>-*` (wszystkie warianty)
 - `css/styles.css` + **wszystkie** strony z podbitym `?v=` — **tylko jeśli ruszałeś CSS**
 
 Hasło FTP czytaj ze `sftp.json` do zmiennej, nigdy inline (patrz CLAUDE.md §7).
@@ -106,7 +145,7 @@ Sam deploy nie wymusza crawla.
 
 - [ ] `<title>` ≤ 60 znaków, ze słowem kluczowym, kończy się `– SSCAR`
 - [ ] `meta description` 140–160 znaków, zachęca do kliknięcia
-- [ ] `canonical` wskazuje na `https://www.sscar.pl/blog-<slug>.html`
+- [ ] `canonical` wskazuje na `https://www.sscar.pl/blog/<slug>.html`
 - [ ] Dokładnie **jeden** `<h1>`, dalej hierarchia `h2` → `h3` bez przeskoków
 - [ ] Minimum **400 słów** treści
 - [ ] Odpowiedź na pytanie w pierwszych 2–3 zdaniach
@@ -118,6 +157,7 @@ Sam deploy nie wymusza crawla.
 - [ ] Wpis dodany do `sitemap.xml`
 - [ ] Kafelek dodany na górze listy w `blog.html`
 - [ ] `grep -o "{{[A-Z_]*}}"` nie zwraca nic
+- [ ] Wszystkie ścieżki względne mają `../` (wpis leży w `blog/`)
 
 ---
 
@@ -133,9 +173,13 @@ Sam deploy nie wymusza crawla.
 - **Cache.** Ruszasz `css/styles.css` → podbij `?v=` na **wszystkich** stronach, łącznie z nowymi
   wpisami. Nie ruszasz CSS → nie podbijaj niczego.
 - **Nie wgrywaj** `docs/`, `tools/`, `img/_src/`, `*.md` — są na liście `ignore` w `sftp.json`.
-- **Górne menu jest pełne.** `nav ul` to `display:flex` bez zawijania; 7 pozycji zajmuje
-  ~680 px i między 769 a ~1050 px jest na styk. Dlatego Blog linkujemy **ze stopki**, nie
-  z górnego menu. Nie dokładaj tam ósmej pozycji bez sprawdzenia w przeglądarce.
+- **Blog jest w górnym menu I w stopce** (od 2026-09-16 b) — 8 pozycji w `nav ul` mieści się,
+  bo doszły breakpointy 769–1200 px i 769–980 px na końcu `css/styles.css`. Kolejna, dziewiąta
+  pozycja wymaga sprawdzenia w przeglądarce. Nowa podstrona = link w **obu** miejscach na
+  **każdej** stronie (pełna reguła w CLAUDE.md §3).
+- **Wpis leży o poziom niżej niż reszta serwisu.** Skopiowanie nagłówka albo stopki z podstrony
+  do wpisu bez dopisania `../` daje 404 na każdym linku. To najłatwiejszy błąd do popełnienia
+  w tej konwencji — patrz kontrola w sekcji 2.
 
 ---
 

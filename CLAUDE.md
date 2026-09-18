@@ -53,9 +53,16 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 - `index.html`, `o-nas.html`, `oferta.html`, `cennik.html`, podstrony usług
   (`badania-techniczne.html`, `klimatyzacja.html`, `geometria-3d.html`,
   `sprawdzenie-przed-zakupem.html`, `wulkanizacja.html`, …), `dekoder.html`, `guide.html`, `rodo.html`.
-- **Blog:** `blog.html` (hub) + wpisy `blog-<slug>.html` **płasko w korzeniu** (NIE w katalogu
-  `blog/` — bez `.htaccess` na serwerze katalog mógłby wystawić listing plików). Prowadzony
-  **ręcznie**; procedura i checklista SEO w `docs/BLOG.md`, szablon w `docs/blog-post-template.html`.
+- **Blog:** `blog.html` (hub, **zostaje w korzeniu**) + wpisy w katalogu **`blog/<slug>.html`**
+  (od 2026-09-17; wcześniej płasko w korzeniu jako `blog-<slug>.html`). Zdjęcia wpisów
+  w **`img/blog/`**, oryginały w `img/_src/blog/`. Katalog `blog/` ma **`index.html`**
+  (przekierowanie na huba) — bez niego serwer bez `.htaccess` mógłby wystawić listing plików;
+  **nie kasować**. Prowadzony **ręcznie**; procedura i checklista SEO w `docs/BLOG.md`,
+  szablon w `docs/blog-post-template.html`.
+  > **⚠️ Wpis leży o poziom niżej niż reszta serwisu — KAŻDA ścieżka względna potrzebuje `../`**
+  > (`../css/styles.css`, `../js/nav.js`, `../Logo-SSCAR.png`, `../index.html`, `../img/blog/...`).
+  > Skopiowanie nagłówka albo stopki z podstrony bez tej poprawki daje 404 na każdym linku.
+  > Kontrola: `grep -oh '\(href\|src\)="[^"]*"' blog/*.html | grep -v '="\(\.\./\|https\?:\|tel:\|mailto:\|#\)'` (nic nie wypisze).
 - `css/styles.css` — **wspólny, cache 7 dni** (NIE dorzucać tu stylów panelu).
 > ### ⚠️ REGUŁA: nawigacja MUSI być identyczna na wszystkich stronach — header **i** stopka
 >
@@ -82,9 +89,12 @@ dodatkowo w **MySQL** (struktura + wyszukiwanie + blokady numerów).
 >   Menu wyglądało inaczej na różnych podstronach.
 
 - `js/nav.js`, `js/reviews_data.js`, `js/dane_klima.js` (dane do klimatyzacji — **generowany**, patrz `tools/`).
-- **⚠️ Katalogi `css/` i `js/` (od 2026-09-16).** Pliki `.html` zostają **PŁASKO w korzeniu** —
-  to zaindeksowane URL-e, a bez `.htaccess` na serwerze nie da się zrobić przekierowań 301.
-  Przenoszenie assetów jest bezpieczne (ich URL-e nie są w indeksie), przenoszenie stron NIE JEST.
+- **⚠️ Katalogi `css/` i `js/` (od 2026-09-16).** Strony usługowe `.html` zostają **PŁASKO
+  w korzeniu** — to zaindeksowane URL-e, a bez `.htaccess` na serwerze nie da się zrobić
+  przekierowań 301. Przenoszenie assetów jest bezpieczne (ich URL-e nie są w indeksie),
+  przenoszenie zaindeksowanych stron NIE JEST. **Wyjątek: wpisy bloga** przeniesiono do `blog/`
+  2026-09-17 świadomie (decyzja właściciela — katalogi działają na innym serwisie na tym samym
+  hostingu), ze ściągawką: stary adres został w korzeniu jako `meta refresh` + `canonical`.
 - Zasoby: `Logo-SSCAR.png`, `favicon.png`, `img/` — warianty responsywne zdjęć
   (hero `index.html` = `img/hero-stacja-*`; od 2026-08-04 zdjęcie, nie film). **`Logo-SSCAR.png` i `favicon.png` muszą zostać w korzeniu:**
   wskazują na nie bezwzględne `og:image` na 13 podstronach (przeniesienie zerwałoby podglądy w social media).
@@ -253,6 +263,76 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-09-18** — **`blog.html`: miniatury kwadratowe, karty mniejsze.** Miniatura rozciągała się
+  na ~580 px wysokości, bo **atrybut `height="577"` na `<img>` działa jak CSS `height: 577px`**
+  i przez to `aspect-ratio` było ignorowane. Fix: `.blog-card-media { height: auto; aspect-ratio: 1/1 }`.
+  Pamiętaj o tym przy każdym `<img>` z `width`/`height` + `aspect-ratio`. Kolumna miniatury
+  240 → **160 px** (mobile: **88 px obok tekstu**, zamiast pełnej szerokości 16:9), `align-items: center`,
+  mniejszy padding. Zrzut symulatora ma w kafelku `object-position: 0% 50%` (w kadrze zostaje koło,
+  nie suwaki). Cache: `styles.css?v=20260918a` na 17 stronach + szablon wpisu.
+- **2026-09-17 (b)** — **Blog przeniesiony do katalogu `blog/`, zdjęcia do `img/blog/`
+  + nowy wpis o symulatorze geometrii.**
+  **Zmiana konwencji z 2026-09-15 (b) i 2026-09-16.** Tamte wpisy mówiły „wpisy PŁASKO
+  w korzeniu, NIE w katalogu `blog/`", bo bez `.htaccess` katalog mógłby wystawić listing
+  plików. **Decyzja właściciela (2026-09-17): katalogi działają na innym serwisie na tym samym
+  hostingu**, więc konwencja została zmieniona. Listing blokuje **`blog/index.html`** — zaślepka
+  z `meta refresh` na huba i `canonical` na `blog.html` (żeby `/blog/` nie konkurowało z hubem).
+  **Hub `blog.html` ZOSTAJE w korzeniu** — jest zaindeksowany i linkowany z nagłówka oraz stopki
+  na każdej podstronie; przeniesienie zerwałoby te linki bez zysku.
+  **⚠️ Stary adres wpisu z września został w korzeniu jako przekierowanie.**
+  `blog-geometria-kol-na-golej-ramie.html` poszedł 2026-09-16 na produkcję i do GSC z prośbą
+  o zaindeksowanie, więc samo przeniesienie dałoby 404 na adresie, o którego crawl właśnie
+  poprosiliśmy. Bez `.htaccess` nie ma jak wystawić 301 — plik zawiera `meta refresh 0`
+  + `canonical` na nowy adres. Do skasowania, gdy GSC potwierdzi indeksację `blog/…`.
+  **⚠️ NAJŁATWIEJSZY BŁĄD W TEJ KONWENCJI: wpis leży o poziom niżej, więc każda ścieżka
+  względna potrzebuje `../`** — CSS, JS, favicon, logo, zdjęcia i wszystkie linki w menu,
+  breadcrumbie, treści i stopce. Kontrola jednym poleceniem (nic nie wypisze):
+  `grep -oh '\(href\|src\)="[^"]*"' blog/*.html | grep -v '="\(\.\./\|https\?:\|tel:\|mailto:\|#\)'`.
+  **Struktura:** `blog/geometria-kol-na-golej-ramie.html`, `blog/symulator-geometrii-kol-3d.html`,
+  `blog/index.html`; zdjęcia `img/blog/<slug>-*`, oryginały `img/_src/blog/<slug>.png`
+  (mirror `img/_src/wear/`). Poprawione: `blog.html` (kafelki + wzorzec w komentarzu),
+  `sitemap.xml`, `docs/BLOG.md`, `docs/blog-post-template.html` (ma już `../` wpisane).
+  **`tools/optimize_images.py`:** slug może teraz zawierać podkatalog (`"blog/<slug>"`) —
+  nowy helper `out_path()` robi `makedirs`. Doszła lista **`SCREEN_SOURCES`** (+`screen_variants`,
+  `SCREEN_WIDTHS = [800, 1200]`) dla **zrzutów ekranu**: zrzut z przeglądarki ma ~1200 px
+  szerokości, więc `variants()` pomija wariant 1400 — a fallback `.jpg` powstaje **wyłącznie**
+  przy 1400, czyli wpis zostałby **bez żadnego `.jpg` na `og:image`** (podgląd linku na FB).
+  Weryfikacja: regeneracja starych wariantów bloga dała pliki **bit w bit tej samej wielkości**
+  co przed zmianą.
+  **Nowy wpis: `blog/symulator-geometrii-kol-3d.html`** (984 słowa) — o remasterze laboratorium
+  geometrii z 2026-09-17 (a). Dwa zrzuty ekranu: model 3D z suwakami + lista wzorców zużycia.
+  **Liczby w tekście nie są przepisane z pamięci** — model zużycia z `geometria-3d.html`
+  przeliczony w Pythonie: fabryka ≈44 000 km, camber −2,4° ≈25 000, zbieżność +4,2 mm ≈24 000,
+  ciśnienie 1,5 bar ≈19 000. Normy, ceny (pomiar 150 zł, regulacja od 250 zł/oś) i nazwa
+  alignera sprawdzone w `geometria-3d.html`/`cennik.html`. Sekcja „dlaczego sprężyna stoi nad
+  wahaczem" opisuje zerowy promień zataczania (`KP_OFF = R·tan(SAI)`) — ta sama historia,
+  co w pułapce 4 wpisu 2026-09-16 (d), napisana dla klienta.
+  **CSS nietknięte** (`.post-*`/`.blog-*` już istniały) → **żadnego bumpu `?v=`**.
+  **Przy okazji:** skasowany `fa.css` z korzenia (89 KB, pobrana kopia Font Awesome
+  z kontroli ikon 2026-09-16 c — korzeń repo to web root, nie miejsce na artefakty diagnostyczne).
+  **Stan: WDROŻONE przez FTP 2026-09-17** (18 plików: `blog.html`, `sitemap.xml`,
+  `blog-geometria-kol-na-golej-ramie.html` nadpisany przekierowaniem, `blog/` 3 pliki,
+  `img/blog/` 12 plików). Katalogi `blog` i `img/blog` utworzone przez FTP `MKD`.
+  MD5 zweryfikowane **18/18** (odczyt z powrotem przez FTP), produkcja odpytana po HTTP.
+  **✅ ROZSTRZYGNIĘTE: KATALOGI NA vh.pl DZIAŁAJĄ — i nie wystawiają listingu.**
+  To było główne ryzyko tej zmiany i jest zmierzone, nie założone: `http://www.sscar.pl/blog/`
+  zwraca **naszą zaślepkę `blog/index.html`** (667 B, `<title>Blog SSCAR</title>`), a nie
+  „Index of /blog". Serwer sam podaje `index.html` z katalogu. Oba wpisy otwierają się pod
+  `/blog/<slug>.html`, zdjęcia z `/img/blog/` schodzą poprawnie, a zasoby wołane przez `../`
+  (`/css/styles.css`, `/js/nav.js`, `/Logo-SSCAR.png`, `/favicon.png`) odpowiadają 200.
+  **Konsekwencja na przyszłość:** ostrzeżenie „nie przenoś stron do podkatalogów" z wpisów
+  2026-09-15 (b) i 2026-09-16 dotyczyło listingu i braku 301. Listing jest **obalony**
+  (wystarczy `index.html` w katalogu). Brak 301 **nadal obowiązuje** — dlatego przenosimy
+  wyłącznie adresy świeże lub niezaindeksowane, a zaindeksowane zostawiają po sobie zaślepkę
+  z `meta refresh` + `canonical`. **Podstron usługowych z korzenia nadal NIE przenosimy:**
+  są w indeksie od sierpnia i nie ma czym wystawić 301.
+  **⚠️ Na serwerze zostało 6 osieroconych plików** `img/blog-geometria-kol-na-golej-ramie-*`
+  (razem 1 374 191 B) — nic ich już nie linkuje, kopie są lokalnie w `img/blog/`. Do skasowania
+  (nazwy ASCII, więc zwykły `FtpWebRequest` wystarczy — pułapka z §7 tu nie zachodzi).
+  **Zostało do zrobienia:** GSC → „Poproś o zaindeksowanie" dla
+  `https://www.sscar.pl/blog/symulator-geometrii-kol-3d.html` **oraz**
+  `https://www.sscar.pl/blog/geometria-kol-na-golej-ramie.html` (nowy adres starego wpisu).
+  **Nie oglądane w prawdziwej przeglądarce** — sprawdzić wygląd wpisu i oba zrzuty ekranu.
 - **2026-09-17** — **Nowy model WebGL w `geometria-3d.html`**, zaakceptowany przez właściciela.
   Proceduralne siatki: opona z przestrzennym bieżnikiem i napisami, dzielone ramiona felgi,
   nawiercana tarcza hamulcowa, czerwony zacisk, amortyzator, sprężyna i wahacz. Materiały,
