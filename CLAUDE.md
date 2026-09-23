@@ -267,7 +267,7 @@ poprawek CSS ani literówek. Trzymaj datę bezwzględną.
   Zamiast telefonu 608 078 802 i maila `graf.m.jar@gmail.com` jest `p.footer-credit` „Strona wykonana przez"
   + link w kolorach CMYK (`www.` cyjan, `m-jaro` magenta, `.pl` żółty) z czterema kółkami C/M/Y/K;
   K ma jasną obwódkę, bo czarne na ciemnej stopce znika. Na 17 stronach + szablon wpisu.
-  CSS na końcu `styles.css`, cache `styles.css?v=20260923b`. **Stan: NIEWDROŻONE.**
+  CSS na końcu `styles.css`, cache `styles.css?v=20260923b`. **Stan: WDROŻONE 2026-09-23** (FTP 18 plików, MD5 18/18).
 - **2026-09-18** — **`blog.html`: miniatury kwadratowe, karty mniejsze.** Miniatura rozciągała się
   na ~580 px wysokości, bo **atrybut `height="577"` na `<img>` działa jak CSS `height: 577px`**
   i przez to `aspect-ratio` było ignorowane. Fix: `.blog-card-media { height: auto; aspect-ratio: 1/1 }`.
