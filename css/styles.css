@@ -1485,12 +1485,12 @@ footer a:hover { color: var(--primary-red); }
     margin: 0;
 }
 
+/* Znacznik absolutnie, NIE flex/grid: li miesza tekst z <strong>,
+   a w flexie każdy kawałek inline staje się osobną kolumną. */
 .checklist li {
-    padding: 0.8rem 0;
+    padding: 0.8rem 0 0.8rem 2.1rem;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    position: relative;
     color: #ddd;
     font-size: 1rem;
     line-height: 1.5;
@@ -1503,8 +1503,9 @@ footer a:hover { color: var(--primary-red); }
     color: var(--primary-red);
     font-weight: 900;
     font-size: 1.1rem;
-    flex-shrink: 0;
-    margin-top: 1px;
+    position: absolute;
+    left: 0;
+    top: calc(0.8rem + 1px);
 }
 
 /* Two-column layout */
@@ -3764,3 +3765,31 @@ h2.table-title::after { content: none; display: none; }
 
     nav ul li a.nav-cta { padding: 0.45rem 0.75rem; }
 }
+
+/* ---- Stopka: podpis autora strony (m-jaro.pl, kolory CMYK) ---- */
+.footer-credit { margin-top: 1.5rem; }
+.footer-credit a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.35rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.footer-credit .cmyk-c { color: #00aeef; }
+.footer-credit .cmyk-m { color: #ec008c; }
+.footer-credit .cmyk-y { color: #fff200; }
+.footer-credit a:hover span[class^="cmyk-"]:not(.cmyk-mark) { text-decoration: underline; text-underline-offset: 3px; }
+.cmyk-mark { display: inline-flex; }
+.cmyk-mark i {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+}
+.cmyk-mark i + i { margin-left: -0.22rem; }
+.cmyk-mark i:nth-child(1) { background: #00aeef; }
+.cmyk-mark i:nth-child(2) { background: #ec008c; }
+.cmyk-mark i:nth-child(3) { background: #fff200; }
+/* K (czarny) na ciemnej stopce: jasna obwódka, inaczej znika */
+.cmyk-mark i:nth-child(4) { background: #1a1a1a; box-shadow: 0 0 0 1px rgba(255,255,255,0.45); }
