@@ -53,6 +53,7 @@ SOURCES = [
     # 1. poziome 2048x1536, 2. pionowe 1536x2048 - wariant 2200 sie pominie.
     ("blog/geometria-kol-na-golej-ramie.png", "blog/geometria-kol-na-golej-ramie"),
     ("blog/geometria-kol-na-golej-ramie-2.png", "blog/geometria-kol-na-golej-ramie-2"),
+    ("blog/citroen-xm-hydropneumatyka.png", "blog/citroen-xm-hydropneumatyka"),
 ]
 
 # Zrzuty ekranu (blog o symulatorze geometrii). Osobny tryb, bo zwykle

@@ -5,7 +5,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 „Utrzymanie tego pliku" na końcu). Szczegóły marki/designu są w `PRODUCT.md` i `DESIGN.md`
 — tu ich nie powtarzamy.
 
-> Daty w tym pliku są bezwzględne. Stan na: **2026-09-17**.
+> Daty w tym pliku są bezwzględne. Stan na: **2026-10-06**.
 
 ---
 
@@ -263,6 +263,18 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-10-06** — **Nowy wpis `blog/citroen-xm-hydropneumatyka.html`** ze zdjęciem XM-a
+  dostarczonym przez właściciela: historia Bertone, trzynasta szyba i hydropneumatyka,
+  z odnośnikami do źródeł Citroëna. Interaktywny schemat obciążenia/poziomowania
+  w `js/xm-hydropneumatyka.js`; CSS tylko we wpisie, wspólny `styles.css` bez zmian.
+  Model rozdziela korekcję wysokości od sterowania twardością Hydractive, nie podaje
+  rzeczywistych ciśnień ani prześwitu. Obsługuje klawiaturę, reduced motion i brak JS.
+  Zdjęcia `img/blog/citroen-xm-hydropneumatyka-*`, oryginał `img/_src/blog/`, wpis w
+  `SOURCES` generatora; kafelek pierwszy na `blog.html`, URL i data w `sitemap.xml`.
+  Źródła, walidacja i pliki do wdrożenia: `docs/blog-citroen-xm.md`.
+  **Stan: WDROŻONE przez FTP 2026-10-06** (7/7 plików pobranych z serwera identycznych
+  z lokalnymi). Produkcja sprawdzona w Chromium: HTML zgodny, zdjęcie, korekcja wysokości,
+  widok 320 px i przejście z kafelka działają; bez błędów JS i odpowiedzi HTTP 4xx/5xx.
 - **2026-09-23** — **Stopka: kontakt do autora strony zastąpiony linkiem do `https://www.m-jaro.pl`.**
   Zamiast telefonu 608 078 802 i maila `graf.m.jar@gmail.com` jest `p.footer-credit` „Strona wykonana przez"
   + link w kolorach CMYK (`www.` cyjan, `m-jaro` magenta, `.pl` żółty) z czterema kółkami C/M/Y/K;

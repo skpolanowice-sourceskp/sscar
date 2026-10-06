@@ -80,9 +80,15 @@
   </url>
   <url>
     <loc>https://www.sscar.pl/blog.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.sscar.pl/blog/citroen-xm-hydropneumatyka.html</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.sscar.pl/blog/symulator-geometrii-kol-3d.html</loc>
