@@ -131,9 +131,9 @@ Wgraj, zachowując ścieżki:
 - `img/blog/<slug>-*` (wszystkie warianty)
 - `css/styles.css` + **wszystkie** strony z podbitym `?v=` — **tylko jeśli ruszałeś CSS**
 
-Hasło FTP czytaj ze `sftp.json` do zmiennej, nigdy inline (patrz CLAUDE.md §7).
-Po wgraniu zweryfikuj MD5 i odpytaj produkcję **po HTTP** — HTTPS przechodzi przez
-challenge antybotowy i zwraca stronę „Weryfikacja" **z kodem 200** (CLAUDE.md, 2026-08-04 b).
+Wgrywaj przez `python tools/ftp_upload.py <pliki>` (weryfikuje każdy plik odczytem; patrz `docs/DEPLOY.md`).
+Potem odpytaj produkcję **po HTTP** — HTTPS przechodzi przez
+challenge antybotowy i zwraca stronę „Weryfikacja" **z kodem 200** (`docs/DEPLOY.md`).
 
 ### Krok 7 — Google Search Console
 „Sprawdzenie adresu URL" → wklej adres wpisu → **„Poproś o zaindeksowanie"**.
@@ -176,7 +176,7 @@ Sam deploy nie wymusza crawla.
 - **Blog jest w górnym menu I w stopce** (od 2026-09-16 b) — 8 pozycji w `nav ul` mieści się,
   bo doszły breakpointy 769–1200 px i 769–980 px na końcu `css/styles.css`. Kolejna, dziewiąta
   pozycja wymaga sprawdzenia w przeglądarce. Nowa podstrona = link w **obu** miejscach na
-  **każdej** stronie (pełna reguła w CLAUDE.md §3).
+  **każdej** stronie (pełna reguła w `CLAUDE.md`, „Reguły, które łamano najczęściej”).
 - **Wpis leży o poziom niżej niż reszta serwisu.** Skopiowanie nagłówka albo stopki z podstrony
   do wpisu bez dopisania `../` daje 404 na każdym linku. To najłatwiejszy błąd do popełnienia
   w tej konwencji — patrz kontrola w sekcji 2.
