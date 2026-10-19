@@ -4,10 +4,16 @@ Pełna historia zmian (najnowsze na górze). Przeniesione z `CLAUDE.md` 2026-10-
 Czytaj, gdy potrzebujesz kontekstu „dlaczego tak jest”. Bieżące zasady są w `CLAUDE.md` i tematycznych plikach `docs/`.
 Nowe wpisy dopisuj **na górze**, krótko (3–8 linii), z datą bezwzględną i stanem wdrożenia.
 
+- **2026-10-19 (b)** — **Dokumentacja podzielona.** `CLAUDE.md` (było ~1100 linii / 100 KB, ładowane przy każdym
+  zapytaniu) skrócony do mapy ~80 linii. Treść przeniesiona do `docs/`: `CHANGELOG.md` (historia), `PANEL.md`,
+  `FRONTEND.md`, `DEPLOY.md`, `SEO.md`, `GEOMETRIA-3D.md`. Nowy `tools/ftp_upload.py` — deploy z weryfikacją
+  odczytem i blokadą plików spoza web rootu.
+
 - **2026-10-19** — **Godziny otwarcia: pon.–śr. 7:00–19:00** (czw.–pt. bez zmian 7:00–20:00, sob. 8:00–14:00).
   Zmienione w treści i schema.org (`index.html`, `o-nas.html`, `oferta.html`) oraz w grafiku rezerwacji:
   `REZ_HOURS` w `reservations/lib.php` (backend + panel) i `HOURS` w `js/rezerwacja.js`
   (cache `rezerwacja.js?v=20261019a`). **Oba miejsca muszą być zgodne** — front liczy sloty sam, backend je weryfikuje.
+  **Stan: WDROŻONE przez FTP 2026-10-19** (6 plików, odczyt z serwera identyczny).
 - **2026-10-06** — **Nowy wpis `blog/citroen-xm-hydropneumatyka.html`** ze zdjęciem XM-a
   dostarczonym przez właściciela: historia Bertone, trzynasta szyba i hydropneumatyka,
   z odnośnikami do źródeł Citroëna. Interaktywny schemat obciążenia/poziomowania
