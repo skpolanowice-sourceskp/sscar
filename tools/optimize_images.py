@@ -54,6 +54,10 @@ SOURCES = [
     ("blog/geometria-kol-na-golej-ramie.png", "blog/geometria-kol-na-golej-ramie"),
     ("blog/geometria-kol-na-golej-ramie-2.png", "blog/geometria-kol-na-golej-ramie-2"),
     ("blog/citroen-xm-hydropneumatyka.png", "blog/citroen-xm-hydropneumatyka"),
+    # Chrysler Cirrus 1995 (wpis z 2026-10-19). Zrodla 4000x3000 po color gradingu
+    # (wnetrze przesuniete w strone szalwiowej zieleni), oryginaly z telefonu poza repo.
+    ("blog/chrysler-cirrus-1995.jpg", "blog/chrysler-cirrus-1995"),
+    ("blog/chrysler-cirrus-1995-2.jpg", "blog/chrysler-cirrus-1995-2"),
 ]
 
 # Zrzuty ekranu (blog o symulatorze geometrii). Osobny tryb, bo zwykle
