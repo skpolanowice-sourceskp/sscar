@@ -5,7 +5,7 @@ zaczniesz research od zera. **Aktualizuj go** po każdej istotnej zmianie (patrz
 „Utrzymanie tego pliku" na końcu). Szczegóły marki/designu są w `PRODUCT.md` i `DESIGN.md`
 — tu ich nie powtarzamy.
 
-> Daty w tym pliku są bezwzględne. Stan na: **2026-10-06**.
+> Daty w tym pliku są bezwzględne. Stan na: **2026-10-19**.
 
 ---
 
@@ -263,6 +263,10 @@ dopisz krótko tutaj (i w razie potrzeby zaktualizuj odpowiednią sekcję). Nie 
 poprawek CSS ani literówek. Trzymaj datę bezwzględną.
 
 ### Changelog
+- **2026-10-19** — **Godziny otwarcia: pon.–śr. 7:00–19:00** (czw.–pt. bez zmian 7:00–20:00, sob. 8:00–14:00).
+  Zmienione w treści i schema.org (`index.html`, `o-nas.html`, `oferta.html`) oraz w grafiku rezerwacji:
+  `REZ_HOURS` w `reservations/lib.php` (backend + panel) i `HOURS` w `js/rezerwacja.js`
+  (cache `rezerwacja.js?v=20261019a`). **Oba miejsca muszą być zgodne** — front liczy sloty sam, backend je weryfikuje.
 - **2026-10-06** — **Nowy wpis `blog/citroen-xm-hydropneumatyka.html`** ze zdjęciem XM-a
   dostarczonym przez właściciela: historia Bertone, trzynasta szyba i hydropneumatyka,
   z odnośnikami do źródeł Citroëna. Interaktywny schemat obciążenia/poziomowania

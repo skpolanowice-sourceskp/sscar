@@ -51,7 +51,13 @@
       "openingHoursSpecification": [
         {
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday"],
+          "opens": "07:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Thursday", "Friday"],
           "opens": "07:00",
           "closes": "20:00"
         },
@@ -236,7 +242,8 @@
 
                 <div class="opening-hours">
                     <h4>Godziny otwarcia:</h4>
-                    <p>Poniedziałek – Piątek: <strong style="color:var(--primary-red)">07:00 – 20:00</strong></p>
+                    <p>Poniedziałek – Środa: <strong style="color:var(--primary-red)">07:00 – 19:00</strong></p>
+                    <p>Czwartek – Piątek: <strong style="color:var(--primary-red)">07:00 – 20:00</strong></p>
                     <p>Sobota: <strong style="color:var(--primary-red)">08:00 – 14:00</strong></p>
                 </div>
             </div>
